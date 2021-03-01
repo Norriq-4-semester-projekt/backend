@@ -2,7 +2,6 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs
-/Api/.vs/Api
-/Api/Backend/bin/Debug/net5.0
-/Api/Backend/obj
+/.vs/Backend/v16
+/Api/bin/Debug/net5.0
+/Api/obj
