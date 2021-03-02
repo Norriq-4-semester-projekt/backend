@@ -5,8 +5,10 @@ using System.Linq;
 
 namespace Api.Controllers
 {
+    // [ApiVersion("0.9", Deprecated = true)] // Set previous version as deprecated
+    [ApiVersion("1.0")] // Set version of controller
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class WeatherForecastController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
