@@ -8,7 +8,7 @@ namespace Api.Controllers
     // [ApiVersion("0.9", Deprecated = true)] // Set previous version as deprecated
     [ApiVersion("1.0")] // Set version of controller
     [ApiController]
-    [Route("api/v{version:apiVersion}/[controller]")]
+    [Route("v{version:apiVersion}/{customer}/[action]")]
     public class WeatherForecastController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
@@ -24,7 +24,7 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult ProduceError()
         {
             try
             {
