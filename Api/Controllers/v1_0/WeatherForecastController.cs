@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 
-namespace Api.Controllers
+namespace Api.Controllers.v1_0
 {
     // [ApiVersion("0.9", Deprecated = true)] // Set previous version as deprecated
     [ApiVersion("1.0")] // Set version of controller
@@ -51,6 +51,19 @@ namespace Api.Controllers
             catch (Exception exception)
             {
                 _logger.LogError(exception, "Something bad happened");
+                return new StatusCodeResult(500);
+            }
+        }
+
+        public IActionResult GetData()
+        {
+            try
+            {
+                return null;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
                 return new StatusCodeResult(500);
             }
         }

@@ -1,3 +1,4 @@
+using Api.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -40,7 +41,9 @@ namespace Api
             });
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Api", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Api", Version = "v1.0" });
+                c.OperationFilter<RemoveVersionParameterFilter>();
+                c.DocumentFilter<ReplaceVersionWithExactValueInPathFilter>();
             });
         }
 
