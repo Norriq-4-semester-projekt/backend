@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Nest;
 using System;
 using System.Linq;
+using System.Net.NetworkInformation;
 
 namespace Api.Controllers.v1_0
 {
@@ -39,7 +40,7 @@ namespace Api.Controllers.v1_0
                 if ((rng.Next(0, 5) < 2))
                 {
                     throw new Exception(message: "Random Bad Call");
-                } 
+                }
                 return Ok(
                      Enumerable.Range(1, 5).Select(index => new WeatherForecast
                      {
@@ -61,22 +62,17 @@ namespace Api.Controllers.v1_0
         {
             try
             {
-
-                var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("elasticapi-logs-development-2021-03");
+                var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("elasticapi-logs-*");
                 var client = new ElasticClient(settings);
 
-                var rs = client.Search<Fields>(s => s
+                var rs = client.Search<dynamic>(s => s
     .Query(q => q
-        .MatchAll()
+        .Bool(b => b
+            .Must(m => m
+                 .Match(f => f
+                    .Field("fields.MachineName").Query("DESKTOP-GJNGD1A"))))
     )
 );
-
-                //    var rs = client.Search<Fields>(s => s
-                //     .Query(q => q.MatchPhrase(m => m.Field("RequestPath").Query("GetData"))
-                //));
-                Console.WriteLine(rs.Total);
-                Console.WriteLine(rs.Documents.FirstOrDefault());
-
                 _logger.LogInformation("Der er sku dadda");
                 return new StatusCodeResult(200);
             }
@@ -87,5 +83,14 @@ namespace Api.Controllers.v1_0
             }
         }
 
+        [HttpGet]
+        public PingReply PingServer(string customer)
+        {
+            Ping myPing = new Ping();
+            PingReply reply = myPing.Send(customer, 1000);
+
+            _logger.LogInformation("Ping: {ping}", reply.RoundtripTime);
+            return reply;
+        }
     }
 }
