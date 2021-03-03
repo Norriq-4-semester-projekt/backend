@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Nest;
 using System;
 using System.Linq;
 
@@ -60,6 +61,11 @@ namespace Api.Controllers.v1_0
         {
             try
             {
+                var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200"));
+                var client = new ElasticClient(settings);
+
+               // SKRIV NOGET KODE HER MH
+
                 _logger.LogInformation("Der er sku dadda");
                 return new StatusCodeResult(200);
             }
