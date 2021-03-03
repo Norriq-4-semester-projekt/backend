@@ -66,13 +66,11 @@ namespace Api.Controllers.v1_0
                 var client = new ElasticClient(settings);
 
                 var rs = client.Search<dynamic>(s => s
-    .Query(q => q
-        .Bool(b => b
-            .Must(m => m
-                 .Match(f => f
-                    .Field("fields.MachineName").Query("DESKTOP-GJNGD1A"))))
-    )
-);
+                    .Query(q => q
+                        .Bool(b => b
+                            .Must(m => m
+                                 .Match(f => f
+                                    .Field("fields.MachineName").Query("DESKTOP-GJNGD1A"))))));
                 _logger.LogInformation("Der er sku dadda");
                 return new StatusCodeResult(200);
             }
