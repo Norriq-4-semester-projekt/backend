@@ -61,10 +61,21 @@ namespace Api.Controllers.v1_0
         {
             try
             {
-                var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200"));
+
+                var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("elasticapi-logs-development-2021-03");
                 var client = new ElasticClient(settings);
 
-               // SKRIV NOGET KODE HER MH
+                var rs = client.Search<Fields>(s => s
+    .Query(q => q
+        .MatchAll()
+    )
+);
+
+                //    var rs = client.Search<Fields>(s => s
+                //     .Query(q => q.MatchPhrase(m => m.Field("RequestPath").Query("GetData"))
+                //));
+                Console.WriteLine(rs.Total);
+                Console.WriteLine(rs.Documents.FirstOrDefault());
 
                 _logger.LogInformation("Der er sku dadda");
                 return new StatusCodeResult(200);
