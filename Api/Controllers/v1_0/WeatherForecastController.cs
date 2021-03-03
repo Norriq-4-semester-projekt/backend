@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 
-namespace Api.Controllers
+namespace Api.Controllers.v1_0
 {
     // [ApiVersion("0.9", Deprecated = true)] // Set previous version as deprecated
     [ApiVersion("1.0")] // Set version of controller
@@ -54,5 +54,21 @@ namespace Api.Controllers
                 return new StatusCodeResult(500);
             }
         }
+
+        [HttpGet]
+        public StatusCodeResult GetData()
+        {
+            try
+            {
+                _logger.LogInformation("Der er sku dadda");
+                return new StatusCodeResult(200);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
+                return new StatusCodeResult(500);
+            }
+        }
+
     }
 }
