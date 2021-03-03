@@ -55,11 +55,13 @@ namespace Api.Controllers.v1_0
             }
         }
 
-        public IActionResult GetData()
+        [HttpGet]
+        public StatusCodeResult GetData()
         {
             try
             {
-                return null;
+                _logger.LogInformation("Der er sku dadda");
+                return new StatusCodeResult(200);
             }
             catch (Exception exception)
             {
@@ -67,5 +69,6 @@ namespace Api.Controllers.v1_0
                 return new StatusCodeResult(500);
             }
         }
+
     }
 }
