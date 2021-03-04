@@ -1,4 +1,4 @@
-using Api.Configuration;
+using Api.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Builder;
@@ -45,7 +45,9 @@ namespace Api
             });
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Api", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Api", Version = "v1.0" });
+                c.OperationFilter<RemoveVersionParameterFilter>();
+                c.DocumentFilter<ReplaceVersionWithExactValueInPathFilter>();
             });
 
             services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));
