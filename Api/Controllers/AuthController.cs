@@ -1,13 +1,12 @@
 ﻿using Api.Helpers;
 using Api.Models.v1_0;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Nest;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -51,8 +50,17 @@ namespace Api.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
         [HttpPost]
-        public StatusCodeResult Register(string Username, string Password)
+        public ActionResult Register(string Username, string Password)
         {
+            UserValidator uv = new UserValidator();
+            User user = new User(Username);
+            user.Password = Password;
+            ValidationResult result = uv.Validate(user);
+            if (!result.IsValid)
+            {
+                return new ObjectResult(result.Errors) { StatusCode = 500 };
+            }
+
             var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users*");
             var client = new ElasticClient(settings);
 
