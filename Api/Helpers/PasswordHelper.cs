@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace HairForceOne.WebService.Util
+namespace Api.Helpers
 {
     /// <summary>
     /// This class contains the generate salt and compute hash methods
