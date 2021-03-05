@@ -50,8 +50,6 @@ namespace Api
                 c.DocumentFilter<ReplaceVersionWithExactValueInPathFilter>();
             });
 
-            services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));
-
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
