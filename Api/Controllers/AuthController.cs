@@ -31,7 +31,7 @@ namespace Api.Controllers
         public async Task<ActionResult> Login(String Username, String Password)
         {
             User u = new User(Username);
-            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users*");
+            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
             var client = new ElasticClient(settings);
 
             try
@@ -105,7 +105,7 @@ namespace Api.Controllers
                 return new ObjectResult(result.Errors) { StatusCode = 500 };
             }
 
-            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users*");
+            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
             var client = new ElasticClient(settings);
 
             try
@@ -132,6 +132,8 @@ namespace Api.Controllers
 
             try
             {
+                client.IndexDocument<User>(u);
+
                 return new StatusCodeResult(200);
             }
             catch (Exception)
