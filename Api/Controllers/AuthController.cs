@@ -11,6 +11,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using DataAccess.Interfaces;
+using DataAccess.Entities;
 
 namespace Api.Controllers
 {
@@ -20,16 +22,19 @@ namespace Api.Controllers
     [Route("v{version:apiVersion}/[action]")]
     public class AuthController : Controller
     {
-        private readonly IConfiguration Configuration;
+        private readonly IConfiguration _configuration;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AuthController(IConfiguration configuration)
+        public AuthController(IConfiguration configuration, IUnitOfWork unitOfWork)
         {
-            Configuration = configuration;
+            _configuration = configuration;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
         public async Task<ActionResult> Login(String Username, String Password)
         {
+            await _unitOfWork.Users.GetAll();
             User u = new User(Username);
             var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
             var client = new ElasticClient(settings);
@@ -70,11 +75,11 @@ namespace Api.Controllers
 
         private string GenerateJWTToken(User user)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtToken:SecretKey"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtToken:SecretKey"]));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var issuer = Configuration["JwtToken:Issuer"];
-            var audience = Configuration["JwtToken:Audience"];
-            var timeToLive = DateTime.Now.AddMinutes(Convert.ToDouble(Configuration["JwtToken:TokenExpiry"]));
+            var issuer = _configuration["JwtToken:Issuer"];
+            var audience = _configuration["JwtToken:Audience"];
+            var timeToLive = DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["JwtToken:TokenExpiry"]));
             var claims = new List<Claim>
             {
                 new Claim("username", user.Username),
@@ -93,6 +98,7 @@ namespace Api.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        /*
         [HttpPost]
         public ActionResult Register(string Username, string Password)
         {
@@ -142,5 +148,6 @@ namespace Api.Controllers
                 return new StatusCodeResult(500);
             }
         }
+        */
     }
 }
