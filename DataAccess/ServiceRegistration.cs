@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DataAccess.Interfaces;
 using DataAccess.Repositories;
+using DataAccess.Service;
 
 namespace DataAccess
 {
@@ -13,6 +14,8 @@ namespace DataAccess
         public static void AddInfrastructure(this IServiceCollection services)
         {
             services.AddTransient<IUserRepository, UserRepository>();
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
         }
+
     }
 }
