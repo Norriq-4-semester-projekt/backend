@@ -42,24 +42,30 @@ namespace Api.Controllers
                                     .Field("username").Query(Username))));
                 if (rs.Hits.Count > 0)
                 {
-                foreach (IHit<User> user in rs.Hits)
-                {
-                        User us = user as User;
-                        if(PasswordHelper.ComparePass(Password, us.PasswordHash, us.Salt))
+                    foreach (var hit in rs.Hits)
+                    {
+                        User us = hit.Source;
+                        if (PasswordHelper.ComparePass(Password, us.PasswordHash, us.Salt))
                         {
                             return Ok(GenerateJWTToken(us));
                         }
-                        
+                    }
+                    //foreach (IHit<User> user in rs.Hits)
+                    //{
+                    //    User us = user as User;
+                    //    if (PasswordHelper.ComparePass(Password, us.PasswordHash, us.Salt))
+                    //    {
+                    //        return Ok(GenerateJWTToken(us));
+                    //    }
+                    //}
                 }
-                }
-                    return new StatusCodeResult(500);
+                return new StatusCodeResult(500);
             }
             catch (Exception)
             {
                 //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
                 return new StatusCodeResult(500);
             }
-
         }
 
         private string GenerateJWTToken(User user)
@@ -86,6 +92,7 @@ namespace Api.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
         [HttpPost]
         public ActionResult Register(string Username, string Password)
         {
@@ -107,11 +114,11 @@ namespace Api.Controllers
                     .Query(q => q
                         .MatchPhrase(mp => mp
                                     .Field("username").Query(Username))));
-                if(rs.Hits.Count > 0)
+
+                if (rs.Hits.Count > 0)
                 {
                     return new StatusCodeResult(500);
                 }
-                
             }
             catch (Exception)
             {
@@ -125,8 +132,6 @@ namespace Api.Controllers
 
             try
             {
-                client.IndexDocument<User>(u);
-
                 return new StatusCodeResult(200);
             }
             catch (Exception)
