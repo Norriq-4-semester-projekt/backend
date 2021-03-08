@@ -1,0 +1,36 @@
+﻿<Properties StartupConfiguration="{227C667B-A1F5-494B-8435-2EA8E531A81C}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="DataAccess/Repositories/UserRepository.cs">
+    <Files>
+      <File FileName="Api/Controllers/v1_0/WeatherForecastController.cs" Line="1" Column="1" />
+      <File FileName="Api/Controllers/AuthController.cs" Line="38" Column="7" />
+      <File FileName="DataAccess/Repositories/UserRepository.cs" Line="48" Column="3" />
+      <File FileName="Api/Program.cs" Line="23" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="Backend" expanded="True">
+            <Node name="Api" expanded="True">
+              <Node name="Controllers" expanded="True" />
+              <Node name="Helpers" expanded="True" />
+            </Node>
+            <Node name="DataAccess" expanded="True">
+              <Node name="Repositories" expanded="True">
+                <Node name="UserRepository.cs" selected="True" />
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.ItemProperties.Api PreferredExecutionTarget="/Applications/Safari.app" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="/Users/benyad/Desktop/Hjem-is/backend/DataAccess/Repositories/UserRepository.cs" relfile="DataAccess/Repositories/UserRepository.cs" line="45" column="33" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>

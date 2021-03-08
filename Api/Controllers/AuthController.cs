@@ -34,7 +34,9 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<ActionResult> Login(String Username, String Password)
         {
-            await _unitOfWork.Users.GetAll();
+            
+            var users = await _unitOfWork.Users.GetAll();
+            return Ok(users);
             User u = new User(Username);
             var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
             var client = new ElasticClient(settings);
@@ -98,7 +100,7 @@ namespace Api.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        /*
+        
         [HttpPost]
         public ActionResult Register(string Username, string Password)
         {
@@ -148,6 +150,6 @@ namespace Api.Controllers
                 return new StatusCodeResult(500);
             }
         }
-        */
+        
     }
 }
