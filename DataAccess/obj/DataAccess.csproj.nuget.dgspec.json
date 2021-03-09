@@ -1,32 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\BigRick\\Documents\\Norriq\\backend\\DataAccess\\DataAccess.csproj": {}
+    "/Users/benyad/Desktop/Hjem-is/backend/DataAccess/DataAccess.csproj": {}
   },
   "projects": {
-    "C:\\Users\\BigRick\\Documents\\Norriq\\backend\\DataAccess\\DataAccess.csproj": {
+    "/Users/benyad/Desktop/Hjem-is/backend/DataAccess/DataAccess.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\BigRick\\Documents\\Norriq\\backend\\DataAccess\\DataAccess.csproj",
+        "projectUniqueName": "/Users/benyad/Desktop/Hjem-is/backend/DataAccess/DataAccess.csproj",
         "projectName": "DataAccess",
-        "projectPath": "C:\\Users\\BigRick\\Documents\\Norriq\\backend\\DataAccess\\DataAccess.csproj",
-        "packagesPath": "C:\\Users\\BigRick\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\BigRick\\Documents\\Norriq\\backend\\DataAccess\\obj\\",
+        "projectPath": "/Users/benyad/Desktop/Hjem-is/backend/DataAccess/DataAccess.csproj",
+        "packagesPath": "/Users/benyad/.nuget/packages/",
+        "outputPath": "/Users/benyad/Desktop/Hjem-is/backend/DataAccess/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\BigRick\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/benyad/.config/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net5.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -47,7 +40,7 @@
           "dependencies": {
             "Dapper": {
               "target": "Package",
-              "version": "[2.0.35, )"
+              "version": "[2.0.78, )"
             },
             "FluentValidation": {
               "target": "Package",
@@ -67,7 +60,7 @@
             },
             "System.Configuration.ConfigurationManager": {
               "target": "Package",
-              "version": "[4.7.0, )"
+              "version": "[5.0.0, )"
             },
             "System.Runtime": {
               "target": "Package",
@@ -92,7 +85,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.200\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/5.0.103/RuntimeIdentifierGraph.json"
         }
       }
     }

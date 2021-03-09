@@ -71,36 +71,6 @@ namespace DataAccess.Repositories
             }
         }
 
-        public ActionResult<User> DeleteByQueryAsync(User entity)
-        {
-
-            var response = client.Search<User>(q => q
-            .Query(rq => rq
-                .MatchPhrase(m => m
-                .Field(f => f.Username)
-                .Query(entity.ToString()))
-            ));
-
-            var id = "";
-
-            var UseristWithIds = response.Hits.Select(h =>
-            {
-                id = h.Id;
-                return h.Source;
-            }).ToList();
-
-            try
-            {
-                client.Delete<User>(id);
-            }
-            catch (Exception)
-            {
-                throw; 
-            }
-           
-            return new StatusCodeResult(200);
-
-        }
 
         public async Task<IEnumerable<User>> GetAll()
         {
@@ -145,9 +115,35 @@ namespace DataAccess.Repositories
             throw new NotImplementedException();
         }
 
-        Task<User> IGenericRepository<User>.DeleteByQueryAsync(User entity)
+        public async Task<int> DeleteByQueryAsync(User entity)
         {
-            throw new NotImplementedException();
+            var response = await client.SearchAsync<User>(q => q
+           .Query(rq => rq
+               .MatchPhrase(m => m
+               .Field(f => f.Username)
+               .Query(entity.ToString()))
+           ));
+
+            var id = "";
+
+            var UseristWithIds = response.Hits.Select(h =>
+            {
+                id = h.Id;
+                return h.Source;
+            }).ToList();
+
+            try
+            {
+                client.Delete<User>(id);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+            return 200;
+
         }
+
     }
 }

@@ -13,7 +13,9 @@ using System.Text;
 using System.Threading.Tasks;
 using DataAccess.Interfaces;
 using DataAccess.Entities;
+using DataAccess.Repositories;
 using DataAccess;
+
 
 namespace Api.Controllers
 {
@@ -25,6 +27,7 @@ namespace Api.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IUnitOfWork _unitOfWork;
+   
 
         public AuthController(IConfiguration configuration, IUnitOfWork unitOfWork)
         {
@@ -149,6 +152,37 @@ namespace Api.Controllers
                 return new StatusCodeResult(500);
             }
         }
+
+        [HttpPost]
+        public async Task<ActionResult> Delete(string Username)
+        {
+
+            User u = new User(Username);
+            
+            
+            try
+            {
+                int result = await _unitOfWork.Users.DeleteByQueryAsync(u);
+
+                
+                if (result == 200)
+                {
+
+                }
+            }
+            catch (Exception)
+            {
+                
+            }
+
+            return new StatusCodeResult(200);
+
+
+        }
         
     }
 }
+
+
+
+
