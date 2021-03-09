@@ -45,6 +45,8 @@ namespace DataAccess.Repositories
                 {
                     return new StatusCodeResult(500);
                 }
+
+                return new StatusCodeResult(200);
             } 
             catch (Exception)
             {
