@@ -1,10 +1,13 @@
 ﻿<Properties StartupConfiguration="{227C667B-A1F5-494B-8435-2EA8E531A81C}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="DataAccess/PasswordHelper.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Api/Program.cs">
     <Files>
-      <File FileName="Api/Controllers/AuthController.cs" Line="126" Column="20" />
-      <File FileName="DataAccess/Repositories/UserRepository.cs" Line="63" Column="50" />
+      <File FileName="Api/Controllers/AuthController.cs" Line="27" Column="46" />
+      <File FileName="DataAccess/Repositories/UserRepository.cs" Line="10" Column="12" />
       <File FileName="DataAccess/UserValidator.cs" Line="13" Column="6" />
       <File FileName="DataAccess/PasswordHelper.cs" Line="5" Column="21" />
+      <File FileName="DataAccess/Entities/User.cs" Line="15" Column="34" />
+      <File FileName="DataAccess/ServiceRegistration.cs" Line="11" Column="21" />
+      <File FileName="Api/Program.cs" Line="29" Column="10" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -15,13 +18,17 @@
                 <Node name="v1_0" expanded="True" />
               </Node>
               <Node name="Helpers" expanded="True" />
+              <Node name="Program.cs" selected="True" />
             </Node>
             <Node name="DataAccess" expanded="True">
+              <Node name="Entities" expanded="True" />
               <Node name="Repositories" expanded="True" />
-              <Node name="PasswordHelper.cs" selected="True" />
             </Node>
           </Node>
         </State>
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State />
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>

@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DataAccess.Interfaces;
 using DataAccess.Entities;
+using DataAccess;
 
 namespace Api.Controllers
 {
@@ -121,7 +122,7 @@ namespace Api.Controllers
                         .MatchPhrase(mp => mp
                                     .Field("username").Query(Username))));
 
-                if (rs.Hits.Count > 0)
+                if (rs.Hits.Count> 0)
                 {
                     return new StatusCodeResult(500);
                 }

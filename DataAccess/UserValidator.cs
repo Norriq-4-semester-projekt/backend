@@ -1,8 +1,7 @@
-﻿using Api.Models.v1_0;
-using FluentValidation;
+﻿using FluentValidation;
 using DataAccess.Entities;
 
-namespace Api.Helpers
+namespace DataAccess
 {
     public class UserValidator : AbstractValidator<User>
     {

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Nest;
 
 
-namespace DataAccess
+namespace DataAccess.Repositories
 {
     public class UserRepository : IUserRepository
     {
@@ -22,7 +22,7 @@ namespace DataAccess
             client = new ElasticClient(settings);
         }
 
-        public ActionResult AddAsync(User entity)
+        public async Task<ActionResult> AddAsync(User entity)
         {
             UserValidator uv = new UserValidator();
             ValidationResult result = uv.Validate(entity);
@@ -36,7 +36,7 @@ namespace DataAccess
 
             try
             {
-                var rs = client.Search<User>(s => s
+                var rs = await client.SearchAsync<User>(s => s
                     .Query(q => q
                         .MatchPhrase(mp => mp
                                     .Field("username").Query(entity.Username))));
@@ -45,7 +45,7 @@ namespace DataAccess
                 {
                     return new StatusCodeResult(500);
                 }
-            }
+            } 
             catch (Exception)
             {
                 //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
@@ -58,7 +58,7 @@ namespace DataAccess
 
             try
             {
-                client.IndexDocument<User>(u);
+                await client.IndexDocumentAsync<User>(u);
 
                 return new StatusCodeResult(200);
             }
@@ -69,9 +69,35 @@ namespace DataAccess
             }
         }
 
-        public Task<User> DeleteByQueryAsync(User entity)
+        public ActionResult<User> DeleteByQueryAsync(User entity)
         {
-            throw new NotImplementedException();
+
+            var response = client.Search<User>(q => q
+            .Query(rq => rq
+                .MatchPhrase(m => m
+                .Field(f => f.Username)
+                .Query(entity.ToString()))
+            ));
+
+            var id = "";
+
+            var UseristWithIds = response.Hits.Select(h =>
+            {
+                id = h.Id;
+                return h.Source;
+            }).ToList();
+
+            try
+            {
+                client.Delete<User>(id);
+            }
+            catch (Exception)
+            {
+                throw; 
+            }
+           
+            return new StatusCodeResult(200);
+
         }
 
         public async Task<IEnumerable<User>> GetAll()
@@ -108,6 +134,16 @@ namespace DataAccess
         }
 
         public Task<User> UpdateAsync(User entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<User> IGenericRepository<User>.AddAsync(User entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<User> IGenericRepository<User>.DeleteByQueryAsync(User entity)
         {
             throw new NotImplementedException();
         }

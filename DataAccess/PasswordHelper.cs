@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Api.Helpers
+namespace DataAccess
 {
     /// <summary>
     /// This class contains the generate salt and compute hash methods

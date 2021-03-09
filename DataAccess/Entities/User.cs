@@ -4,6 +4,14 @@ namespace DataAccess.Entities
 {
     public class User
     {
+
+        private string _id;
+        public String Id
+        {
+            get => _id;
+            set => _id = value;
+        }
+
         private String _username;
         public String Username
         {
@@ -33,5 +41,6 @@ namespace DataAccess.Entities
         {
             this.Username = Username;
         }
+
     }
 }

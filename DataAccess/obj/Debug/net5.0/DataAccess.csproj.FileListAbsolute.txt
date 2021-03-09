@@ -55,3 +55,4 @@ C:/Users/BigRick/Documents/Norriq/backend/DataAccess/obj/Debug/net5.0/DataAccess
 /Users/benyad/Desktop/Hjem-is/backend/DataAccess/obj/Debug/net5.0/ref/DataAccess.dll
 /Users/benyad/Desktop/Hjem-is/backend/DataAccess/obj/Debug/net5.0/DataAccess.pdb
 /Users/benyad/Desktop/Hjem-is/backend/DataAccess/obj/Debug/net5.0/DataAccess.genruntimeconfig.cache
+/Users/benyad/Desktop/Hjem-is/backend/DataAccess/bin/Debug/net5.0/FluentValidation.dll

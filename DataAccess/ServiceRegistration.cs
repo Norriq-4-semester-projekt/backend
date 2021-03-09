@@ -7,6 +7,7 @@ using DataAccess.Interfaces;
 using DataAccess.Repositories;
 using DataAccess.Service;
 
+
 namespace DataAccess
 {
     public static class ServiceRegistration
