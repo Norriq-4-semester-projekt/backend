@@ -117,24 +117,24 @@ namespace DataAccess.Repositories
 
         public async Task<int> DeleteByQueryAsync(User entity)
         {
-            var response = await client.SearchAsync<User>(q => q
-           .Query(rq => rq
-               .MatchPhrase(m => m
-               .Field(f => f.Username)
-               .Query(entity.ToString()))
-           ));
 
-            var id = "";
+            /* Console.WriteLine("\n\n\nRESULT: " + response);
+             Console.ReadLine();
 
-            var UseristWithIds = response.Hits.Select(h =>
-            {
-                id = h.Id;
-                return h.Source;
-            }).ToList();
+             var id = "";
+
+             var UseristWithIds = response.Hits.Select(h =>
+             {
+                 id = h.Id;
+                 return h.Source;
+             }).ToList();
+            */
 
             try
             {
-                client.Delete<User>(id);
+                await client.DeleteAsync<dynamic>(entity.Username);
+                
+
             }
             catch (Exception)
             {
