@@ -92,5 +92,68 @@ namespace Api.Controllers.v1_0
             _logger.LogInformation("Ping: {ping}", reply.RoundtripTime);
             return reply;
         }
+
+        [HttpGet]
+        public StatusCodeResult GetDataCpu()
+        {
+            try
+            {
+                var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("metricbeat-*");
+                var client = new ElasticClient(settings);
+
+                var rs = client.Search<dynamic>(s => s
+                    .Query(q => q
+                        .Bool(b => b
+                            .Should(sh => sh
+                                .MatchPhrase(mp => mp
+                                    .Field("host.name")
+                                    .Query("vmi316085.contaboserver.net")
+                                    .Field("event.dataset")
+                                    .Query("system.cpu")
+
+                                )
+                            )
+
+                            .Filter(f => f
+                                .DateRange(r => r
+                                    .Field("@timestamp")
+                                    .GreaterThanOrEquals("now-10m")
+                                    )
+                                )
+                            )
+                        )
+                    .Aggregations(aggs => aggs
+                        .Max("mySampledCpuUserMax", max => max
+                            .Field("system.cpu.user.pct")
+                            )
+                        .Min("mySampledCpuUserMin", min => min
+                            .Field("system.cpu.user.pct")
+                            )
+                        .Average("mySampledCpuUserAvg", avg => avg
+                            .Field("system.cpu.user.pct")
+
+                        )
+                    ));
+                if (rs.Aggregations.Count > 0)
+                {
+                    //var children = rs.Aggregations.Max("mySampleCpuUserMax");
+                    foreach (var aggs in rs.Aggregations.Values)
+                    
+
+                    {
+                        Console.WriteLine(aggs);
+                    }
+                    //Console.WriteLine(aggs);
+
+                    return new StatusCodeResult(200);
+                }
+
+                return Ok();
+            }
+            catch (Exception exception)
+            {
+                return new StatusCodeResult(500);
+            }
+        }
     }
 }

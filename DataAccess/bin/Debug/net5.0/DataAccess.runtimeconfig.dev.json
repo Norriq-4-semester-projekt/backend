@@ -1,8 +1,8 @@
 {
   "runtimeOptions": {
     "additionalProbingPaths": [
-      "/Users/benyad/.dotnet/store/|arch|/|tfm|",
-      "/Users/benyad/.nuget/packages"
+      "C:\\Users\\iclou\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\iclou\\.nuget\\packages"
     ]
   }
 }
