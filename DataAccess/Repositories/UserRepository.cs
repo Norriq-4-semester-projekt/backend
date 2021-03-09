@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Api.Helpers;
 using DataAccess.Entities;
 using DataAccess.Interfaces;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Nest;
 
-namespace DataAccess.Repositories
+
+namespace DataAccess
 {
     public class UserRepository : IUserRepository
     {
@@ -20,9 +22,51 @@ namespace DataAccess.Repositories
             client = new ElasticClient(settings);
         }
 
-        public Task<User> AddAsync(User entity)
+        public ActionResult AddAsync(User entity)
         {
-            throw new NotImplementedException();
+            UserValidator uv = new UserValidator();
+            ValidationResult result = uv.Validate(entity);
+            if (!result.IsValid)
+            {
+                return new ObjectResult(result.Errors) { StatusCode = 500 };
+            }
+
+            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
+            var client = new ElasticClient(settings);
+
+            try
+            {
+                var rs = client.Search<User>(s => s
+                    .Query(q => q
+                        .MatchPhrase(mp => mp
+                                    .Field("username").Query(entity.Username))));
+
+                if (rs.Hits.Count > 0)
+                {
+                    return new StatusCodeResult(500);
+                }
+            }
+            catch (Exception)
+            {
+                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
+                return new StatusCodeResult(500);
+            }
+
+            User u = new User(entity.Username);
+            u.Salt = PasswordHelper.GenerateSalt();
+            u.PasswordHash = PasswordHelper.ComputeHash(entity.Password, u.Salt);
+
+            try
+            {
+                client.IndexDocument<User>(u);
+
+                return new StatusCodeResult(200);
+            }
+            catch (Exception)
+            {
+                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
+                return new StatusCodeResult(500);
+            }
         }
 
         public Task<User> DeleteByQueryAsync(User entity)

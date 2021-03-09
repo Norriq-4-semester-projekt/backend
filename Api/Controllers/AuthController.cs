@@ -17,7 +17,7 @@ using DataAccess.Entities;
 namespace Api.Controllers
 {
     // [ApiVersion("0.9", Deprecated = true)] // Set previous version as deprecated
-    [ApiVersion("1.0")] // Set version of controller
+    [ApiVersion("1")] // Set version of controller
     [ApiController]
     [Route("v{version:apiVersion}/[action]")]
     public class AuthController : Controller
@@ -34,9 +34,7 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<ActionResult> Login(String Username, String Password)
         {
-            
-            var users = await _unitOfWork.Users.GetAll();
-            return Ok(users);
+           
             User u = new User(Username);
             var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
             var client = new ElasticClient(settings);
