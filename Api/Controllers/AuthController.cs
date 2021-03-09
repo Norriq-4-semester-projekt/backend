@@ -158,25 +158,16 @@ namespace Api.Controllers
         {
 
             User u = new User(Username);
+            int result;
+
+           
+            result = await _unitOfWork.Users.DeleteByQueryAsync(u);
+            if (result == 200)
+              {
+                return StatusCode(200);
+              }
             
-            
-            try
-            {
-                int result = await _unitOfWork.Users.DeleteByQueryAsync(u);
-
-                
-                if (result == 200)
-                {
-
-                }
-            }
-            catch (Exception)
-            {
-                
-            }
-
             return new StatusCodeResult(200);
-
 
         }
         

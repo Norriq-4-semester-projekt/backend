@@ -138,7 +138,7 @@ namespace DataAccess.Repositories
             }
             catch (Exception)
             {
-                throw;
+                return 500;
             }
 
             return 200;
