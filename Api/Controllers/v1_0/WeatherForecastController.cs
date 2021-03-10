@@ -124,18 +124,41 @@ namespace Api.Controllers.v1_0
                                 )
                             )
                         )
+                    .Aggregations(aggs1 => aggs1
+                        .DateHistogram("myDateHistogram", date => date
+                        .Field("@timestamp")
+                        .CalendarInterval(DateInterval.Minute)
                         .Aggregations(aggs => aggs
                             .Stats("Test", st => st
                             .Field("system.cpu.user.pct"))
                         )
-                    );
+                    )));
                 if (rs.Aggregations.Count > 0)
                 {
-                    Console.WriteLine("Max: " + rs.Aggregations.Max("Test").Value);
-                    Console.WriteLine("Min: " + rs.Aggregations.Min("Test").Value);
-                    Console.WriteLine("Avg: " + rs.Aggregations.Average("Test").Value);
-                    var response = rs.Aggregations.DateHistogram("myDateHistogram");
                     var dateHistogram = rs.Aggregations.DateHistogram("myDateHistogram");
+                    foreach (var item in dateHistogram.Buckets)
+                    {
+                        Console.WriteLine("Date: " + item.Date.ToString());
+                        StatsAggregate test = (StatsAggregate)item.Values.FirstOrDefault();
+                        Console.WriteLine("Max: " + test.Max * 100 + "%");
+                        Console.WriteLine("Avg: " + test.Average * 100 + "%");
+                        Console.WriteLine("Min: " + test.Min * 100 + "%");
+                        //item.Values.FirstOrDefault()
+                        //var test = item.Values.AsEnumerable();
+                        //var test2 = test.FirstOrDefault();
+                        //                        var test2
+                        //Console.WriteLine(item.Values.AsQueryable<StatsAggregate>().Where);
+                        //Console.WriteLine("Min: " + min.FirstOrDefault().Min);
+                        //Console.WriteLine("Min: "+ item.AsQueryable<StatsAggregate>().FirstOrDefault<StatsAggregate>().Min);
+                        //Console.WriteLine("Min: "item.FirstOrDefault<StatsAggregate>().Min);
+                        //Console.WriteLine("Max: "item.FirstOrDefault<StatsAggregate>().Max);
+                        //Console.WriteLine("Avg: "item.FirstOrDefault<StatsAggregate>().Average);
+                        Console.WriteLine("---------------------------------------------------------");
+                    }
+                    //Console.WriteLine("Min: " + rs.Aggregations.Stats("Test").Min);
+                    //Console.WriteLine("Avg: " + rs.Aggregations.Stats("Test").Average);
+                    var response = rs.Aggregations.DateHistogram("myDateHistogram");
+
                     TermsAggregate<string> termAgg = rs.Aggregations.Terms("mySampledCpuUserAvg");
                     IAggregate termAggregation = rs.Aggregations["mySampledCpuUserAvg"];
                     foreach (string term in termAggregation.Meta.Values)
