@@ -124,36 +124,30 @@ namespace Api.Controllers.v1_0
                                 )
                             )
                         )
-                    .Aggregations(aggs1 => aggs1
-                        .DateHistogram("myDateHistogram", date => date
-                        .Field("@timestamp")
-                        .CalendarInterval(DateInterval.Minute)
                         .Aggregations(aggs => aggs
-                            .Max("mySampledCpuUserMax", max => max
-                                .Field("system.cpu.user.pct")
-                                )
-                            .Min("mySampledCpuUserMin", min => min
-                                .Field("system.cpu.user.pct")
-                                )
-                            .Average("mySampledCpuUserAvg", avg => avg
-                                .Field("system.cpu.user.pct")
-
+                            .Stats("Test", st => st
+                            .Field("system.cpu.user.pct"))
                         )
-                    ))));
+                    );
                 if (rs.Aggregations.Count > 0)
                 {
+                    Console.WriteLine("Max: " + rs.Aggregations.Max("Test").Value);
+                    Console.WriteLine("Min: " + rs.Aggregations.Min("Test").Value);
+                    Console.WriteLine("Avg: " + rs.Aggregations.Average("Test").Value);
                     var response = rs.Aggregations.DateHistogram("myDateHistogram");
                     var dateHistogram = rs.Aggregations.DateHistogram("myDateHistogram");
-
-                    //var children = rs.Aggregations.Max("mySampleCpuUserMax");
-                    foreach (var items in dateHistogram.Buckets)
+                    TermsAggregate<string> termAgg = rs.Aggregations.Terms("mySampledCpuUserAvg");
+                    IAggregate termAggregation = rs.Aggregations["mySampledCpuUserAvg"];
+                    foreach (string term in termAggregation.Meta.Values)
                     {
-                        Console.WriteLine(dateHistogram.Buckets);
-                        Console.WriteLine(items);
-                        Console.WriteLine(response);
-
+                        Console.WriteLine("termAggregation" + term);
                     }
-                    //Console.WriteLine(aggs);
+                    foreach (var agg in termAgg.Meta.Keys)
+                    {
+                        Console.WriteLine("Anden metode" + agg);
+                        Console.WriteLine("Anden metode" + termAgg.Meta.TryGetValue(agg, out object test));
+                        Console.WriteLine("tredje metode" + test.ToString());
+                    }
                     return new StatusCodeResult(200);
                 }
 
