@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DataAccess.Entities;
+﻿using DataAccess.Entities;
 using DataAccess.Interfaces;
 using FluentValidation.Results;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Nest;
-
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DataAccess.Repositories
 {
@@ -47,7 +44,7 @@ namespace DataAccess.Repositories
                 }
 
                 return new StatusCodeResult(200);
-            } 
+            }
             catch (Exception)
             {
                 //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
@@ -70,7 +67,6 @@ namespace DataAccess.Repositories
                 return new StatusCodeResult(500);
             }
         }
-
 
         public async Task<IEnumerable<User>> GetAll()
         {
@@ -117,18 +113,17 @@ namespace DataAccess.Repositories
 
         public async Task<int> DeleteByQueryAsync(User entity)
         {
-            var response = await client.SearchAsync<User>(q => q
-           .Query(rq => rq
-               .MatchPhrase(m => m
-               .Field("username")
-               .Query(entity.Username))
-           ));
-
-            var id = response.Hits.Select(h => h.Id).FirstOrDefault<string>();
+            //var id = response.Hits.Select(h => h.Id).FirstOrDefault<string>();
 
             try
             {
-                client.Delete<User>(id);
+                var response = await client.DeleteByQueryAsync<User>(q => q
+               .Query(rq => rq
+                   .MatchPhrase(m => m
+                   .Field("username")
+                   .Query(entity.Username))
+               ));
+                client.Delete<User>(entity);
             }
             catch (Exception)
             {
@@ -136,8 +131,6 @@ namespace DataAccess.Repositories
             }
 
             return 200;
-
         }
-
     }
 }
