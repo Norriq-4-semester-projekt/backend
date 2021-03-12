@@ -108,14 +108,10 @@ namespace Api.Controllers.v1_0
                         .Bool(b => b
                             .Should(sh => sh
                                 .MatchPhrase(mp => mp
-                                    .Field("host.name")
-                                    .Query("vmi316085.contaboserver.net")
-                                    .Field("event.dataset")
-                                    .Query("system.cpu")
-
+                                    .Field("host.name").Query("vmi316085.contaboserver.net")
+                                    .Field("event.dataset").Query("system.cpu")
                                 )
                             )
-
                             .Filter(f => f
                                 .DateRange(r => r
                                     .Field("@timestamp")

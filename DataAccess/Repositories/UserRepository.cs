@@ -120,17 +120,11 @@ namespace DataAccess.Repositories
             var response = await client.SearchAsync<User>(q => q
            .Query(rq => rq
                .MatchPhrase(m => m
-               .Field(f => f.Username)
-               .Query(entity.ToString()))
+               .Field("username")
+               .Query(entity.Username))
            ));
 
-            var id = "";
-
-            var UseristWithIds = response.Hits.Select(h =>
-            {
-                id = h.Id;
-                return h.Source;
-            }).ToList();
+            var id = response.Hits.Select(h => h.Id).FirstOrDefault<string>();
 
             try
             {
