@@ -108,14 +108,10 @@ namespace Api.Controllers.v1_0
                         .Bool(b => b
                             .Should(sh => sh
                                 .MatchPhrase(mp => mp
-                                    .Field("host.name")
-                                    .Query("vmi316085.contaboserver.net")
-                                    .Field("event.dataset")
-                                    .Query("system.cpu")
-
+                                    .Field("host.name").Query("vmi316085.contaboserver.net")
+                                    .Field("event.dataset").Query("system.cpu")
                                 )
                             )
-
                             .Filter(f => f
                                 .DateRange(r => r
                                     .Field("@timestamp")
@@ -129,31 +125,22 @@ namespace Api.Controllers.v1_0
                         .Field("@timestamp")
                         .CalendarInterval(DateInterval.Minute)
                         .Aggregations(aggs => aggs
-                            .Max("mySampledCpuUserMax", max => max
-                                .Field("system.cpu.user.pct")
-                                )
-                            .Min("mySampledCpuUserMin", min => min
-                                .Field("system.cpu.user.pct")
-                                )
-                            .Average("mySampledCpuUserAvg", avg => avg
-                                .Field("system.cpu.user.pct")
-
+                            .Stats("Test", st => st
+                            .Field("system.cpu.user.pct"))
                         )
-                    ))));
+                    )));
                 if (rs.Aggregations.Count > 0)
                 {
-                    var response = rs.Aggregations.DateHistogram("myDateHistogram");
                     var dateHistogram = rs.Aggregations.DateHistogram("myDateHistogram");
-
-                    //var children = rs.Aggregations.Max("mySampleCpuUserMax");
-                    foreach (var items in dateHistogram.Buckets)
+                    foreach (var item in dateHistogram.Buckets)
                     {
-                        Console.WriteLine(dateHistogram.Buckets);
-                        Console.WriteLine(items);
-                        Console.WriteLine(response);
-
+                        Console.WriteLine("Date: " + item.Date.ToString());
+                        StatsAggregate test = (StatsAggregate)item.Values.FirstOrDefault();
+                        Console.WriteLine("Max: " + test.Max);
+                        Console.WriteLine("Avg: " + test.Average);
+                        Console.WriteLine("Min: " + test.Min);
+                        Console.WriteLine("---------------------------------------------------------");
                     }
-                    //Console.WriteLine(aggs);
                     return new StatusCodeResult(200);
                 }
 
