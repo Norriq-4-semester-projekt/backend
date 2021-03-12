@@ -118,11 +118,11 @@ namespace DataAccess.Repositories
             try
             {
                 var response = await client.DeleteByQueryAsync<User>(q => q
-               .Query(rq => rq
-                   .MatchPhrase(m => m
-                   .Field("username")
-                   .Query(entity.Username))
-               ));
+                .Query(rq => rq
+                    .MatchPhrase(m => m
+                    .Field("username")
+                    .Query(entity.Username))
+                ));
                 client.Delete<User>(entity);
             }
             catch (Exception)
