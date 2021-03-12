@@ -108,14 +108,10 @@ namespace Api.Controllers.v1_0
                         .Bool(b => b
                             .Should(sh => sh
                                 .MatchPhrase(mp => mp
-                                    .Field("host.name")
-                                    .Query("vmi316085.contaboserver.net")
-                                    .Field("event.dataset")
-                                    .Query("system.cpu")
-
+                                    .Field("host.name").Query("vmi316085.contaboserver.net")
+                                    .Field("event.dataset").Query("system.cpu")
                                 )
                             )
-
                             .Filter(f => f
                                 .DateRange(r => r
                                     .Field("@timestamp")
@@ -140,36 +136,10 @@ namespace Api.Controllers.v1_0
                     {
                         Console.WriteLine("Date: " + item.Date.ToString());
                         StatsAggregate test = (StatsAggregate)item.Values.FirstOrDefault();
-                        Console.WriteLine("Max: " + test.Max * 100 + "%");
-                        Console.WriteLine("Avg: " + test.Average * 100 + "%");
-                        Console.WriteLine("Min: " + test.Min * 100 + "%");
-                        //item.Values.FirstOrDefault()
-                        //var test = item.Values.AsEnumerable();
-                        //var test2 = test.FirstOrDefault();
-                        //                        var test2
-                        //Console.WriteLine(item.Values.AsQueryable<StatsAggregate>().Where);
-                        //Console.WriteLine("Min: " + min.FirstOrDefault().Min);
-                        //Console.WriteLine("Min: "+ item.AsQueryable<StatsAggregate>().FirstOrDefault<StatsAggregate>().Min);
-                        //Console.WriteLine("Min: "item.FirstOrDefault<StatsAggregate>().Min);
-                        //Console.WriteLine("Max: "item.FirstOrDefault<StatsAggregate>().Max);
-                        //Console.WriteLine("Avg: "item.FirstOrDefault<StatsAggregate>().Average);
+                        Console.WriteLine("Max: " + test.Max);
+                        Console.WriteLine("Avg: " + test.Average);
+                        Console.WriteLine("Min: " + test.Min);
                         Console.WriteLine("---------------------------------------------------------");
-                    }
-                    //Console.WriteLine("Min: " + rs.Aggregations.Stats("Test").Min);
-                    //Console.WriteLine("Avg: " + rs.Aggregations.Stats("Test").Average);
-                    var response = rs.Aggregations.DateHistogram("myDateHistogram");
-
-                    TermsAggregate<string> termAgg = rs.Aggregations.Terms("mySampledCpuUserAvg");
-                    IAggregate termAggregation = rs.Aggregations["mySampledCpuUserAvg"];
-                    foreach (string term in termAggregation.Meta.Values)
-                    {
-                        Console.WriteLine("termAggregation" + term);
-                    }
-                    foreach (var agg in termAgg.Meta.Keys)
-                    {
-                        Console.WriteLine("Anden metode" + agg);
-                        Console.WriteLine("Anden metode" + termAgg.Meta.TryGetValue(agg, out object test));
-                        Console.WriteLine("tredje metode" + test.ToString());
                     }
                     return new StatusCodeResult(200);
                 }
