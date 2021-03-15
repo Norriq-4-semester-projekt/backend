@@ -1,5 +1,5 @@
-﻿using FluentValidation;
-using DataAccess.Entities;
+﻿using DataAccess.Entities;
+using FluentValidation;
 
 namespace DataAccess
 {

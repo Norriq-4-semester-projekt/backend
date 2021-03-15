@@ -16,6 +16,7 @@ namespace DataAccess.Repositories
 
         public UserRepository()
         {
+            settings.BasicAuthentication("elastic", "changeme");
             client = new ElasticClient(settings);
         }
 
@@ -101,9 +102,27 @@ namespace DataAccess.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<User> UpdateAsync(User entity)
+        [HttpPost]
+        public async Task<int> UpdateByQueryAsync(User currentUser, User newUser)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var response = await client.UpdateByQueryAsync<User>(q => q
+               .Query(rq => rq
+                   .MatchPhrase(m => m
+                   .Field("username")
+                   .Query(currentUser.Username)))
+               .Script(s => s
+                    .Source("ctx._source.username = params.username")
+                    .Params(p => p
+                        .Add("username", newUser.Username))
+                    ));
+            }
+            catch (Exception)
+            {
+                return 500;
+            }
+            return 200;
         }
 
         Task<User> IGenericRepository<User>.AddAsync(User entity)
@@ -123,7 +142,8 @@ namespace DataAccess.Repositories
                    .Field("username")
                    .Query(entity.Username))
                ));
-                client.Delete<User>(entity);
+
+                //client.Delete<User>(entity);
             }
             catch (Exception)
             {

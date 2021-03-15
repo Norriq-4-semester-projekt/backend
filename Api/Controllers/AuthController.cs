@@ -1,5 +1,6 @@
-﻿using Api.Helpers;
-using Api.Models.v1_0;
+﻿using DataAccess;
+using DataAccess.Entities;
+using DataAccess.Interfaces;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -11,11 +12,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using DataAccess.Interfaces;
-using DataAccess.Entities;
-using DataAccess.Repositories;
-using DataAccess;
-
 
 namespace Api.Controllers
 {
@@ -27,7 +23,6 @@ namespace Api.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IUnitOfWork _unitOfWork;
-   
 
         public AuthController(IConfiguration configuration, IUnitOfWork unitOfWork)
         {
@@ -38,9 +33,9 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<ActionResult> Login(String Username, String Password)
         {
-           
             User u = new User(Username);
             var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
+            settings.BasicAuthentication("elastic", "changeme");
             var client = new ElasticClient(settings);
 
             try
@@ -102,7 +97,6 @@ namespace Api.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        
         [HttpPost]
         public ActionResult Register(string Username, string Password)
         {
@@ -116,6 +110,7 @@ namespace Api.Controllers
             }
 
             var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
+            settings.BasicAuthentication("elastic", "changeme");
             var client = new ElasticClient(settings);
 
             try
@@ -125,7 +120,7 @@ namespace Api.Controllers
                         .MatchPhrase(mp => mp
                                     .Field("username").Query(Username))));
 
-                if (rs.Hits.Count> 0)
+                if (rs.Hits.Count > 0)
                 {
                     return new StatusCodeResult(500);
                 }
@@ -156,24 +151,31 @@ namespace Api.Controllers
         [HttpPost]
         public async Task<ActionResult> Delete(string Username)
         {
-
             User u = new User(Username);
             int result;
 
-           
             result = await _unitOfWork.Users.DeleteByQueryAsync(u);
             if (result == 200)
-              {
+            {
                 return StatusCode(200);
-              }
-            
-            return new StatusCodeResult(200);
+            }
 
+            return new StatusCodeResult(200);
         }
-        
+
+        [HttpPost]
+        public async Task<ActionResult> Update(string Username, string NewUsername)
+        {
+            User u = new User(Username);
+            User u1 = new User(NewUsername);
+
+            var result = await _unitOfWork.Users.UpdateByQueryAsync(u, u1);
+            if (result != null)
+            {
+                return StatusCode(200);
+            }
+
+            return new StatusCodeResult(200);
+        }
     }
 }
-
-
-
-

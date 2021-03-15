@@ -1,12 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DataAccess.Interfaces;
+﻿using DataAccess.Interfaces;
 using DataAccess.Repositories;
 using DataAccess.Service;
-
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DataAccess
 {
@@ -17,6 +12,5 @@ namespace DataAccess
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<IUnitOfWork, UnitOfWork>();
         }
-
     }
 }

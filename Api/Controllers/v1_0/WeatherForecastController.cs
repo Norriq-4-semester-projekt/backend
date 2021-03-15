@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Nest;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Text.Json;
 
 namespace Api.Controllers.v1_0
 {
@@ -94,13 +96,14 @@ namespace Api.Controllers.v1_0
         }
 
         [HttpGet]
-        public StatusCodeResult GetDataCpu()
+        public IActionResult GetDataCpu()
         {
             try
             {
                 var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("metricbeat-*");
                 settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
                 settings.PrettyJson(); // Good for DEBUG
+                settings.BasicAuthentication("elastic", "changeme");
                 var client = new ElasticClient(settings);
 
                 var rs = client.Search<dynamic>(s => s
@@ -131,20 +134,24 @@ namespace Api.Controllers.v1_0
                     )));
                 if (rs.Aggregations.Count > 0)
                 {
+                    Dictionary<String, Object> etellerandet = new Dictionary<String, Object>();
                     var dateHistogram = rs.Aggregations.DateHistogram("myDateHistogram");
+                    List<Object> list = new List<Object>();
+
                     foreach (var item in dateHistogram.Buckets)
                     {
-                        Console.WriteLine("Date: " + item.Date.ToString());
+                        Dictionary<string, string> newlist = new Dictionary<string, string>();
                         StatsAggregate test = (StatsAggregate)item.Values.FirstOrDefault();
-                        Console.WriteLine("Max: " + test.Max);
-                        Console.WriteLine("Avg: " + test.Average);
-                        Console.WriteLine("Min: " + test.Min);
-                        Console.WriteLine("---------------------------------------------------------");
+                        newlist.Add("Timestamp", item.Date.ToString());
+                        newlist.Add("min", test.Min.ToString());
+                        newlist.Add("max", test.Max.ToString());
+                        newlist.Add("avg", test.Average.ToString());
+                        list.Add(newlist);
                     }
-                    return new StatusCodeResult(200);
-                }
 
-                return Ok();
+                    return Ok(JsonSerializer.Serialize(list));
+                }
+                return new StatusCodeResult(200);
             }
             catch (Exception exception)
             {

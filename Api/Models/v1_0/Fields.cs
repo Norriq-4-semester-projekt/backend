@@ -26,6 +26,7 @@ namespace Api.Models.v1_0
         public string ConnectionId { get; set; }
         public string MachineName { get; set; }
         public string Environment { get; set; }
+
         [JsonProperty("@timestamp")]
         public List<DateTime> Timestamp { get; set; }
     }
