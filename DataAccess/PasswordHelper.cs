@@ -4,15 +4,10 @@ using System.Text;
 
 namespace DataAccess
 {
-    /// <summary>
-    /// This class contains the generate salt and compute hash methods
-    /// </summary>
+
     public static class PasswordHelper
     {
-        /// <summary>
-        /// This method generate a unique salt with a length of 32
-        /// </summary>
-        /// <returns></returns>
+
         public static string GenerateSalt()
         {
             int length = 32;
@@ -22,12 +17,6 @@ namespace DataAccess
             return Convert.ToBase64String(buffer);
         }
 
-        /// <summary>
-        /// This method computes the hashed password with the input password and the generated salt
-        /// </summary>
-        /// <param name="password"></param>
-        /// <param name="salt"></param>
-        /// <returns></returns>
         public static string ComputeHash(string password, string salt)
         {
             SHA512Managed sHA512ManagedString = new SHA512Managed();
@@ -38,13 +27,6 @@ namespace DataAccess
             return builder.ToString();
         }
 
-        /// <summary>
-        /// This method compares the input password with the computed PasswordHash the included unique salt
-        /// </summary>
-        /// <param name="password"></param>
-        /// <param name="passwordHash"></param>
-        /// <param name="salt"></param>
-        /// <returns></returns>
         public static bool ComparePass(string password, string passwordHash, string salt)
         {
             string newHashedPin = ComputeHash(password, salt);

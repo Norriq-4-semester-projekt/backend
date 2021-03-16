@@ -29,9 +29,6 @@ namespace DataAccess.Repositories
                 return new ObjectResult(result.Errors) { StatusCode = 500 };
             }
 
-            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
-            var client = new ElasticClient(settings);
-
             try
             {
                 var rs = await client.SearchAsync<User>(s => s
@@ -48,23 +45,18 @@ namespace DataAccess.Repositories
             }
             catch (Exception)
             {
-                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
                 return new StatusCodeResult(500);
             }
-
             User u = new User(entity.Username);
             u.Salt = PasswordHelper.GenerateSalt();
             u.PasswordHash = PasswordHelper.ComputeHash(entity.Password, u.Salt);
-
             try
             {
                 await client.IndexDocumentAsync<User>(u);
-
                 return new StatusCodeResult(200);
             }
             catch (Exception)
             {
-                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
                 return new StatusCodeResult(500);
             }
         }
@@ -93,7 +85,6 @@ namespace DataAccess.Repositories
             catch (Exception)
             {
                 throw;
-                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
             }
         }
 
