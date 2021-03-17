@@ -39,10 +39,9 @@ namespace Api.Controllers
                 User user = result.Value as User;
                 return Ok(GenerateJWTToken(user));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
-                return new StatusCodeResult(500);
+                throw new Exception("Login failed", ex);
             }
         }
 

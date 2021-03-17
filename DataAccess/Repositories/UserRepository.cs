@@ -17,7 +17,9 @@ namespace DataAccess.Repositories
 
         public UserRepository()
         {
-            settings.BasicAuthentication("elastic", "changeme");
+            settings.BasicAuthentication("elastic", "changeme"); // ElasticSearch Username and Password
+            settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
+            settings.PrettyJson(); // Good for DEBUG
             client = new ElasticClient(settings);
         }
 
@@ -37,13 +39,20 @@ namespace DataAccess.Repositories
                     {
                         return new ObjectResult(u) { StatusCode = 200 };
                     }
+                    else
+                    {
+                        throw new Exception("Incorrect username or password");
+                    }
                 }
-                return new StatusCodeResult(500);
+                else
+                {
+                    throw new Exception("Incorrect username or password");
+                    //return new ObjectResult("Incorrect username or password") { StatusCode = 500 };
+                }
             }
             catch (Exception)
             {
-                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
-                return new StatusCodeResult(500);
+                throw;
             }
         }
 
