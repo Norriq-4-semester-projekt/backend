@@ -13,7 +13,8 @@ namespace DataAccess.Repositories
     public class UserRepository : IUserRepository
     {
         private ElasticClient client;
-        private ConnectionSettings settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
+        //private ConnectionSettings settings = new ConnectionSettings(new Uri("http://localhost:9200")).DefaultIndex("users"); // localhost
+        private ConnectionSettings settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users"); // vps
 
         public UserRepository()
         {
@@ -41,13 +42,12 @@ namespace DataAccess.Repositories
                     }
                     else
                     {
-                        throw new Exception("Incorrect username or password");
+                        return new ObjectResult("Incorrect username or password") { StatusCode = 500 };
                     }
                 }
                 else
                 {
-                    throw new Exception("Incorrect username or password");
-                    //return new ObjectResult("Incorrect username or password") { StatusCode = 500 };
+                    return new ObjectResult("Incorrect username or password") { StatusCode = 500 };
                 }
             }
             catch (Exception)
@@ -80,12 +80,12 @@ namespace DataAccess.Repositories
             }
             catch (Exception)
             {
-                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
-                return new StatusCodeResult(500);
+                throw;
             }
             entity.Salt = PasswordHelper.GenerateSalt();
             entity.PasswordHash = PasswordHelper.ComputeHash(entity.Password, entity.Salt);
 
+            entity.Password = null;
             try
             {
                 client.IndexDocument<User>(entity);
@@ -94,55 +94,54 @@ namespace DataAccess.Repositories
             }
             catch (Exception)
             {
-                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
-                return new StatusCodeResult(500);
+                throw;
             }
         }
 
-        //public async Task<IEnumerable<User>> GetAll(List<User> users)
-        //{
-        //    try
-        //    {
-        //        //List<User> users = new List<User>();
-        //        var rs = await client.SearchAsync<User>(s => s
-        //            .Query(q => q
-        //                .MatchAll()));
-
-        //        if (rs.Hits.Count > 0)
-        //        {
-        //            foreach (var hit in rs.Hits)
-
-        //            {
-        //                User u = hit.Source;
-        //                users.Add(u);
-        //            }
-        //        }
-        //        return users;
-        //    }
-        //    catch (Exception)
-        //    {
-        //        throw;
-        //    }
-        //}
-
-        public async Task<int> GetByQueryAsync(User entity)
+        public async Task<IEnumerable<User>> GetAll()
         {
             try
             {
+                List<User> users = new List<User>();
                 var rs = await client.SearchAsync<User>(s => s
                     .Query(q => q
-                        .MatchPhrase(mp => mp
-                                    .Field("username").Query(entity.Username))));
+                        .MatchAll()));
+
+                if (rs.Hits.Count > 0)
+                {
+                    foreach (var hit in rs.Hits)
+
+                    {
+                        User u = hit.Source;
+                        users.Add(u);
+                    }
+                }
+                return users;
             }
             catch (Exception)
             {
-                return 500;
+                throw;
             }
-            return 200;
         }
 
+        //public async Task<ActionResult> GetByQueryAsync(User entity)
+        //{
+        //    try
+        //    {
+        //        var rs = await client.SearchAsync<User>(s => s
+        //            .Query(q => q
+        //                .MatchPhrase(mp => mp
+        //                            .Field("username").Query(entity.Username))));
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return new StatusCodeResult(50);
+        //    }
+        //    return new StatusCodeResult(200);
+        //}
+
         [HttpPost]
-        public async Task<int> UpdateByQueryAsync(User currentUser, User newUser)
+        public async Task<ActionResult> UpdateByQueryAsync(User currentUser, User newUser)
         {
             try
             {
@@ -158,20 +157,18 @@ namespace DataAccess.Repositories
                     ));
                 if (response.Updated == 0)
                 {
-                    return 500;
+                    return new ObjectResult("User didnt exist") { StatusCode = 500 };
                 }
             }
             catch (Exception)
             {
-                return 500;
+                throw;
             }
-            return 200;
+            return new StatusCodeResult(200);
         }
 
-        public async Task<int> DeleteByQueryAsync(User entity)
+        public async Task<ActionResult> DeleteByQueryAsync(User entity)
         {
-            //var id = response.Hits.Select(h => h.Id).FirstOrDefault<string>();
-
             try
             {
                 var response = await client.DeleteByQueryAsync<User>(q => q
@@ -182,48 +179,15 @@ namespace DataAccess.Repositories
                ));
                 if (response.Deleted == 0)
                 {
-                    return 500;
+                    return new ObjectResult("User didnt exist") { StatusCode = 500 };
                 }
-
-                //client.Delete<User>(entity);
             }
             catch (Exception)
             {
-                return 500;
+                throw;
             }
 
-            return 200;
-        }
-
-        Task<User> IGenericRepository<User>.AddAsync(User entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        async Task<int> IGenericRepository<User>.GetAll(List<User> users)
-        {
-            try
-            {
-                //List<User> users = new List<User>();
-                var rs = await client.SearchAsync<User>(s => s
-                    .Query(q => q
-                        .MatchAll()));
-
-                if (rs.Hits.Count > 0)
-                {
-                    foreach (var hit in rs.Hits)
-
-                    {
-                        User u = hit.Source;
-                        users.Add(u);
-                    }
-                }
-                return 200;
-            }
-            catch (Exception)
-            {
-                return 500;
-            }
+            return new StatusCodeResult(200);
         }
     }
 }

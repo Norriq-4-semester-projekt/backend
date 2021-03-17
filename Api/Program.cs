@@ -21,7 +21,7 @@ namespace Api
             //    .WriteTo.Console()
             //    .CreateLogger();
             CreateHostBuilder(args).Build().Run();
-            node = new Uri("http://164.68.106.245:9200");
+            node = new Uri("http://localhost:9200");
             settings = new ConnectionSettings(node);
             client = new ElasticClient(settings);
             Console.WriteLine(response.Status);

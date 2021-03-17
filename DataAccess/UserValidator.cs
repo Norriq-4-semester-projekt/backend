@@ -4,7 +4,7 @@ using FluentValidation;
 namespace DataAccess
 {
     public class UserValidator : AbstractValidator<User>
-    {   
+    {
         //Sørger for at password er mindst 8 bogstaver, og at der er et username
         public UserValidator()
         {

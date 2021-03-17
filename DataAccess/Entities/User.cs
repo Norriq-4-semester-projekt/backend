@@ -20,6 +20,7 @@ namespace DataAccess.Entities
             get => _username;
             set => _username = value;
         }
+        [JsonIgnore]
 
         private String _password;
 

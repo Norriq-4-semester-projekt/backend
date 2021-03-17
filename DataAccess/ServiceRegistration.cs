@@ -7,7 +7,7 @@ namespace DataAccess
 {
     public static class ServiceRegistration
     {
-        //Tilføjer services UserRepo og UnitOfWork 
+        //Tilføjer services UserRepo og UnitOfWork
         public static void AddInfrastructure(this IServiceCollection services)
         {
             services.AddTransient<IUserRepository, UserRepository>();

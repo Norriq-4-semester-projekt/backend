@@ -4,10 +4,9 @@ using System.Text;
 
 namespace DataAccess
 {
-
     public static class PasswordHelper
     {
-        //Metode til at oprette en Salt 
+        //Metode til at oprette en Salt
         public static string GenerateSalt()
         {
             int length = 32;
@@ -16,6 +15,7 @@ namespace DataAccess
             rng.GetBytes(buffer);
             return Convert.ToBase64String(buffer);
         }
+
         //Hasher et password med salt. Bruger SHA512
         public static string ComputeHash(string password, string salt)
         {
@@ -26,6 +26,7 @@ namespace DataAccess
             { builder.Append(bytes[i].ToString("X2")); }
             return builder.ToString();
         }
+
         //Checker om et password stemmer overens med det hashede password
         public static bool ComparePass(string password, string passwordHash, string salt)
         {

@@ -199,7 +199,7 @@ namespace Api.Controllers.v1_0
                 )));
                 if (rs.Aggregations.Count > 0)
                 {
-                    Dictionary<String, Object> etellerandet = new Dictionary<String, Object>();
+                    //Dictionary<String, Object> etellerandet = new Dictionary<String, Object>();
                     var dateHistogram = rs.Aggregations.DateHistogram("myDnsDateHistogram");
                     List<Object> list = new List<Object>();
 

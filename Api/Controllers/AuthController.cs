@@ -1,7 +1,5 @@
-﻿using DataAccess;
-using DataAccess.Entities;
+﻿using DataAccess.Entities;
 using DataAccess.Interfaces;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +8,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Api.Controllers
@@ -78,12 +77,11 @@ namespace Api.Controllers
             User user = new User(Username, Password);
             try
             {
-                return Ok(await _unitOfWork.Users.AddAsync(user));
+                return await _unitOfWork.Users.AddAsync(user);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
-                return new StatusCodeResult(500);
+                throw new Exception("Register failed", ex);
             }
         }
 
@@ -92,15 +90,14 @@ namespace Api.Controllers
         public async Task<ActionResult> Delete(string Username)
         {
             User u = new User(Username);
-            int result;
-
-            result = await _unitOfWork.Users.DeleteByQueryAsync(u);
-            if (result == 500)
+            try
             {
-                return StatusCode(500);
+                return await _unitOfWork.Users.DeleteByQueryAsync(u);
             }
-
-            return new StatusCodeResult(200);
+            catch (Exception ex)
+            {
+                throw new Exception("Delete Failed", ex);
+            }
         }
 
         //Opdaterer username på en user
@@ -109,44 +106,44 @@ namespace Api.Controllers
         {
             User u = new User(Username);
             User u1 = new User(NewUsername);
-
-            var result = await _unitOfWork.Users.UpdateByQueryAsync(u, u1);
-            if (result != null)
+            try
             {
-                return StatusCode(500);
+                return await _unitOfWork.Users.UpdateByQueryAsync(u, u1);
             }
-
-            return new StatusCodeResult(200);
+            catch (Exception ex)
+            {
+                throw new Exception("Update Failed", ex);
+            }
         }
 
+        //public async Task<ActionResult> GetBy(string Username)
+        //{
+        //    User u = new User(Username);
+        //    //var result;
+
+        //    try
+        //    {
+        //        var result = await _unitOfWork.Users.GetByQueryAsync(u);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return StatusCode(500);
+        //    }
+
+        //    return new StatusCodeResult(200);
+        //}
+
         [HttpGet]
-        public async Task<ActionResult> GetBy(string Username)
+        public async Task<ActionResult> GetAll()
         {
-            User u = new User(Username);
-            int result;
-
-            result = await _unitOfWork.Users.GetByQueryAsync(u);
-            if (result == 500)
+            try
             {
-                return StatusCode(500);
+                return new ObjectResult(JsonSerializer.Serialize(await _unitOfWork.Users.GetAll())) { StatusCode = 200 };
             }
-
-            return new StatusCodeResult(200);
-        }
-
-        [HttpGet]
-        public async Task<ActionResult> GetAll(List<User> users)
-        {
-            //List<User> users = new List<User>();
-            int result;
-
-            result = await _unitOfWork.Users.GetAll(users);
-            if (result == 500)
+            catch (Exception ex)
             {
-                return StatusCode(500);
+                throw new Exception("Connection failed", ex);
             }
-
-            return new StatusCodeResult(200);
         }
     }
 }
