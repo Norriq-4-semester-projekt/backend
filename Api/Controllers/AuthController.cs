@@ -46,6 +46,7 @@ namespace Api.Controllers
             }
         }
 
+        //Opretter JWT token
         private string GenerateJWTToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtToken:SecretKey"]));
@@ -60,6 +61,7 @@ namespace Api.Controllers
             };
 
             //ToDo add claims with user info!
+            //Gør den ikke det i forvejen?
             var token = new JwtSecurityToken(
             issuer,
             audience,
@@ -86,6 +88,7 @@ namespace Api.Controllers
             }
         }
 
+        //Sletter en User ud fra Username
         [HttpPost]
         public async Task<ActionResult> Delete(string Username)
         {
@@ -93,14 +96,15 @@ namespace Api.Controllers
             int result;
 
             result = await _unitOfWork.Users.DeleteByQueryAsync(u);
-            if (result == 200)
+            if (result == 500)
             {
-                return StatusCode(200);
+                return StatusCode(500);
             }
 
             return new StatusCodeResult(200);
         }
 
+        //Opdaterer username på en user
         [HttpPost]
         public async Task<ActionResult> Update(string Username, string NewUsername)
         {
@@ -110,7 +114,35 @@ namespace Api.Controllers
             var result = await _unitOfWork.Users.UpdateByQueryAsync(u, u1);
             if (result != null)
             {
-                return StatusCode(200);
+                return StatusCode(500);
+            }
+
+            return new StatusCodeResult(200);
+        }
+        [HttpGet]
+        public async Task<ActionResult> GetBy(string Username)
+        {
+            User u = new User(Username);
+            int result;
+
+            result = await _unitOfWork.Users.GetByQueryAsync(u);
+            if (result == 500)
+            {
+                return StatusCode(500);
+            }
+
+            return new StatusCodeResult(200);
+        }
+        [HttpGet]
+        public async Task<ActionResult> GetAll(List<User> users)
+        {
+            //List<User> users = new List<User>();
+            int result;
+
+            result = await _unitOfWork.Users.GetAll(users);
+            if (result == 500)
+            {
+                return StatusCode(500);
             }
 
             return new StatusCodeResult(200);

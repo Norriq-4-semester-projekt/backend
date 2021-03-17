@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Repositories
 {
-    //User repository - indeholder implementationer af metoderne fra IUserRepository og IGenericRepository
     public class UserRepository : IUserRepository
     {
         private ElasticClient client;
@@ -93,7 +92,6 @@ namespace DataAccess.Repositories
         //Metode til at tilføje en ny User. Bruges i forbindelse med "Register"
         public async Task<ActionResult> AddAsync(User entity)
         {
-            //Validerer om password og username opfylder kravene om længde
             UserValidator uv = new UserValidator();
             ValidationResult result = uv.Validate(entity);
             if (!result.IsValid)
@@ -103,7 +101,6 @@ namespace DataAccess.Repositories
 
             try
             {
-                //Query til Elastic som finder User ud fra Username
                 var rs = await client.SearchAsync<User>(s => s
                     .Query(q => q
                         .MatchPhrase(mp => mp
@@ -118,8 +115,6 @@ namespace DataAccess.Repositories
             {
                 return new StatusCodeResult(500);
             }
-
-            //Hasher passwordet på den nye User
             User u = new User(entity.Username);
             u.Salt = PasswordHelper.GenerateSalt();
             u.PasswordHash = PasswordHelper.ComputeHash(entity.Password, u.Salt);
@@ -134,42 +129,48 @@ namespace DataAccess.Repositories
             }
         }
 
-        //Henter alle Users fra Elastic
-        public async Task<IEnumerable<User>> GetAll()
+        //public async Task<IEnumerable<User>> GetAll(List<User> users)
+        //{
+        //    try
+        //    {
+        //        //List<User> users = new List<User>();
+        //        var rs = await client.SearchAsync<User>(s => s
+        //            .Query(q => q
+        //                .MatchAll()));
+
+        //        if (rs.Hits.Count > 0)
+        //        {
+        //            foreach (var hit in rs.Hits)
+
+        //            {
+        //                User u = hit.Source;
+        //                users.Add(u);
+        //            }
+        //        }
+        //        return users;
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //}
+
+        public async Task<int> GetByQueryAsync(User entity)
         {
             try
             {
-                List<User> users = new List<User>();
                 var rs = await client.SearchAsync<User>(s => s
                     .Query(q => q
-                        .MatchAll()));
-
-                //Tilføjer hver User til users listen
-                if (rs.Hits.Count > 0)
-                {
-                    foreach (var hit in rs.Hits)
-
-                    {
-                        User u = hit.Source;
-                        users.Add(u);
-                    }
-                }
-
-                return users;
+                        .MatchPhrase(mp => mp
+                                    .Field("username").Query(entity.Username))));
             }
             catch (Exception)
             {
-                throw;
+                return 500;
             }
+            return 200;
         }
 
-        //Burde returnere én User
-        public Task<User> GetByQueryAsync(User entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        //Opdaterer brugernavnet på en User
         [HttpPost]
         public async Task<int> UpdateByQueryAsync(User currentUser, User newUser)
         {
@@ -185,6 +186,10 @@ namespace DataAccess.Repositories
                     .Params(p => p
                         .Add("username", newUser.Username))
                     ));
+                if (response.Updated == 0)
+                {
+                    return 500;
+                }
             }
             catch (Exception)
             {
@@ -193,12 +198,6 @@ namespace DataAccess.Repositories
             return 200;
         }
 
-        Task<User> IGenericRepository<User>.AddAsync(User entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        //Sletter en User fra Elastic ud fra brugernavn.
         public async Task<int> DeleteByQueryAsync(User entity)
         {
             //var id = response.Hits.Select(h => h.Id).FirstOrDefault<string>();
@@ -211,6 +210,10 @@ namespace DataAccess.Repositories
                    .Field("username")
                    .Query(entity.Username))
                ));
+                if (response.Deleted == 0)
+                {
+                    return 500;
+                }
 
                 //client.Delete<User>(entity);
             }
@@ -220,6 +223,37 @@ namespace DataAccess.Repositories
             }
 
             return 200;
+        }
+
+        Task<User> IGenericRepository<User>.AddAsync(User entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        async Task<int> IGenericRepository<User>.GetAll(List<User> users)
+        {
+            try
+            {
+                //List<User> users = new List<User>();
+                var rs = await client.SearchAsync<User>(s => s
+                    .Query(q => q
+                        .MatchAll()));
+
+                if (rs.Hits.Count > 0)
+                {
+                    foreach (var hit in rs.Hits)
+
+                    {
+                        User u = hit.Source;
+                        users.Add(u);
+                    }
+                }
+                return 200;
+            }
+            catch (Exception)
+            {
+                return 500;
+            }
         }
     }
 }

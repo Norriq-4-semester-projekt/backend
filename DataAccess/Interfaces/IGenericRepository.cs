@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using DataAccess.Entities;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DataAccess.Interfaces
@@ -7,9 +8,9 @@ namespace DataAccess.Interfaces
     {
         Task<T> AddAsync(T entity);
 
-        Task<T> GetByQueryAsync(T entity);
+        Task<int> GetByQueryAsync(T entity);
 
-        Task<IEnumerable<T>> GetAll();
+        Task<int> GetAll(List<User> users);
 
         Task<int> UpdateByQueryAsync(T entity, T u1);
 
