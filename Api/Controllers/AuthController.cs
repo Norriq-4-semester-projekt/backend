@@ -155,9 +155,9 @@ namespace Api.Controllers
             int result;
 
             result = await _unitOfWork.Users.DeleteByQueryAsync(u);
-            if (result == 200)
+            if (result == 500)
             {
-                return StatusCode(200);
+                return StatusCode(500);
             }
 
             return new StatusCodeResult(200);
@@ -172,7 +172,36 @@ namespace Api.Controllers
             var result = await _unitOfWork.Users.UpdateByQueryAsync(u, u1);
             if (result != null)
             {
-                return StatusCode(200);
+                return StatusCode(500);
+            }
+
+            return new StatusCodeResult(200);
+        }
+        [HttpGet]
+        public async Task<ActionResult> GetBy(string Username)
+        {
+            User u = new User(Username);
+            int result;
+
+            result = await _unitOfWork.Users.GetByQueryAsync(u);
+            if (result == 500)
+            {
+                return StatusCode(500);
+            }
+
+            return new StatusCodeResult(200);
+        }
+        [HttpGet]
+        public async Task<ActionResult> GetAll(List<User> users)
+        {
+
+            //List<User> users = new List<User>();
+            int result;
+
+            result = await _unitOfWork.Users.GetAll(users);
+            if (result == 500)
+            {
+                return StatusCode(500);
             }
 
             return new StatusCodeResult(200);

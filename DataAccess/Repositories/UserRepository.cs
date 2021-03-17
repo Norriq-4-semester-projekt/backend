@@ -40,7 +40,6 @@ namespace DataAccess.Repositories
                 {
                     return new StatusCodeResult(500);
                 }
-
                 return new StatusCodeResult(200);
             }
             catch (Exception)
@@ -61,36 +60,49 @@ namespace DataAccess.Repositories
             }
         }
 
-        public async Task<IEnumerable<User>> GetAll()
+        //public async Task<IEnumerable<User>> GetAll(List<User> users)
+        //{
+        //    try
+        //    {
+        //        //List<User> users = new List<User>();
+        //        var rs = await client.SearchAsync<User>(s => s
+        //            .Query(q => q
+        //                .MatchAll()));
+
+        //        if (rs.Hits.Count > 0)
+        //        {
+        //            foreach (var hit in rs.Hits)
+
+        //            {
+        //                User u = hit.Source;
+        //                users.Add(u);
+        //            }
+        //        }
+        //        return users;
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //}
+
+        public async Task<int> GetByQueryAsync(User entity)
         {
             try
             {
-                List<User> users = new List<User>();
                 var rs = await client.SearchAsync<User>(s => s
                     .Query(q => q
-                        .MatchAll()));
-
-                if (rs.Hits.Count > 0)
-                {
-                    foreach (var hit in rs.Hits)
-
-                    {
-                        User u = hit.Source;
-                        users.Add(u);
-                    }
-                }
-
-                return users;
+                        .MatchPhrase(mp => mp
+                                    .Field("username").Query(entity.Username))));
             }
             catch (Exception)
             {
-                throw;
-            }
-        }
 
-        public Task<User> GetByQueryAsync(User entity)
-        {
-            throw new NotImplementedException();
+                return 500;
+
+            }
+            return 200;
+
         }
 
         [HttpPost]
@@ -108,17 +120,16 @@ namespace DataAccess.Repositories
                     .Params(p => p
                         .Add("username", newUser.Username))
                     ));
+                if (response.Updated == 0)
+                {
+                    return 500;
+                }
             }
             catch (Exception)
             {
                 return 500;
             }
             return 200;
-        }
-
-        Task<User> IGenericRepository<User>.AddAsync(User entity)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<int> DeleteByQueryAsync(User entity)
@@ -133,6 +144,10 @@ namespace DataAccess.Repositories
                    .Field("username")
                    .Query(entity.Username))
                ));
+                if (response.Deleted == 0)
+                {
+                    return 500;
+                }
 
                 //client.Delete<User>(entity);
             }
@@ -142,6 +157,37 @@ namespace DataAccess.Repositories
             }
 
             return 200;
+        }
+
+        Task<User> IGenericRepository<User>.AddAsync(User entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        async Task<int> IGenericRepository<User>.GetAll(List<User> users)
+        {
+            try
+            {
+                //List<User> users = new List<User>();
+                var rs = await client.SearchAsync<User>(s => s
+                    .Query(q => q
+                        .MatchAll()));
+
+                if (rs.Hits.Count > 0)
+                {
+                    foreach (var hit in rs.Hits)
+
+                    {
+                        User u = hit.Source;
+                        users.Add(u);
+                    }
+                }
+                return 200;
+            }
+            catch (Exception)
+            {
+                return 500;
+            }
         }
     }
 }
