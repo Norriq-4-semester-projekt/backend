@@ -33,6 +33,7 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<ActionResult> Login(String Username, String Password)
         {
+            //
             User u = new User(Username);
             var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
             settings.BasicAuthentication("elastic", "changeme");
@@ -48,10 +49,10 @@ namespace Api.Controllers
                 {
                     foreach (var hit in rs.Hits)
                     {
-                        User us = hit.Source;
-                        if (PasswordHelper.ComparePass(Password, us.PasswordHash, us.Salt))
+                        u = hit.Source;
+                        if (PasswordHelper.ComparePass(Password, u.PasswordHash, u.Salt))
                         {
-                            return Ok(GenerateJWTToken(us));
+                            return Ok(GenerateJWTToken(u));
                         }
                     }
                     //foreach (IHit<User> user in rs.Hits)

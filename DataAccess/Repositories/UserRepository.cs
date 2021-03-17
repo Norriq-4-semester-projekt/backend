@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace DataAccess.Repositories
 {
+    //User repository - indeholder implementationer af metoderne fra IUserRepository og IGenericRepository
     public class UserRepository : IUserRepository
     {
         private ElasticClient client;
@@ -19,9 +20,11 @@ namespace DataAccess.Repositories
             settings.BasicAuthentication("elastic", "changeme");
             client = new ElasticClient(settings);
         }
-
+        
+        //Metode til at tilføje en ny User. Bruges i forbindelse med "Register"
         public async Task<ActionResult> AddAsync(User entity)
         {
+            //Validerer om password og username opfylder kravene om længde
             UserValidator uv = new UserValidator();
             ValidationResult result = uv.Validate(entity);
             if (!result.IsValid)
@@ -31,6 +34,7 @@ namespace DataAccess.Repositories
 
             try
             {
+                //Query til Elastic som finder User ud fra Username
                 var rs = await client.SearchAsync<User>(s => s
                     .Query(q => q
                         .MatchPhrase(mp => mp
@@ -47,6 +51,8 @@ namespace DataAccess.Repositories
             {
                 return new StatusCodeResult(500);
             }
+
+            //Hasher passwordet på den nye User
             User u = new User(entity.Username);
             u.Salt = PasswordHelper.GenerateSalt();
             u.PasswordHash = PasswordHelper.ComputeHash(entity.Password, u.Salt);
@@ -61,6 +67,7 @@ namespace DataAccess.Repositories
             }
         }
 
+        //Henter alle Users fra Elastic
         public async Task<IEnumerable<User>> GetAll()
         {
             try
@@ -70,6 +77,7 @@ namespace DataAccess.Repositories
                     .Query(q => q
                         .MatchAll()));
 
+                //Tilføjer hver User til users listen
                 if (rs.Hits.Count > 0)
                 {
                     foreach (var hit in rs.Hits)
@@ -88,11 +96,13 @@ namespace DataAccess.Repositories
             }
         }
 
+        //Burde returnere én User
         public Task<User> GetByQueryAsync(User entity)
         {
             throw new NotImplementedException();
         }
 
+        //Opdaterer brugernavnet på en User
         [HttpPost]
         public async Task<int> UpdateByQueryAsync(User currentUser, User newUser)
         {
@@ -121,6 +131,7 @@ namespace DataAccess.Repositories
             throw new NotImplementedException();
         }
 
+        //Sletter en User fra Elastic ud fra brugernavn.
         public async Task<int> DeleteByQueryAsync(User entity)
         {
             //var id = response.Hits.Select(h => h.Id).FirstOrDefault<string>();
