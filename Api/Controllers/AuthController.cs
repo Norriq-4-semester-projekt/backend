@@ -33,7 +33,7 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<ActionResult> Login(String Username, String Password)
         {
-            //
+            //Opretter en forbindelse til Elastic
             User u = new User(Username);
             var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
             settings.BasicAuthentication("elastic", "changeme");
@@ -41,6 +41,7 @@ namespace Api.Controllers
 
             try
             {
+                //Check om useren eksisterer ud fra username
                 var rs = await client.SearchAsync<User>(s => s
                     .Query(q => q
                         .MatchPhrase(mp => mp
@@ -49,20 +50,13 @@ namespace Api.Controllers
                 {
                     foreach (var hit in rs.Hits)
                     {
+                        //Checker at password er rigtigt
                         u = hit.Source;
                         if (PasswordHelper.ComparePass(Password, u.PasswordHash, u.Salt))
                         {
                             return Ok(GenerateJWTToken(u));
                         }
                     }
-                    //foreach (IHit<User> user in rs.Hits)
-                    //{
-                    //    User us = user as User;
-                    //    if (PasswordHelper.ComparePass(Password, us.PasswordHash, us.Salt))
-                    //    {
-                    //        return Ok(GenerateJWTToken(us));
-                    //    }
-                    //}
                 }
                 return new StatusCodeResult(500);
             }
@@ -73,6 +67,7 @@ namespace Api.Controllers
             }
         }
 
+        //Opretter JWT token
         private string GenerateJWTToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtToken:SecretKey"]));
@@ -87,6 +82,7 @@ namespace Api.Controllers
             };
 
             //ToDo add claims with user info!
+            //Gør den ikke det i forvejen?
             var token = new JwtSecurityToken(
             issuer,
             audience,
@@ -98,6 +94,7 @@ namespace Api.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        //Register burde kalde Add() fra UserRepository, men lige nu har den sin egen implementation
         [HttpPost]
         public ActionResult Register(string Username, string Password)
         {
@@ -110,12 +107,14 @@ namespace Api.Controllers
                 return new ObjectResult(result.Errors) { StatusCode = 500 };
             }
 
+            //Forbindelse til Elastic
             var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
             settings.BasicAuthentication("elastic", "changeme");
             var client = new ElasticClient(settings);
 
             try
             {
+                //Finder User ud fra username
                 var rs = client.Search<User>(s => s
                     .Query(q => q
                         .MatchPhrase(mp => mp
@@ -131,7 +130,8 @@ namespace Api.Controllers
                 //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
                 return new StatusCodeResult(500);
             }
-
+            //Opdaterer User informationer. 
+            //Opdaterer ikke _id???
             User u = new User(Username);
             u.Salt = PasswordHelper.GenerateSalt();
             u.PasswordHash = PasswordHelper.ComputeHash(Password, u.Salt);
@@ -149,6 +149,7 @@ namespace Api.Controllers
             }
         }
 
+        //Sletter en User ud fra Username
         [HttpPost]
         public async Task<ActionResult> Delete(string Username)
         {
@@ -164,6 +165,7 @@ namespace Api.Controllers
             return new StatusCodeResult(200);
         }
 
+        //Opdaterer username på en user
         [HttpPost]
         public async Task<ActionResult> Update(string Username, string NewUsername)
         {
