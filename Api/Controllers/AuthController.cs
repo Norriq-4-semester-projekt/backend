@@ -79,7 +79,7 @@ namespace Api.Controllers
             User user = new User(Username, Password);
             try
             {
-                return Ok(await _unitOfWork.Users.Register(user));
+                return Ok(await _unitOfWork.Users.AddAsync(user));
             }
             catch (Exception)
             {
@@ -119,6 +119,7 @@ namespace Api.Controllers
 
             return new StatusCodeResult(200);
         }
+
         [HttpGet]
         public async Task<ActionResult> GetBy(string Username)
         {
@@ -133,6 +134,7 @@ namespace Api.Controllers
 
             return new StatusCodeResult(200);
         }
+
         [HttpGet]
         public async Task<ActionResult> GetAll(List<User> users)
         {

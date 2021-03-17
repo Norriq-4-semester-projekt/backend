@@ -47,7 +47,8 @@ namespace DataAccess.Repositories
             }
         }
 
-        public async Task<ActionResult> Register(User entity)
+        //Metode til at tilføje en ny User. Bruges i forbindelse med "Register"
+        public async Task<ActionResult> AddAsync(User entity)
         {
             UserValidator uv = new UserValidator();
             ValidationResult result = uv.Validate(entity);
@@ -85,46 +86,6 @@ namespace DataAccess.Repositories
             catch (Exception)
             {
                 //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
-                return new StatusCodeResult(500);
-            }
-        }
-
-        //Metode til at tilføje en ny User. Bruges i forbindelse med "Register"
-        public async Task<ActionResult> AddAsync(User entity)
-        {
-            UserValidator uv = new UserValidator();
-            ValidationResult result = uv.Validate(entity);
-            if (!result.IsValid)
-            {
-                return new ObjectResult(result.Errors) { StatusCode = 500 };
-            }
-
-            try
-            {
-                var rs = await client.SearchAsync<User>(s => s
-                    .Query(q => q
-                        .MatchPhrase(mp => mp
-                                    .Field("username").Query(entity.Username))));
-
-                if (rs.Hits.Count > 0)
-                {
-                    return new StatusCodeResult(500);
-                }
-            }
-            catch (Exception)
-            {
-                return new StatusCodeResult(500);
-            }
-            User u = new User(entity.Username);
-            u.Salt = PasswordHelper.GenerateSalt();
-            u.PasswordHash = PasswordHelper.ComputeHash(entity.Password, u.Salt);
-            try
-            {
-                await client.IndexDocumentAsync<User>(u);
-                return new StatusCodeResult(200);
-            }
-            catch (Exception)
-            {
                 return new StatusCodeResult(500);
             }
         }

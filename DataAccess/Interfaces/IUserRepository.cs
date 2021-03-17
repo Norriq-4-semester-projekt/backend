@@ -7,7 +7,5 @@ namespace DataAccess.Interfaces
     public interface IUserRepository : IGenericRepository<User>
     {
         Task<ActionResult> Login(User entity);
-
-        Task<ActionResult> Register(User entity);
     }
 }
