@@ -6,6 +6,7 @@ namespace Api.Helpers
 {
     public class RemoveVersionParameterFilter : IOperationFilter
     {
+        //Fjerner versionsnummer
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
             var versionParameter = operation.Parameters.Single(p => p.Name == "version");

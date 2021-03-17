@@ -5,6 +5,7 @@ namespace Api.Helpers
 {
     public class ReplaceVersionWithExactValueInPathFilter : IDocumentFilter
     {
+        //opdaterer versionsnummer
         public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
         {
             var paths = new OpenApiPaths();

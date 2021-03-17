@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 namespace Api.Models.v1_0
 {
+    //Indeholder alle de fields der kunne være interessante at logge til fejlfinding
     public class Fields
     {
         public double ElapsedMilliseconds { get; set; }
