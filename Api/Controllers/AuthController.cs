@@ -5,7 +5,6 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Nest;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -33,38 +32,12 @@ namespace Api.Controllers
         [HttpGet]
         public async Task<ActionResult> Login(String Username, String Password)
         {
-            //
-            User u = new User(Username);
-            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
-            settings.BasicAuthentication("elastic", "changeme");
-            var client = new ElasticClient(settings);
-
+            User u = new User(Username, Password);
             try
             {
-                var rs = await client.SearchAsync<User>(s => s
-                    .Query(q => q
-                        .MatchPhrase(mp => mp
-                                    .Field("username").Query(Username))));
-                if (rs.Hits.Count > 0)
-                {
-                    foreach (var hit in rs.Hits)
-                    {
-                        u = hit.Source;
-                        if (PasswordHelper.ComparePass(Password, u.PasswordHash, u.Salt))
-                        {
-                            return Ok(GenerateJWTToken(u));
-                        }
-                    }
-                    //foreach (IHit<User> user in rs.Hits)
-                    //{
-                    //    User us = user as User;
-                    //    if (PasswordHelper.ComparePass(Password, us.PasswordHash, us.Salt))
-                    //    {
-                    //        return Ok(GenerateJWTToken(us));
-                    //    }
-                    //}
-                }
-                return new StatusCodeResult(500);
+                ObjectResult result = await _unitOfWork.Users.Login(u) as ObjectResult;
+                User user = result.Value as User;
+                return Ok(GenerateJWTToken(user));
             }
             catch (Exception)
             {
@@ -99,48 +72,12 @@ namespace Api.Controllers
         }
 
         [HttpPost]
-        public ActionResult Register(string Username, string Password)
+        public async Task<ActionResult> Register(string Username, string Password)
         {
-            UserValidator uv = new UserValidator();
-            User user = new User(Username);
-            user.Password = Password;
-            ValidationResult result = uv.Validate(user);
-            if (!result.IsValid)
-            {
-                return new ObjectResult(result.Errors) { StatusCode = 500 };
-            }
-
-            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users");
-            settings.BasicAuthentication("elastic", "changeme");
-            var client = new ElasticClient(settings);
-
+            User user = new User(Username, Password);
             try
             {
-                var rs = client.Search<User>(s => s
-                    .Query(q => q
-                        .MatchPhrase(mp => mp
-                                    .Field("username").Query(Username))));
-
-                if (rs.Hits.Count > 0)
-                {
-                    return new StatusCodeResult(500);
-                }
-            }
-            catch (Exception)
-            {
-                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
-                return new StatusCodeResult(500);
-            }
-
-            User u = new User(Username);
-            u.Salt = PasswordHelper.GenerateSalt();
-            u.PasswordHash = PasswordHelper.ComputeHash(Password, u.Salt);
-
-            try
-            {
-                client.IndexDocument<User>(u);
-
-                return new StatusCodeResult(200);
+                return Ok(await _unitOfWork.Users.Register(user));
             }
             catch (Exception)
             {

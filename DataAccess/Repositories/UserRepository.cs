@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Nest;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DataAccess.Repositories
@@ -20,7 +21,75 @@ namespace DataAccess.Repositories
             settings.BasicAuthentication("elastic", "changeme");
             client = new ElasticClient(settings);
         }
-        
+
+        public async Task<ActionResult> Login(User entity)
+        {
+            try
+            {
+                var rs = await client.SearchAsync<User>(s => s
+                    .Query(q => q
+                        .MatchPhrase(mp => mp
+                                    .Field("username").Query(entity.Username))));
+
+                if (rs.Hits.Count > 0)
+                {
+                    User u = rs.Hits.Select(h => h.Source).FirstOrDefault<User>();
+                    if (PasswordHelper.ComparePass(entity.Password, u.PasswordHash, u.Salt))
+                    {
+                        return new ObjectResult(u) { StatusCode = 200 };
+                    }
+                }
+                return new StatusCodeResult(500);
+            }
+            catch (Exception)
+            {
+                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
+                return new StatusCodeResult(500);
+            }
+        }
+
+        public async Task<ActionResult> Register(User entity)
+        {
+            UserValidator uv = new UserValidator();
+            ValidationResult result = uv.Validate(entity);
+            if (!result.IsValid)
+            {
+                return new ObjectResult(result.Errors) { StatusCode = 500 };
+            }
+
+            try
+            {
+                var rs = await client.SearchAsync<User>(s => s
+                    .Query(q => q
+                        .MatchPhrase(mp => mp
+                                    .Field("username").Query(entity.Username))));
+
+                if (rs.Hits.Count > 0)
+                {
+                    return new ObjectResult("User already exists") { StatusCode = 500 };
+                }
+            }
+            catch (Exception)
+            {
+                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
+                return new StatusCodeResult(500);
+            }
+            entity.Salt = PasswordHelper.GenerateSalt();
+            entity.PasswordHash = PasswordHelper.ComputeHash(entity.Password, entity.Salt);
+
+            try
+            {
+                client.IndexDocument<User>(entity);
+
+                return new StatusCodeResult(200);
+            }
+            catch (Exception)
+            {
+                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
+                return new StatusCodeResult(500);
+            }
+        }
+
         //Metode til at tilføje en ny User. Bruges i forbindelse med "Register"
         public async Task<ActionResult> AddAsync(User entity)
         {
@@ -44,8 +113,6 @@ namespace DataAccess.Repositories
                 {
                     return new StatusCodeResult(500);
                 }
-
-                return new StatusCodeResult(200);
             }
             catch (Exception)
             {

@@ -156,7 +156,7 @@ namespace Api.Controllers.v1_0
                 }
                 return new StatusCodeResult(200);
             }
-            catch (Exception exception)
+            catch (Exception)
             {
                 return new StatusCodeResult(500);
             }
@@ -210,7 +210,6 @@ namespace Api.Controllers.v1_0
                         newlist.Add("Timestamp", item.Date.ToString());
                         newlist.Add("OK", test.Count.Equals("OK"));
                         newlist.Add("Error", item.Count.Equals("Error"));
-
                     }
                     return Ok(JsonSerializer.Serialize(list));
                 }

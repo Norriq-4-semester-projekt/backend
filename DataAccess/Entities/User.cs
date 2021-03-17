@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 
 namespace DataAccess.Entities
 {
@@ -22,6 +23,7 @@ namespace DataAccess.Entities
 
         private String _password;
 
+        [JsonIgnore]
         public String Password
         {
             get => _password;
@@ -47,6 +49,12 @@ namespace DataAccess.Entities
         public User(String Username)
         {
             this.Username = Username;
+        }
+
+        public User(String Username, string Password)
+        {
+            this.Username = Username;
+            this.Password = Password;
         }
     }
 }
