@@ -1,5 +1,4 @@
-﻿using Dapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Nest;
@@ -229,5 +228,34 @@ namespace Api.Controllers.v1_0
                 throw;
             }
         }
+        //public async Task<ActionResult> GetNetworkTrafic()
+        //{
+        //    var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("metricbeat-*");
+        //    settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
+        //    settings.PrettyJson(); // Good for DEBUG
+        //    settings.BasicAuthentication("elastic", "changeme");
+        //    settings.DisableDirectStreaming();
+        //    var client = new ElasticClient(settings);
+        //    try
+        //    {
+        //        var respond = await client.SearchAsync<dynamic>(s => s
+        //        .Size(0)
+        //        .Query(q => q
+        //            .Bool(b => b
+        //                .Should(sh => sh
+        //                )
+        //            ));
+        //        if (true)
+        //        {
+
+        //        }
+        //    return new StatusCodeResult(200);
+        //    }
+        //    catch (Exception)
+        //    {
+
+        //        throw;
+        //    }
+        //}
     }
 }
