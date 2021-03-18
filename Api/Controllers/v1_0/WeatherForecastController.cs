@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Dapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Nest;
@@ -204,22 +205,15 @@ namespace Api.Controllers.v1_0
                 if (rs.Aggregations.Count > 0)
                 {
                     List<Object> list = new List<Object>();
-                    foreach (var item in timeseries.Buckets.Select(s => new { s.KeyAsString, count = s.DocCount, status = s.Terms("statuses"), values = s.Values}))
+                    foreach (var item in timeseries.Buckets.Select(s => new { s.KeyAsString, status = s.Terms("statuses") }))
                     {
                         Dictionary<string, string> newlist = new Dictionary<string, string>();
-                        newlist.Add("status", item.status.ToString());
                         newlist.Add("KeyAsString", item.KeyAsString);
-                        newlist.Add("Count", item.count.ToString());
-                        newlist.Add("Values", item.values.ToString());
-                        foreach (Nest.TermsAggregation item2 in item.values.AsEnumerable<IAggregate>())
+
+                        foreach (var item2 in item.status.Buckets.ToList())
                         {
-                            newlist.Add("Values2", item2.ToString());
-                            //newlist.Add("Values2", item2.Aggregations.AsEnumerable().FirstOrDefault<TermsAggregation>().ToString());
-
-                            Console.WriteLine(item2);
-
+                            newlist.Add(item2.Key, item2.DocCount.ToString());
                         }
-
 
                         list.Add(newlist);
 
