@@ -10,7 +10,9 @@ namespace ML
         private static string BaseDatasetsRelativePath = @"../../../../Data";
 
         //private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/product-sales.csv";
+        //private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/response.csv";
         private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/http.csv";
+
 
         private static string DatasetPath = GetAbsolutePath(DatasetRelativePath);
 
