@@ -164,7 +164,7 @@ namespace Api.Controllers.v1_0
                             ValueAggregate valueAggregate = a as ValueAggregate;
 
                             cpuPair.Add(test89, valueAggregate.Value.ToString());
-                            Console.WriteLine(test89 + ": " + (valueAggregate.Value);
+                            Console.WriteLine(test89 + ": " + (valueAggregate.Value));
                             Console.WriteLine(test89 + ": " + valueAggregate.ValueAsString);
                         }
                         list.Add(cpuPair);
