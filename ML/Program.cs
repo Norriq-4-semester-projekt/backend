@@ -1,4 +1,5 @@
 ﻿using Microsoft.ML;
+using Nest;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,14 +28,16 @@ namespace ML
 
         private static async System.Threading.Tasks.Task Main()
         {
-            DataContractJsonSerializer dj = new DataContractJsonSerializer(typeof(ProductsDataList));
-            MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(await File.OpenText(DatasetRelativePath).ReadToEndAsync()));
-            ProductsDataList training_data = (ProductsDataList)dj.ReadObject(ms);
+            //DataContractJsonSerializer dj = new DataContractJsonSerializer(typeof(ProductsDataList));
+            //MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(await File.OpenText(DatasetRelativePath).ReadToEndAsync()));
+            //ProductsDataList training_data = (ProductsDataList)dj.ReadObject(ms);
+
+            ProductsDataList training_data = UpdateMLModel();
             // Create MLContext to be shared across the model creation workflow objects
             mlContext = new MLContext();
 
             //assign the Number of records in dataset file to cosntant variable
-            const int size = 36;
+            int size = training_data.Data.Count;
 
             //Load the data into IDataView.
             //This dataset is used while prediction/detecting spikes or changes.
@@ -104,7 +107,7 @@ namespace ML
             var predictions = mlContext.Data.CreateEnumerable<ProductSalesPrediction>(transformedData, reuseRowObject: false);
 
             Console.WriteLine($"{nameof(ProductSalesPrediction.Prediction)} column obtained post-transformation.");
-            Console.WriteLine("Alert\tScore\tP-Value\tMartingale value");
+            Console.WriteLine("Alert\tScore\tP-Value\tvalue");
 
             foreach (var p in predictions)
             {
@@ -136,6 +139,50 @@ namespace ML
             IEnumerable<ProductSalesData> enumerableData = new List<ProductSalesData>();
             var dv = mlContext.Data.LoadFromEnumerable(enumerableData);
             return dv;
+        }
+
+        public static ProductsDataList UpdateMLModel()
+        {
+            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("packetbeat-*");
+            settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
+            settings.PrettyJson(); // Good for DEBUG
+            settings.BasicAuthentication("elastic", "changeme");
+            var client = new ElasticClient(settings);
+            ProductsDataList pdl = new ProductsDataList();
+            var rs = client.Search<dynamic>(s => s
+            .Aggregations(aggs => aggs
+            .Nested("kv", n => n.Path(p => p).Aggregations(agggs => aggs
+            .DateHistogram("Data", dhg => dhg
+            .Field("@timestamp")
+            .CalendarInterval("1h")
+            .TimeZone("Europe/Copenhagen"))))
+            .Size(0).Fields(fi => fi
+            .Field("@timestamp"))
+            .Query(q => q
+            .Bool(b => b
+            .Filter(f => f
+            .MatchPhrase(mp => mp
+            .Field("url.full").Query("http://thekrane.dk/")))
+            .Filter(fil => fil.DateRange(dr => dr.Field("@timestamp").GreaterThanOrEquals("now-14d").LessThanOrEquals("now")))))));
+
+            ProductsDataList list = new ProductsDataList();
+            list.Data = new List<ProductSalesData>();
+            if (rs.Aggregations.Count > 0)
+            {
+                foreach (DateHistogramBucket item in rs.Aggregations.DateHistogram("Data").Buckets)
+                {
+                    ProductSalesData pd = new ProductSalesData();
+                    pd.doc_count = item.DocCount.Value;
+                    pd.key_as_string = item.KeyAsString;
+                    list.Data.Add(pd);
+                }
+
+                //DateHistogramBucket list = rs.Aggregations.DateHistogram("Data").Buckets;
+                //list.Buckets.
+                //rs.Aggregations.DateHistogram().Buckets
+            }
+            //return new ObjectResult(JsonSerializer.Serialize(list));
+            return list;
         }
     }
 }
