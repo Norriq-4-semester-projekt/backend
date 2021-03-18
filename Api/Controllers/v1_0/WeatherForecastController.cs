@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Api.Controllers.v1_0
 {
@@ -163,61 +164,75 @@ namespace Api.Controllers.v1_0
         }
 
         [HttpGet]
-        public IActionResult GetHttpErrors()
+        public async Task<ActionResult> GetHttpErrors()
         {
             var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("packetbeat-*");
             settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
             settings.PrettyJson(); // Good for DEBUG
             settings.BasicAuthentication("elastic", "changeme");
+            settings.DisableDirectStreaming();
             var client = new ElasticClient(settings);
             try
             {
-                var rs = client.Search<dynamic>(s => s
-                .Query(q => q
-                    .Bool(b => b
-                        .Should(sh => sh
-                            .MatchPhrase(mp => mp
-                                .Field("dns.question.name").Query("thekrane.dk")
-                                .Field("event.dataset").Query("dns")
-                            )
-                        )
-                        .Filter(f => f
-                            .DateRange(dr => dr
-                                .Field("@timestamp")
-                                .GreaterThanOrEquals("now-5m")
+                var rs = await client.SearchAsync<dynamic>(s => s
+                    .Size(0)
+                    .Query(q => q
+                        .Bool(b => b
+                            .Filter(f => f
+                                .DateRange(r => r
+                                    .Field("@timestamp")
+                                    .GreaterThan("now-5m")
                                 )
                             )
                         )
                     )
-                .Aggregations(aggs => aggs
-                    .DateHistogram("myDnsDataHistrogram", date => date
-                    .Field("@timestamp")
-                    .CalendarInterval(DateInterval.Minute)
-                    //.Aggregations(aggs1 => aggs1
-                    //    .ValueCount("valuecount", vc => vc
-                    //    .Field("status")
-                )));
+                    .Aggregations(aggs => aggs
+                        .DateHistogram("timeseries", dh => dh
+                            .Field("@timestamp")
+                            .CalendarInterval("1m")
+                            .Aggregations(aggs => aggs
+                                .Terms("statuses", t => t
+                                    .Field("status")
+                                )
+                            )
+                        )
+                    )
+                );
+
+                var timeseries = rs.Aggregations.DateHistogram("timeseries");
+
                 if (rs.Aggregations.Count > 0)
                 {
-                    //Dictionary<String, Object> etellerandet = new Dictionary<String, Object>();
-                    var dateHistogram = rs.Aggregations.DateHistogram("myDnsDateHistogram");
                     List<Object> list = new List<Object>();
-
-                    foreach (var item in dateHistogram.Buckets)
+                    foreach (var item in timeseries.Buckets.Select(s => new { s.KeyAsString, count = s.DocCount, status = s.Terms("statuses"), values = s.Values}))
                     {
-                        Dictionary<String, Object> newlist = new Dictionary<String, Object>();
-                        StatsAggregate test = (StatsAggregate)item.Values.FirstOrDefault();
-                        newlist.Add("Timestamp", item.Date.ToString());
-                        newlist.Add("OK", test.Count.Equals("OK"));
-                        newlist.Add("Error", item.Count.Equals("Error"));
+                        Dictionary<string, string> newlist = new Dictionary<string, string>();
+                        newlist.Add("status", item.status.ToString());
+                        newlist.Add("KeyAsString", item.KeyAsString);
+                        newlist.Add("Count", item.count.ToString());
+                        newlist.Add("Values", item.values.ToString());
+                        foreach (Nest.TermsAggregation item2 in item.values.AsEnumerable<IAggregate>())
+                        {
+                            newlist.Add("Values2", item2.ToString());
+                            //newlist.Add("Values2", item2.Aggregations.AsEnumerable().FirstOrDefault<TermsAggregation>().ToString());
+
+                            Console.WriteLine(item2);
+
+                        }
+
+
+                        list.Add(newlist);
+
+                        Console.WriteLine(newlist);
                     }
-                    return Ok(JsonSerializer.Serialize(list));
+                    return new ObjectResult(JsonSerializer.Serialize(list));
                 }
+
                 return new StatusCodeResult(200);
             }
             catch (Exception)
             {
-                return new StatusCodeResult(500);
+                throw;
             }
         }
     }
