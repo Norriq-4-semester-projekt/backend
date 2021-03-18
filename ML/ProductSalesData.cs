@@ -5,9 +5,9 @@ namespace ML
     public class ProductSalesData
     {
         [LoadColumn(0)]
-        public string timestamp;
+        public string key_as_string;
 
         [LoadColumn(1)]
-        public float count;
+        public float doc_count;
     }
 }
