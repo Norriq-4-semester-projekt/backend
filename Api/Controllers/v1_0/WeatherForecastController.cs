@@ -260,7 +260,7 @@ namespace Api.Controllers.v1_0
             var client = new ElasticClient(settings);
             try
             {
-                var respond = await client.SearchAsync<dynamic>(s => s
+                var response = await client.SearchAsync<dynamic>(s => s
                 .Size(0)
                 .Query(q => q
                     .DateRange(r => r
@@ -276,19 +276,48 @@ namespace Api.Controllers.v1_0
                             .DateHistogram("histogram", dh => dh
                             .Field("@timestamp")
                             .CalendarInterval("1m")
-                            .Aggregations(aggs2 => aggs2)
-                                ))
-                    )));
-                if (true)
+                            .Aggregations(aggs2 => aggs2
+                                .Max("NetworkInBytesMax", maxin => maxin
+                                .Field("system.network.in.bytes")
+                                )
+                                .Derivative("NetworkInBytesPerSecond", d => d
+                                    .BucketsPath("NetworkInBytesMax")
+                                    )
+                                .Max("NetworkOutBytesMax", maxout => maxout
+                                .Field("system.network.out.bytes")
+                                )
+                                .Derivative("NetworkOutBytesPerSecond", de => de
+                                    .BucketsPath("NetworkOutBytesMax")
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ));
+                if (response.Aggregations.Count > 0)
                 {
+                    var dateHistogram = response.Aggregations.DateHistogram("histogram");
+                    List<Object> list = new List<Object>();
+                    foreach (DateHistogramBucket item in dateHistogram.Buckets)
+                    {
+                        Dictionary<string, string> newlist = new Dictionary<string, string>();
 
+                        foreach (var item2 in item.Keys)
+                        {
+                            item.TryGetValue(item2, out IAggregate a);
+                            ValueAggregate valueAggregate = a as ValueAggregate;
+                            newlist.Add(item2, valueAggregate.Value.ToString());
+
+                        }
+                        list.Add(newlist);
+                    }
                 }
                 return new StatusCodeResult(200);
             }
             catch (Exception)
             {
 
-                throw;
+                return new StatusCodeResult(500);
             }
         }
     }
