@@ -129,12 +129,22 @@ namespace Api.Controllers.v1_0
                         .Field("@timestamp")
                         .CalendarInterval(DateInterval.Minute)
                         .Aggregations(aggs => aggs
-                            .Stats("Test", st => st
+                            .Average("AvgUserCpu", auc => auc
                             .Field("system.cpu.user.pct")
                             )
+                        .Average("AvgSystemCpu", asc => asc
+                        .Field("system.cpu.system.pct")
                         )
-                    )
+                        .Max("CpuCoresMax", mcpu => mcpu
+                        .Field("system.cpu.cores")
+                    ).BucketScript("CpuCalc", bs => bs
+                        .BucketsPath(bp => bp
+                        .Add("user", "AvgUserCpu")
+                        .Add("system", "AvgSystemCpu")
+                        .Add("cores", "CpuCoresMax"))
+                        .Script("(params.user + params.system) / params.cores")))
                 )
+                        )
             );
                 if (rs.Aggregations.Count > 0)
                 {
@@ -142,15 +152,27 @@ namespace Api.Controllers.v1_0
                     var dateHistogram = rs.Aggregations.DateHistogram("myCpuDateHistogram");
                     List<Object> list = new List<Object>();
 
-                    foreach (var item in dateHistogram.Buckets)
+                    foreach (DateHistogramBucket item in dateHistogram.Buckets)
                     {
                         Dictionary<string, string> newlist = new Dictionary<string, string>();
-                        StatsAggregate test = (StatsAggregate)item.Values.FirstOrDefault();
-                        newlist.Add("Timestamp", item.Date.ToString());
-                        newlist.Add("min", test.Min.ToString());
-                        newlist.Add("max", test.Max.ToString());
-                        newlist.Add("avg", test.Average.ToString());
-                        list.Add(newlist);
+                        Dictionary<string, string> cpuPair = new Dictionary<string, string>();
+
+                        foreach (var test89 in item.Keys)
+                        {
+                            item.TryGetValue(test89, out IAggregate a);
+                            ValueAggregate valueAggregate = a as ValueAggregate;
+
+                            cpuPair.Add(test89, valueAggregate.Value.ToString());
+                            Console.WriteLine(test89 + ": " + (valueAggregate.Value));
+                            Console.WriteLine(test89 + ": " + valueAggregate.ValueAsString);
+                        }
+                        list.Add(cpuPair);
+                        //StatsAggregate test = (StatsAggregate)item.Values.FirstOrDefault();
+                        //newlist.Add("Timestamp", item.Date.ToString());
+                        //newlist.Add("min", test.Min.ToString());
+                        //newlist.Add("max", test.Max.ToString());
+                        //newlist.Add("avg", test.Average.ToString());
+                        //list.Add(newlist);
                     }
 
                     return Ok(JsonSerializer.Serialize(list));
