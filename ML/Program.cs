@@ -158,11 +158,14 @@ namespace ML
             .Size(0).Fields(fi => fi
             .Field("@timestamp"))
             .Query(q => q
-            .Bool(b => b
-            .Filter(f => f
-            .MatchPhrase(mp => mp
-            .Field("url.full").Query("http://thekrane.dk/")))
-            .Filter(fil => fil.DateRange(dr => dr.Field("@timestamp").GreaterThanOrEquals("now-14d").LessThanOrEquals("now"))))));
+            .Bool(b => b.Must(mu => mu
+            .Match(ma => ma.Field("url.full")
+            .Query("http://thekrane.dk/")))
+            .Filter(fil => fil
+            .DateRange(dr => dr
+            .Field("@timestamp")
+            .GreaterThanOrEquals("now-14d")
+            .LessThanOrEquals("now"))))));
 
             ProductsDataList list = new ProductsDataList();
             list.Data = new List<ProductSalesData>();
