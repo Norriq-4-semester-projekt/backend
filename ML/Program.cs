@@ -151,11 +151,10 @@ namespace ML
             ProductsDataList pdl = new ProductsDataList();
             var rs = client.Search<dynamic>(s => s
             .Aggregations(aggs => aggs
-            .Nested("kv", n => n.Path(p => p).Aggregations(agggs => aggs
             .DateHistogram("Data", dhg => dhg
             .Field("@timestamp")
             .CalendarInterval("1h")
-            .TimeZone("Europe/Copenhagen"))))
+            .TimeZone("Europe/Copenhagen")))
             .Size(0).Fields(fi => fi
             .Field("@timestamp"))
             .Query(q => q
@@ -163,7 +162,7 @@ namespace ML
             .Filter(f => f
             .MatchPhrase(mp => mp
             .Field("url.full").Query("http://thekrane.dk/")))
-            .Filter(fil => fil.DateRange(dr => dr.Field("@timestamp").GreaterThanOrEquals("now-14d").LessThanOrEquals("now")))))));
+            .Filter(fil => fil.DateRange(dr => dr.Field("@timestamp").GreaterThanOrEquals("now-14d").LessThanOrEquals("now"))))));
 
             ProductsDataList list = new ProductsDataList();
             list.Data = new List<ProductSalesData>();
