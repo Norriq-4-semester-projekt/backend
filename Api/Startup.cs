@@ -45,7 +45,7 @@ namespace Api
             });
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Api", Version = "v1.0" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Api", Version = "v1" });
                 c.OperationFilter<RemoveVersionParameterFilter>();
                 c.DocumentFilter<ReplaceVersionWithExactValueInPathFilter>();
             });
