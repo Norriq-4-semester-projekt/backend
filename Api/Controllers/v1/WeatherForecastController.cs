@@ -261,7 +261,7 @@ namespace Api.Controllers.v1_0
             var client = new ElasticClient(settings);
             try
             {
-                var response = client.Search<dynamic>(s => s
+                var response = await client.SearchAsync<dynamic>(s => s
                 .Size(0)
                 .Query(q => q
                     .Bool(b => b
@@ -304,17 +304,14 @@ namespace Api.Controllers.v1_0
                     List<Object> list = new List<Object>();
                     foreach (DateHistogramBucket item in dateHistogram.Buckets)
                     {
-                        Dictionary<string, string> newlist = new Dictionary<string, string>();
+                        Dictionary<string, dynamic> newlist = new Dictionary<string, dynamic>();
+                        newlist.Add("Timestamp", item.KeyAsString);
 
                         foreach (var item2 in item.Keys)
                         {
                             item.TryGetValue(item2, out IAggregate a);
                             ValueAggregate valueAggregate = a as ValueAggregate;
-
-                            //newlist.Add(item.KeyAsString, valueAggregate.Value.ToString());
-                            //newlist.Add(item2, item.KeyAsString);
-                            newlist.Add(item2, valueAggregate.Value.ToString());
-                            //newlist.Add("timestamp", item.KeyAsString);
+                            newlist.Add(item2, valueAggregate.Value);
 
                         }
                         list.Add(newlist);
