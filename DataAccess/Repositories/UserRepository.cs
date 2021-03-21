@@ -140,7 +140,6 @@ namespace DataAccess.Repositories
         //    return new StatusCodeResult(200);
         //}
 
-        [HttpPost]
         public async Task<ActionResult> UpdateByQueryAsync(User currentUser, User newUser)
         {
             try
