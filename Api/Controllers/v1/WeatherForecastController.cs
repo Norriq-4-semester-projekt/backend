@@ -9,10 +9,10 @@ using System.Net.NetworkInformation;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Api.Controllers.v1_0
+namespace Api.Controllers.v1
 {
-    // [ApiVersion("0.9", Deprecated = true)] // Set previous version as deprecated
-    [ApiVersion("1.0")] // Set version of controller
+    // [ApiVersion("0", Deprecated = true)] // Set previous version as deprecated
+    [ApiVersion("1")] // Set version of controller
     [ApiController]
     [Route("v{version:apiVersion}/{customer}/[action]")]
     public class WeatherForecastController : ControllerBase
@@ -250,6 +250,8 @@ namespace Api.Controllers.v1_0
                 throw;
             }
         }
+
+        [HttpGet]
         public async Task<ActionResult> GetNetworkTrafic()
         {
             var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("metricbeat-*");
@@ -307,7 +309,6 @@ namespace Api.Controllers.v1_0
                             item.TryGetValue(item2, out IAggregate a);
                             ValueAggregate valueAggregate = a as ValueAggregate;
                             newlist.Add(item2, valueAggregate.Value.ToString());
-
                         }
                         list.Add(newlist);
                     }
@@ -316,7 +317,6 @@ namespace Api.Controllers.v1_0
             }
             catch (Exception)
             {
-
                 return new StatusCodeResult(500);
             }
         }
