@@ -262,40 +262,47 @@ namespace Api.Controllers.v1
             var client = new ElasticClient(settings);
             try
             {
-                var response = await client.SearchAsync<dynamic>(s => s
-                .Size(0)
-                .Query(q => q
-                    .DateRange(r => r
-                        .Field("@timestamp")
-                        .GreaterThanOrEquals("now-5m")
-                        )
-                    )
-                .Aggregations(aggs => aggs
-                    .Terms("names", te => te
-                        .Field("system.network.name")
-                        .Size(50)
-                        .Aggregations(aggs1 => aggs1
-                            .DateHistogram("histogram", dh => dh
-                            .Field("@timestamp")
-                            .CalendarInterval("1m")
-                            .Aggregations(aggs2 => aggs2
-                                .Max("NetworkInBytesMax", maxin => maxin
-                                .Field("system.network.in.bytes")
-                                )
-                                .Derivative("NetworkInBytesPerSecond", d => d
-                                    .BucketsPath("NetworkInBytesMax")
-                                    )
-                                .Max("NetworkOutBytesMax", maxout => maxout
-                                .Field("system.network.out.bytes")
-                                )
-                                .Derivative("NetworkOutBytesPerSecond", de => de
-                                    .BucketsPath("NetworkOutBytesMax")
-                                    )
+                    var response = await client.SearchAsync<dynamic>(s => s
+                    .Size(0)
+                    .Query(q => q
+                        .Bool(b => b
+                            .Must(mu => mu
+                                .Match(ma => ma
+                                .Field("system.network.name").Query("eth0")
                                 )
                             )
                         )
                     )
-                ));
+                    .Query(qu => qu
+                        .DateRange(r => r
+                            .Field("@timestamp")
+                            .GreaterThanOrEquals("now-5m")
+                            )
+                        )
+                    .Aggregations(aggs => aggs
+                        .Terms("names", te => te
+                            .Field("system.network.name")
+                            .Size(50)
+                            .Aggregations(aggs1 => aggs1
+                                .DateHistogram("histogram", dh => dh
+                                .Field("@timestamp")
+                                .CalendarInterval("1m")
+                                .Aggregations(aggs2 => aggs2
+                                    .Max("NetworkInBytesMax", maxin => maxin
+                                    .Field("system.network.in.bytes"))
+                                        .Derivative("NetworkInBytesPerSecond", d => d
+                                            .BucketsPath("NetworkInBytesMax"))
+                                    .Max("NetworkOutBytesMax", maxout => maxout
+                                    .Field("system.network.out.bytes"))
+                                        .Derivative("NetworkOutBytesPerSecond", de => de
+                                            .BucketsPath("NetworkOutBytesMax")
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    );
                 if (response.Aggregations.Count > 0)
                 {
                     var dateHistogram = response.Aggregations.DateHistogram("histogram");
