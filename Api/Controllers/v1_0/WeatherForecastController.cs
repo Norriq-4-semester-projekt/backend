@@ -261,50 +261,46 @@ namespace Api.Controllers.v1_0
             var client = new ElasticClient(settings);
             try
             {
-                    var response = await client.SearchAsync<dynamic>(s => s
-                    .Size(0)
-                    .Query(q => q
-                        .Bool(b => b
-                            .Must(mu => mu
-                                .Match(ma => ma
-                                .Field("system.network.name").Query("eth0")
+                var response = client.Search<dynamic>(s => s
+                .Size(0)
+                .Query(q => q
+                    .Bool(b => b
+                        .Should(sh => sh
+                            .MatchPhrase(mp => mp
+                                .Field("hostname").Query("vmi316085.contaboserver.net")
+                                .Field("event.dataset").Query("system.network")
+                            )
+                        )
+                        .Filter(f => f
+                            .DateRange(dr => dr
+                                .Field("@timestamp")
+                                .GreaterThanOrEquals("now-5m")
                                 )
                             )
                         )
                     )
-                    .Query(qu => qu
-                        .DateRange(r => r
-                            .Field("@timestamp")
-                            .GreaterThanOrEquals("now-5m")
-                            )
-                        )
+                .Aggregations(aggs => aggs
+                    .DateHistogram("myNetworkDateHistogram", date => date
+                    .Field("@timestamp")
+                    .CalendarInterval(DateInterval.Minute)
                     .Aggregations(aggs => aggs
-                        .Terms("names", te => te
-                            .Field("system.network.name")
-                            .Size(50)
-                            .Aggregations(aggs1 => aggs1
-                                .DateHistogram("histogram", dh => dh
-                                .Field("@timestamp")
-                                .CalendarInterval("1m")
-                                .Aggregations(aggs2 => aggs2
-                                    .Max("NetworkInBytesMax", maxin => maxin
-                                    .Field("system.network.in.bytes"))
-                                        .Derivative("NetworkInBytesPerSecond", d => d
-                                            .BucketsPath("NetworkInBytesMax"))
-                                    .Max("NetworkOutBytesMax", maxout => maxout
-                                    .Field("system.network.out.bytes"))
-                                        .Derivative("NetworkOutBytesPerSecond", de => de
-                                            .BucketsPath("NetworkOutBytesMax")
-                                            )
-                                        )
-                                    )
-                                )
-                            )
-                        )   
-                    );
+                        .Average("AVGnetIN", avg => avg
+                        .Field("host.network.in.bytes"))
+                        .Average("AVGnetOut", avg => avg
+                        .Field("host.network.out.bytes"))
+                        .Max("MAXnetIN", max => max
+                        .Field("host.network.in.bytes"))
+                        .Max("MAXnetOUT", max => max
+                        .Field("host.network.out.bytes"))
+                        )
+                    )
+                    )
+                );
+
                 if (response.Aggregations.Count > 0)
                 {
-                    var dateHistogram = response.Aggregations.DateHistogram("histogram");
+                    Console.WriteLine(response.DebugInformation);
+                    var dateHistogram = response.Aggregations.DateHistogram("myNetworkDateHistogram");
                     List<Object> list = new List<Object>();
                     foreach (DateHistogramBucket item in dateHistogram.Buckets)
                     {
@@ -314,11 +310,16 @@ namespace Api.Controllers.v1_0
                         {
                             item.TryGetValue(item2, out IAggregate a);
                             ValueAggregate valueAggregate = a as ValueAggregate;
+
+                            //newlist.Add(item.KeyAsString, valueAggregate.Value.ToString());
+                            //newlist.Add(item2, item.KeyAsString);
                             newlist.Add(item2, valueAggregate.Value.ToString());
+                            //newlist.Add("timestamp", item.KeyAsString);
 
                         }
                         list.Add(newlist);
                     }
+                    return Ok(JsonSerializer.Serialize(list));
                 }
                 return new StatusCodeResult(200);
             }
