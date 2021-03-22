@@ -8,10 +8,10 @@ namespace ML
         public string key_as_string;
 
         [LoadColumn(1)]
-        public float MAXnetOUT;
-
-        [LoadColumn(2)]
         public float MAXnetIN;
+
+        //[LoadColumn(2)]
+        //public float MAXnetOUT;
 
         //[LoadColumn(3)]
         //public float AVGnetOUT;

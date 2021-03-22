@@ -5,6 +5,5 @@ namespace ML
     public class NetworksDataList
     {
         public List<NetworksData> Data;
-
     }
 }

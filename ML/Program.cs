@@ -3,8 +3,6 @@ using Nest;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Json;
-using System.Text;
 
 namespace ML
 {
@@ -67,21 +65,17 @@ namespace ML
             ////var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 99, pvalueHistoryLength: size / 4);
             var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(NetworksData.MAXnetIN), confidence: 95, pvalueHistoryLength: size / 4);
 
-
-
             //STEP 2:The Transformed Model.
             //In IID Spike detection, we don't need to do training, we just need to do transformation.
             //As you are not training the model, there is no need to load IDataView with real data, you just need schema of data.
             //So create empty data view and pass to Fit() method.
             ITransformer tansformedModel = estimator.Fit(CreateEmptyDataView());
 
-
             //STEP 3: Use/test model
             //Apply data transformation to create predictions.
             IDataView transformedData = tansformedModel.Transform(dataView);
             //var predictions = mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, reuseRowObject: false);
             IEnumerable<NetworksDataPrediction> predictions = mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, reuseRowObject: false);
-
 
             Console.WriteLine("Alert\tScore\tP-Value");
             foreach (var p in predictions)
@@ -196,7 +190,7 @@ namespace ML
         //    //return new ObjectResult(JsonSerializer.Serialize(list));
         //    return list;
         //}
-        public static  NetworksDataList Network()
+        public static NetworksDataList Network()
         {
             var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("metricbeat-*");
             settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
@@ -204,40 +198,40 @@ namespace ML
             settings.BasicAuthentication("elastic", "changeme");
             var client = new ElasticClient(settings);
 
-            var response =  client.Search<dynamic>(s => s
-                .Size(0)
-                .Query(q => q
-                    .Bool(b => b
-                        .Should(sh => sh
-                            .MatchPhrase(mp => mp
-                                .Field("hostname").Query("vmi316085.contaboserver.net")
-                                .Field("event.dataset").Query("system.network")
-                            )
-                        )
-                        .Filter(f => f
-                            .DateRange(dr => dr
-                                .Field("@timestamp")
-                                .GreaterThanOrEquals("now-1d")
-                                )
-                            )
-                        )
-                    )
-                .Aggregations(aggs => aggs
-                    .DateHistogram("myNetworkDateHistogram", date => date
-                    .Field("@timestamp")
-                    .CalendarInterval(DateInterval.Minute)
-                    .Aggregations(aggs => aggs
-                        //.Average("AVGnetIN", avg => avg
-                        //.Field("host.network.in.bytes"))
-                        //.Average("AVGnetOut", avg => avg
-                        //.Field("host.network.out.bytes"))
-                        .Max("MAXnetIN", max => max
-                        .Field("host.network.in.bytes"))
-                        //.Max("MAXnetOUT", max => max
-                        //.Field("host.network.out.bytes"))
-                        )
-                    )
-                    )
+            var response = client.Search<dynamic>(s => s
+               .Size(0)
+               .Query(q => q
+                   .Bool(b => b
+                       .Should(sh => sh
+                           .MatchPhrase(mp => mp
+                               .Field("hostname").Query("vmi316085.contaboserver.net")
+                               .Field("event.dataset").Query("system.network")
+                           )
+                       )
+                       .Filter(f => f
+                           .DateRange(dr => dr
+                               .Field("@timestamp")
+                               .GreaterThanOrEquals("now-1h")
+                               )
+                           )
+                       )
+                   )
+               .Aggregations(aggs => aggs
+                   .DateHistogram("myNetworkDateHistogram", date => date
+                   .Field("@timestamp")
+                   .CalendarInterval(DateInterval.Minute)
+                   .Aggregations(aggs => aggs
+                       //.Average("AVGnetIN", avg => avg
+                       //.Field("host.network.in.bytes"))
+                       //.Average("AVGnetOut", avg => avg
+                       //.Field("host.network.out.bytes"))
+                       .Max("MAXnetIN", max => max
+                       .Field("host.network.in.bytes"))
+                       //.Max("MAXnetOUT", max => max
+                       //.Field("host.network.out.bytes"))
+                       )
+                   )
+                   )
                 );
 
             NetworksDataList list = new NetworksDataList();
@@ -252,22 +246,16 @@ namespace ML
                     {
                         item.TryGetValue(test, out IAggregate a);
                         ValueAggregate valueAggregate = a as ValueAggregate;
-                        nd.MAXnetIN = (float)valueAggregate.Value.Value;
+                        nd.MAXnetIN = (float)valueAggregate.Value;
                         nd.key_as_string = item.KeyAsString;
                         netwirk.Add(test, valueAggregate.Value);
-                        Console.WriteLine(test + ":" + (valueAggregate.Value));
-                        Console.WriteLine(test + ":" + (valueAggregate.Value.Value));
-
-
+                        Console.WriteLine(test + ": " + valueAggregate.Value);
                     }
 
                     list.Data.Add(nd);
-
                 }
-
             }
             return list;
         }
-
     }
 }
