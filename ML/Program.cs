@@ -32,7 +32,9 @@ namespace ML
             //MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(await File.OpenText(DatasetRelativePath).ReadToEndAsync()));
             //ProductsDataList training_data = (ProductsDataList)dj.ReadObject(ms);
 
-            ProductsDataList training_data = UpdateMLModel();
+            //ProductsDataList training_data = UpdateMLModel();
+            NetworksDataList training_data = Network();
+
             // Create MLContext to be shared across the model creation workflow objects
             mlContext = new MLContext();
 
@@ -60,8 +62,12 @@ namespace ML
         {
             Console.WriteLine("===============Detect temporary changes in pattern===============");
 
-            //STEP 1: Create Esimtator
-            var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 99, pvalueHistoryLength: size / 4);
+            ////STEP 1: Create Esimtator
+            ////var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 99, pvalueHistoryLength: size / 4);
+            ////var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 99, pvalueHistoryLength: size / 4);
+            var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(NetworksData.MAXnetIN), confidence: 95, pvalueHistoryLength: size / 4);
+
+
 
             //STEP 2:The Transformed Model.
             //In IID Spike detection, we don't need to do training, we just need to do transformation.
@@ -69,10 +75,13 @@ namespace ML
             //So create empty data view and pass to Fit() method.
             ITransformer tansformedModel = estimator.Fit(CreateEmptyDataView());
 
+
             //STEP 3: Use/test model
             //Apply data transformation to create predictions.
             IDataView transformedData = tansformedModel.Transform(dataView);
-            var predictions = mlContext.Data.CreateEnumerable<ProductSalesPrediction>(transformedData, reuseRowObject: false);
+            //var predictions = mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, reuseRowObject: false);
+            IEnumerable<NetworksDataPrediction> predictions = mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, reuseRowObject: false);
+
 
             Console.WriteLine("Alert\tScore\tP-Value");
             foreach (var p in predictions)
@@ -93,7 +102,8 @@ namespace ML
             Console.WriteLine("===============Detect Persistent changes in pattern===============");
 
             //STEP 1: Setup transformations using DetectIidChangePoint
-            var estimator = mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 95, changeHistoryLength: size / 4);
+            //var estimator = mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 95, changeHistoryLength: size / 4);
+            var estimator = mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(NetworksData.MAXnetIN), confidence: 95, changeHistoryLength: size / 4);
 
             //STEP 2:The Transformed Model.
             //In IID Change point detection, we don't need need to do training, we just need to do transformation.
@@ -104,9 +114,9 @@ namespace ML
             //STEP 3: Use/test model
             //Apply data transformation to create predictions.
             IDataView transformedData = tansformedModel.Transform(dataView);
-            var predictions = mlContext.Data.CreateEnumerable<ProductSalesPrediction>(transformedData, reuseRowObject: false);
+            var predictions = mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, reuseRowObject: false);
 
-            Console.WriteLine($"{nameof(ProductSalesPrediction.Prediction)} column obtained post-transformation.");
+            Console.WriteLine($"{nameof(NetworksDataPrediction.Prediction)} column obtained post-transformation.");
             Console.WriteLine("Alert\tScore\tP-Value\tvalue");
 
             foreach (var p in predictions)
@@ -136,56 +146,128 @@ namespace ML
         private static IDataView CreateEmptyDataView()
         {
             //Create empty DataView. We just need the schema to call fit()
-            IEnumerable<ProductSalesData> enumerableData = new List<ProductSalesData>();
+            IEnumerable<NetworksData> enumerableData = new List<NetworksData>();
             var dv = mlContext.Data.LoadFromEnumerable(enumerableData);
             return dv;
         }
 
-        public static ProductsDataList UpdateMLModel()
+        //public static ProductsDataList UpdateMLModel()
+        //{
+        //    var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("packetbeat-*");
+        //    settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
+        //    settings.PrettyJson(); // Good for DEBUG
+        //    settings.BasicAuthentication("elastic", "changeme");
+        //    var client = new ElasticClient(settings);
+        //    ProductsDataList pdl = new ProductsDataList();
+        //    var rs = client.Search<dynamic>(s => s
+        //    .Aggregations(aggs => aggs
+        //    .DateHistogram("Data", dhg => dhg
+        //    .Field("@timestamp")
+        //    .CalendarInterval("1h")
+        //    .TimeZone("Europe/Copenhagen")))
+        //    .Size(0).Fields(fi => fi
+        //    .Field("@timestamp"))
+        //    .Query(q => q
+        //    .Bool(b => b.Must(mu => mu
+        //    .Match(ma => ma.Field("url.full")
+        //    .Query("http://thekrane.dk/")))
+        //    .Filter(fil => fil
+        //    .DateRange(dr => dr
+        //    .Field("@timestamp")
+        //    .GreaterThanOrEquals("now-14d")
+        //    .LessThanOrEquals("now"))))));
+
+        //    ProductsDataList list = new ProductsDataList();
+        //    list.Data = new List<ProductSalesData>();
+        //    if (rs.Aggregations.Count > 0)
+        //    {
+        //        foreach (DateHistogramBucket item in rs.Aggregations.DateHistogram("Data").Buckets)
+        //        {
+        //            ProductSalesData pd = new ProductSalesData();
+        //            pd.doc_count = item.DocCount.Value;
+        //            pd.key_as_string = item.KeyAsString;
+        //            list.Data.Add(pd);
+        //        }
+
+        //        //DateHistogramBucket list = rs.Aggregations.DateHistogram("Data").Buckets;
+        //        //list.Buckets.
+        //        //rs.Aggregations.DateHistogram().Buckets
+        //    }
+        //    //return new ObjectResult(JsonSerializer.Serialize(list));
+        //    return list;
+        //}
+        public static  NetworksDataList Network()
         {
-            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("packetbeat-*");
+            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("metricbeat-*");
             settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
             settings.PrettyJson(); // Good for DEBUG
             settings.BasicAuthentication("elastic", "changeme");
             var client = new ElasticClient(settings);
-            ProductsDataList pdl = new ProductsDataList();
-            var rs = client.Search<dynamic>(s => s
-            .Aggregations(aggs => aggs
-            .DateHistogram("Data", dhg => dhg
-            .Field("@timestamp")
-            .CalendarInterval("1h")
-            .TimeZone("Europe/Copenhagen")))
-            .Size(0).Fields(fi => fi
-            .Field("@timestamp"))
-            .Query(q => q
-            .Bool(b => b.Must(mu => mu
-            .Match(ma => ma.Field("url.full")
-            .Query("http://thekrane.dk/")))
-            .Filter(fil => fil
-            .DateRange(dr => dr
-            .Field("@timestamp")
-            .GreaterThanOrEquals("now-14d")
-            .LessThanOrEquals("now"))))));
 
-            ProductsDataList list = new ProductsDataList();
-            list.Data = new List<ProductSalesData>();
-            if (rs.Aggregations.Count > 0)
+            var response =  client.Search<dynamic>(s => s
+                .Size(0)
+                .Query(q => q
+                    .Bool(b => b
+                        .Should(sh => sh
+                            .MatchPhrase(mp => mp
+                                .Field("hostname").Query("vmi316085.contaboserver.net")
+                                .Field("event.dataset").Query("system.network")
+                            )
+                        )
+                        .Filter(f => f
+                            .DateRange(dr => dr
+                                .Field("@timestamp")
+                                .GreaterThanOrEquals("now-1d")
+                                )
+                            )
+                        )
+                    )
+                .Aggregations(aggs => aggs
+                    .DateHistogram("myNetworkDateHistogram", date => date
+                    .Field("@timestamp")
+                    .CalendarInterval(DateInterval.Minute)
+                    .Aggregations(aggs => aggs
+                        //.Average("AVGnetIN", avg => avg
+                        //.Field("host.network.in.bytes"))
+                        //.Average("AVGnetOut", avg => avg
+                        //.Field("host.network.out.bytes"))
+                        .Max("MAXnetIN", max => max
+                        .Field("host.network.in.bytes"))
+                        //.Max("MAXnetOUT", max => max
+                        //.Field("host.network.out.bytes"))
+                        )
+                    )
+                    )
+                );
+
+            NetworksDataList list = new NetworksDataList();
+            list.Data = new List<NetworksData>();
+            if (response.Aggregations.Count > 0)
             {
-                foreach (DateHistogramBucket item in rs.Aggregations.DateHistogram("Data").Buckets)
+                foreach (DateHistogramBucket item in response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets)
                 {
-                    ProductSalesData pd = new ProductSalesData();
-                    pd.doc_count = item.DocCount.Value;
-                    pd.key_as_string = item.KeyAsString;
-                    list.Data.Add(pd);
+                    NetworksData nd = new NetworksData();
+                    Dictionary<string, double?> netwirk = new Dictionary<string, double?>();
+                    foreach (var test in item.Keys)
+                    {
+                        item.TryGetValue(test, out IAggregate a);
+                        ValueAggregate valueAggregate = a as ValueAggregate;
+                        nd.MAXnetIN = (float)valueAggregate.Value.Value;
+                        nd.key_as_string = item.KeyAsString;
+                        netwirk.Add(test, valueAggregate.Value);
+                        Console.WriteLine(test + ":" + (valueAggregate.Value));
+                        Console.WriteLine(test + ":" + (valueAggregate.Value.Value));
+
+
+                    }
+
+                    list.Data.Add(nd);
+
                 }
 
-                //DateHistogramBucket list = rs.Aggregations.DateHistogram("Data").Buckets;
-                //list.Buckets.
-                //rs.Aggregations.DateHistogram().Buckets
             }
-            //return new ObjectResult(JsonSerializer.Serialize(list));
             return list;
         }
-        public static 
+
     }
 }
