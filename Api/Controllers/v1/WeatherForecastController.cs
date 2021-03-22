@@ -250,6 +250,7 @@ namespace Api.Controllers.v1_0
                 throw;
             }
         }
+
         [HttpGet]
         public async Task<ActionResult> GetNetworkTrafic()
         {
@@ -312,7 +313,6 @@ namespace Api.Controllers.v1_0
                             item.TryGetValue(item2, out IAggregate a);
                             ValueAggregate valueAggregate = a as ValueAggregate;
                             newlist.Add(item2, valueAggregate.Value);
-
                         }
                         list.Add(newlist);
                     }
@@ -322,7 +322,6 @@ namespace Api.Controllers.v1_0
             }
             catch (Exception)
             {
-
                 return new StatusCodeResult(500);
             }
         }

@@ -13,6 +13,7 @@ namespace DataAccess.Repositories
     public class UserRepository : IUserRepository
     {
         private ElasticClient client;
+
         //private ConnectionSettings settings = new ConnectionSettings(new Uri("http://localhost:9200")).DefaultIndex("users"); // localhost
         private ConnectionSettings settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users"); // vps
 
