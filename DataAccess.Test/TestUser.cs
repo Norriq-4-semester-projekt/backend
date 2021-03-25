@@ -1,12 +1,10 @@
-using NUnit.Framework;
-using DataAccess;
-using System.Threading.Tasks;
 using DataAccess.Entities;
+using NUnit.Framework;
 
 namespace DataAccess.Test
 {
     [TestFixture]
-    class TestUser
+    internal class TestUser
     {
         [SetUp]
         public void Setup()

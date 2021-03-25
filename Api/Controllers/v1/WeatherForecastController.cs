@@ -3,7 +3,6 @@ using DataAccess.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Nest;
 using System;
 using System.Collections.Generic;
@@ -327,6 +326,7 @@ namespace Api.Controllers.v1_0
             //    return new StatusCodeResult(500);
             //}
         }
+
         [HttpGet]
         public async Task<ActionResult> GetNetworkCpuTrafic()
         {

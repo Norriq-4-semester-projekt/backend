@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using Nest;
 using Serilog;
 using Serilog.Sinks.Elasticsearch;
 using System;
@@ -15,6 +14,7 @@ namespace Api
         private static ElasticClient client;
         private static ClusterHealthResponse response;
         */
+
         public static void Main(string[] args)
         {
             //Log.Logger = new LoggerConfiguration()

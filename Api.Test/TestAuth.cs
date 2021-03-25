@@ -1,18 +1,10 @@
-using NUnit.Framework;
-using DataAccess;
-using System.Threading.Tasks;
 using DataAccess.Entities;
-using DataAccess.Interfaces;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using Api.Controllers;
-using Nest;
+using NUnit.Framework;
 
 namespace Api.Test
 {
     [TestFixture]
-    class TestAuth
+    internal class TestAuth
     {
         /*
         public class UserRepoMock : IUserRepository
@@ -59,7 +51,6 @@ namespace Api.Test
             /*
             AuthController controller = new AuthController
             {
-
             }
             Assert.Pass();
             */

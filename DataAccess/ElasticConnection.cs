@@ -1,8 +1,5 @@
 ﻿using Nest;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace DataAccess
 {
@@ -13,13 +10,14 @@ namespace DataAccess
         private static ConnectionSettings settings;
         private ElasticClient _client;
         public ElasticClient client { get => _client; }
-       
+
         private ElasticConnection()
         {
             settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200"));
             settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
             settings.PrettyJson(); // Good for DEBUG
             settings.BasicAuthentication("elastic", "changeme");
+            settings.DisableDirectStreaming();
             _client = new ElasticClient(settings);
         }
 
