@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DataAccess;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Nest;
@@ -67,10 +68,8 @@ namespace Api.Controllers.v1_0
         {
             try
             {
-                var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("elasticapi-logs-*");
-                var client = new ElasticClient(settings);
-
-                var rs = client.Search<dynamic>(s => s
+                var rs = ElasticConnection.Instance.client.Search<dynamic>(s => s
+                .Index("elasticapi-logs-*")
                     .Query(q => q
                         .Bool(b => b
                             .Must(m => m
@@ -101,13 +100,8 @@ namespace Api.Controllers.v1_0
         {
             try
             {
-                var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("metricbeat-*");
-                settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
-                settings.PrettyJson(); // Good for DEBUG
-                settings.BasicAuthentication("elastic", "changeme");
-                var client = new ElasticClient(settings);
-
-                var rs = client.Search<dynamic>(s => s
+                var rs = ElasticConnection.Instance.client.Search<dynamic>(s => s
+                .Index("metricbeat-*")
                     .Query(q => q
                         .Bool(b => b
                             .Should(sh => sh
@@ -188,15 +182,10 @@ namespace Api.Controllers.v1_0
         [HttpGet]
         public async Task<ActionResult> GetHttpErrors()
         {
-            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("packetbeat-*");
-            settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
-            settings.PrettyJson(); // Good for DEBUG
-            settings.BasicAuthentication("elastic", "changeme");
-            settings.DisableDirectStreaming();
-            var client = new ElasticClient(settings);
             try
             {
-                var rs = await client.SearchAsync<dynamic>(s => s
+                var rs = await ElasticConnection.Instance.client.SearchAsync<dynamic>(s => s
+                .Index("packetbeat-*")
                     .Size(0)
                     .Query(q => q
                         .Bool(b => b
@@ -254,15 +243,10 @@ namespace Api.Controllers.v1_0
         [HttpGet]
         public async Task<ActionResult> GetNetworkTrafic()
         {
-            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("metricbeat-*");
-            settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
-            settings.PrettyJson(); // Good for DEBUG
-            settings.BasicAuthentication("elastic", "changeme");
-            settings.DisableDirectStreaming();
-            var client = new ElasticClient(settings);
             try
             {
-                var response = await client.SearchAsync<dynamic>(s => s
+                var response = await ElasticConnection.Instance.client.SearchAsync<dynamic>(s => s
+                .Index("metricbeat-*")
                 .Size(0)
                 .Query(q => q
                     .Bool(b => b
@@ -328,15 +312,10 @@ namespace Api.Controllers.v1_0
         [HttpGet]
         public async Task<ActionResult> GetNetworkCpuTrafic()
         {
-            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("metricbeat-*");
-            settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
-            settings.PrettyJson(); // Good for DEBUG
-            settings.BasicAuthentication("elastic", "changeme");
-            settings.DisableDirectStreaming();
-            var client = new ElasticClient(settings);
             try
             {
-                    var response = await client.SearchAsync<dynamic>(s => s
+                var response = await ElasticConnection.Instance.client.SearchAsync<dynamic>(s => s
+                .Index("metricbeat-*")
                     .Size(0)
                     .Query(q => q
                         .Bool(b => b
