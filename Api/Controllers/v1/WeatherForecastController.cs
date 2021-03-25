@@ -1,6 +1,8 @@
 ﻿using DataAccess;
+using DataAccess.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Nest;
 using System;
@@ -15,20 +17,29 @@ namespace Api.Controllers.v1_0
     // [ApiVersion("0.9", Deprecated = true)] // Set previous version as deprecated
     [ApiVersion("1.0")] // Set version of controller
     [ApiController]
-    [Route("v{version:apiVersion}/{customer}/[action]")]
+    [Route("v{version:apiVersion}/[action]")]
     public class WeatherForecastController : ControllerBase
     {
+        private readonly IConfiguration _configuration;
+        private readonly IUnitOfWork _unitOfWork;
+
+        public WeatherForecastController(IConfiguration configuration, IUnitOfWork unitOfWork)
+        {
+            _configuration = configuration;
+            _unitOfWork = unitOfWork;
+        }
+
         private static readonly string[] Summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        private readonly ILogger<WeatherForecastController> _logger;
+        //private readonly ILogger<WeatherForecastController> _logger;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
-        {
-            _logger = logger;
-        }
+        //public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        //{
+        //    _logger = logger;
+        //}
 
         [Authorize]
         [HttpGet]
@@ -58,7 +69,7 @@ namespace Api.Controllers.v1_0
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, "Something bad happened");
+                //_logger.LogError(exception, "Something bad happened");
                 return new StatusCodeResult(500);
             }
         }
@@ -75,12 +86,12 @@ namespace Api.Controllers.v1_0
                             .Must(m => m
                                  .Match(f => f
                                     .Field("fields.MachineName").Query("DESKTOP-GJNGD1A"))))));
-                _logger.LogInformation("Der er sku dadda");
+                //_logger.LogInformation("Der er sku dadda");
                 return new StatusCodeResult(200);
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
+                //_logger.LogError(exception, "Could not retrieve any data from ElasticSearch");
                 return new StatusCodeResult(500);
             }
         }
@@ -91,7 +102,7 @@ namespace Api.Controllers.v1_0
             Ping myPing = new Ping();
             PingReply reply = myPing.Send(customer, 1000);
 
-            _logger.LogInformation("Ping: {ping}", reply.RoundtripTime);
+            //_logger.LogInformation("Ping: {ping}", reply.RoundtripTime);
             return reply;
         }
 
@@ -245,69 +256,76 @@ namespace Api.Controllers.v1_0
         {
             try
             {
-                var response = await ElasticConnection.Instance.client.SearchAsync<dynamic>(s => s
-                .Index("metricbeat-*")
-                .Size(0)
-                .Query(q => q
-                    .Bool(b => b
-                        .Should(sh => sh
-                            .MatchPhrase(mp => mp
-                                .Field("hostname").Query("vmi316085.contaboserver.net")
-                                .Field("event.dataset").Query("system.network")
-                            )
-                        )
-                        .Filter(f => f
-                            .DateRange(dr => dr
-                                .Field("@timestamp")
-                                .GreaterThanOrEquals("now-2d")
-                                )
-                            )
-                        )
-                    )
-                .Aggregations(aggs => aggs
-                    .DateHistogram("myNetworkDateHistogram", date => date
-                    .Field("@timestamp")
-                    .CalendarInterval(DateInterval.Minute)
-                    .Aggregations(aggs => aggs
-                        .Average("AVGnetIN", avg => avg
-                        .Field("host.network.in.bytes"))
-                        .Average("AVGnetOut", avg => avg
-                        .Field("host.network.out.bytes"))
-                        .Max("MAXnetIN", max => max
-                        .Field("host.network.in.bytes"))
-                        .Max("MAXnetOUT", max => max
-                        .Field("host.network.out.bytes"))
-                        )
-                    )
-                    )
-                );
-
-                if (response.Aggregations.Count > 0)
-                {
-                    Console.WriteLine(response.DebugInformation);
-                    var dateHistogram = response.Aggregations.DateHistogram("myNetworkDateHistogram");
-                    List<Object> list = new List<Object>();
-                    foreach (DateHistogramBucket item in dateHistogram.Buckets)
-                    {
-                        Dictionary<string, dynamic> newlist = new Dictionary<string, dynamic>();
-                        newlist.Add("Timestamp", item.KeyAsString);
-
-                        foreach (var item2 in item.Keys)
-                        {
-                            item.TryGetValue(item2, out IAggregate a);
-                            ValueAggregate valueAggregate = a as ValueAggregate;
-                            newlist.Add(item2, valueAggregate.Value);
-                        }
-                        list.Add(newlist);
-                    }
-                    return Ok(JsonSerializer.Serialize(list));
-                }
-                return new StatusCodeResult(200);
+                return new ObjectResult(JsonSerializer.Serialize(await _unitOfWork.Data.GetAll())) { StatusCode = 200 };
             }
             catch (Exception)
             {
                 return new StatusCodeResult(500);
             }
+
+            //    var response = await ElasticConnection.Instance.client.SearchAsync<dynamic>(s => s
+            //    .Index("metricbeat-*")
+            //    .Size(0)
+            //    .Query(q => q
+            //        .Bool(b => b
+            //            .Should(sh => sh
+            //                .MatchPhrase(mp => mp
+            //                    .Field("hostname").Query("vmi316085.contaboserver.net")
+            //                    .Field("event.dataset").Query("system.network")
+            //                )
+            //            )
+            //            .Filter(f => f
+            //                .DateRange(dr => dr
+            //                    .Field("@timestamp")
+            //                    .GreaterThanOrEquals("now-2h")
+            //                    )
+            //                )
+            //            )
+            //        )
+            //    .Aggregations(aggs => aggs
+            //        .DateHistogram("myNetworkDateHistogram", date => date
+            //        .Field("@timestamp")
+            //        .CalendarInterval(DateInterval.Minute)
+            //        .Aggregations(aggs => aggs
+            //            .Average("AVGnetIN", avg => avg
+            //            .Field("host.network.in.bytes"))
+            //            .Average("AVGnetOut", avg => avg
+            //            .Field("host.network.out.bytes"))
+            //            .Max("MAXnetIN", max => max
+            //            .Field("host.network.in.bytes"))
+            //            .Max("MAXnetOUT", max => max
+            //            .Field("host.network.out.bytes"))
+            //            )
+            //        )
+            //        )
+            //    );
+
+            //    if (response.Aggregations.Count > 0)
+            //    {
+            //        Console.WriteLine(response.DebugInformation);
+            //        var dateHistogram = response.Aggregations.DateHistogram("myNetworkDateHistogram");
+            //        List<Object> list = new List<Object>();
+            //        foreach (DateHistogramBucket item in dateHistogram.Buckets)
+            //        {
+            //            Dictionary<string, dynamic> newlist = new Dictionary<string, dynamic>();
+            //            newlist.Add("Timestamp", item.KeyAsString);
+
+            //            foreach (var item2 in item.Keys)
+            //            {
+            //                item.TryGetValue(item2, out IAggregate a);
+            //                ValueAggregate valueAggregate = a as ValueAggregate;
+            //                newlist.Add(item2, valueAggregate.Value);
+            //            }
+            //            list.Add(newlist);
+            //        }
+            //        return Ok(JsonSerializer.Serialize(list));
+            //    }
+            //    return new StatusCodeResult(200);
+            //}
+            //catch (Exception)
+            //{
+            //    return new StatusCodeResult(500);
+            //}
         }
         [HttpGet]
         public async Task<ActionResult> GetNetworkCpuTrafic()

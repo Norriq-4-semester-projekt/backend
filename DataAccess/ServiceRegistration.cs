@@ -12,6 +12,7 @@ namespace DataAccess
         {
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<IUnitOfWork, UnitOfWork>();
+            services.AddTransient<IDataRepository, DataRepository>();
         }
     }
 }
