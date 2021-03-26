@@ -1,4 +1,5 @@
-﻿using Nest;
+﻿using DataAccess.Entities;
+using Nest;
 using System;
 
 namespace DataAccess
@@ -18,6 +19,8 @@ namespace DataAccess
             settings.PrettyJson(); // Good for DEBUG
             settings.BasicAuthentication("elastic", "changeme");
             settings.DisableDirectStreaming();
+            settings.DefaultMappingFor<Data>(m => m
+                .IndexName("metricbeat.*"));
             _client = new ElasticClient(settings);
         }
 

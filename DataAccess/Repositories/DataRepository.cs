@@ -39,7 +39,7 @@ namespace DataAccess.Repositories
             {
                 List<Data> data = new List<Data>();
 
-                var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
+                var response = await ElasticConnection.Instance.client.SearchAsync<dynamic>(s => s
                 .Index("metricbeat-*")
                     .Query(q => q
                         .Exists(c => c
