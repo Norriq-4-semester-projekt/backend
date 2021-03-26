@@ -2,7 +2,6 @@
 using DataAccess.Interfaces;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
-using Nest;
 using System;
 using System.Collections.Generic;
 using System.Linq;

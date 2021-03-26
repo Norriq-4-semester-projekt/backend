@@ -39,7 +39,7 @@ namespace DataAccess.Repositories
             {
                 List<Data> data = new List<Data>();
 
-                var response = await ElasticConnection.Instance.client.SearchAsync<dynamic>(s => s
+                var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
                 .Index("metricbeat-*")
                     .Query(q => q
                         .Exists(c => c
@@ -52,41 +52,6 @@ namespace DataAccess.Repositories
                         )
                     )
                 );
-
-                //.Size(0)
-                //.Query(q => q
-                //    .Bool(b => b
-                //        .Should(sh => sh
-                //            .MatchPhrase(mp => mp
-                //                .Field("hostname").Query("vmi316085.contaboserver.net")
-                //                .Field("event.dataset").Query("system.network")
-                //            )
-                //        )
-                //        .Filter(f => f
-                //            .DateRange(dr => dr
-                //                .Field("@timestamp")
-                //                .GreaterThanOrEquals("now-2h")
-                //                )
-                //            )
-                //        )
-                //    )
-                //.Aggregations(aggs => aggs
-                //    .DateHistogram("myNetworkDateHistogram", date => date
-                //        .Field("@timestamp")
-                //        .CalendarInterval(DateInterval.Minute)
-                //        .Aggregations(aggs => aggs
-                //            .Average("AVGnetIN", avg => avg
-                //            .Field("host.network.in.bytes"))
-                //            .Average("AVGnetOut", avg => avg
-                //            .Field("host.network.out.bytes"))
-                //            .Max("MAXnetIN", max => max
-                //            .Field("host.network.in.bytes"))
-                //            .Max("MAXnetOUT", max => max
-                //            .Field("host.network.out.bytes"))
-                //            )
-                //        )
-                //    )
-                //);
 
                 if (response.Hits.Count > 0)
                 {

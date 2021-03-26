@@ -11,13 +11,12 @@ namespace DataAccess.Entities
             get => Timestamp;
             set => Timestamp = value;
         }
-        public long Bytes {
+
+        public long Bytes
+        {
             get => Bytes;
             set => Bytes = value;
         }
-
-
-
 
         //private float _AVGnetIN;
 
