@@ -42,27 +42,49 @@ namespace DataAccess.Repositories
                 var response = await ElasticConnection.Instance.client.SearchAsync<dynamic>(s => s
                 .Index("metricbeat-*")
                     .Query(q => q
-                        .Exists(c => c
-                            .Field("host.network.*")
-                        )
+                        .Bool(b => b
+                            .Should(sh => sh
+                                .Exists(c => c
+                                    .Field("host.network.in.bytes")
+                            )
+                                ).Filter(f => f
+                                .DateRange(dr => dr
+                                    .Field("@timestamp")
+                                    .GreaterThanOrEquals("now-2h")
+                                    )
+                                )
+                            )
                     )
                     .Source(src => src
                         .Includes(i => i
-                            .Field("host.network.*")
+                            .Field("host.network.in.bytes")
                         )
                     )
                 );
 
-                if (response.Hits.Count > 0)
+                if(response.Hits.Count > 0)
                 {
-                    Console.WriteLine(response.DebugInformation);
-                    foreach (var hit in response.Hits)
+                    //Console.WriteLine(response.DebugInformation);
+                    var dataResponse = response.Hits;
 
+                    foreach(Hit<dynamic> item in dataResponse)
                     {
-                        Data d = hit.Source;
-                        data.Add(d);
+                        String timestamp = null;
+                        object bytesIn = 0;
+
+                       Dictionary<string, dynamic> test = item.Source;
+                        test.TryGetValue("host", out var host);
+                        Dictionary<string, dynamic> test2 = host;
+                        test2.TryGetValue("network", out var network);
+                        Dictionary<string, dynamic> test3 = network;
+                        test3.TryGetValue("in", out var input);
+                        Dictionary<string, dynamic> test4 = input;
+                        test4.TryGetValue("bytes", out var final);
+                        Console.WriteLine(final);
                     }
                 }
+
+
                 return data;
             }
 
