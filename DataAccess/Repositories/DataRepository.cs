@@ -62,17 +62,16 @@ namespace DataAccess.Repositories
                     )
                 );
 
-                if(response.Hits.Count > 0)
+                if (response.Hits.Count > 0)
                 {
                     //Console.WriteLine(response.DebugInformation);
                     var dataResponse = response.Hits;
 
-                    foreach(Hit<dynamic> item in dataResponse)
+                    foreach (Hit<dynamic> item in dataResponse)
                     {
                         String timestamp = null;
                         object bytesIn = 0;
-
-                       Dictionary<string, dynamic> test = item.Source;
+                        Dictionary<string, dynamic> test = item.Source;
                         test.TryGetValue("host", out var host);
                         Dictionary<string, dynamic> test2 = host;
                         test2.TryGetValue("network", out var network);
@@ -80,10 +79,16 @@ namespace DataAccess.Repositories
                         test3.TryGetValue("in", out var input);
                         Dictionary<string, dynamic> test4 = input;
                         test4.TryGetValue("bytes", out var final);
-                        Console.WriteLine(final);
+                        long test144 = final;
+                        Data d = new Data
+                        {
+                            Bytes = test144
+                        };
+                        Console.WriteLine(d.Bytes);
+                        data.Add(d);
+                        Console.WriteLine(data);
                     }
                 }
-
 
                 return data;
             }
