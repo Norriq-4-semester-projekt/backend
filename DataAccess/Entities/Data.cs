@@ -4,11 +4,7 @@ namespace DataAccess.Entities
 {
     public class Data
     {
-        public string Timestamp
-        {
-            get => Timestamp;
-            set => Timestamp = value;
-        }
+        public string Timestamp { get; set; }
 
         public long Bytes { get; set; }
     }

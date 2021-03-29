@@ -50,7 +50,7 @@ namespace DataAccess.Repositories
                                 ).Filter(f => f
                                 .DateRange(dr => dr
                                     .Field("@timestamp")
-                                    .GreaterThanOrEquals("now-2h")
+                                    .GreaterThanOrEquals("now-5m")
                                     )
                                 )
                             )
@@ -58,6 +58,7 @@ namespace DataAccess.Repositories
                     .Source(src => src
                         .Includes(i => i
                             .Field("host.network.in.bytes")
+                            .Field("@timestamp")
                         )
                     )
                 );
@@ -79,10 +80,13 @@ namespace DataAccess.Repositories
                         test3.TryGetValue("in", out var input);
                         Dictionary<string, dynamic> test4 = input;
                         test4.TryGetValue("bytes", out var final);
+                        test.TryGetValue("@timestamp", out dynamic time);
+                        string test145 = time;
                         long test144 = final;
                         Data d = new Data
                         {
-                            Bytes = test144
+                            Bytes = test144,
+                            Timestamp = test145
                         };
                         Console.WriteLine(d.Bytes);
                         data.Add(d);
