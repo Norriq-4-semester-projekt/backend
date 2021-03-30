@@ -44,17 +44,18 @@ namespace DataAccess.Repositories
                     .Query(q => q
                         .Bool(b => b
                             .Should(sh => sh
-                                .Exists(c => c
+                                .Match(c => c
                                     .Field("host.network.in.bytes")
-                            )
-                                ).Filter(f => f
-                                .DateRange(dr => dr
+                                    )
+                                )
+                            .Filter(f => f
+                                    .DateRange(dr => dr
                                     .Field("@timestamp")
                                     .GreaterThanOrEquals("now-5m")
                                     )
                                 )
                             )
-                    )
+                        )
                     .Source(src => src
                         .Includes(i => i
                             .Field("host.network.in.bytes")
@@ -70,32 +71,34 @@ namespace DataAccess.Repositories
 
                     foreach (Hit<dynamic> item in dataResponse)
                     {
-                        String timestamp = null;
-                        object bytesIn = 0;
-                        Dictionary<string, dynamic> test = item.Source;
-                        test.TryGetValue("host", out var host);
-                        Dictionary<string, dynamic> test2 = host;
-                        test2.TryGetValue("network", out var network);
-                        Dictionary<string, dynamic> test3 = network;
-                        test3.TryGetValue("in", out var input);
-                        Dictionary<string, dynamic> test4 = input;
-                        test4.TryGetValue("bytes", out var final);
-                        test.TryGetValue("@timestamp", out dynamic time);
-                        string test145 = time;
-                        long test144 = final;
-                        Data d = new Data
-                        {
-                            Bytes = test144,
-                            Timestamp = test145
-                        };
-                        Console.WriteLine(d.Bytes);
-                        data.Add(d);
-                        Console.WriteLine(data);
+                        Data d = item.Source;
                     }
+                    String timestamp = null;
+                    object bytesIn = 0;
+                    Dictionary<string, dynamic> test = item.Source;
+                    test.TryGetValue("host", out var host);
+                    Dictionary<string, dynamic> test2 = host;
+                    test2.TryGetValue("network", out var network);
+                    Dictionary<string, dynamic> test3 = network;
+                    test3.TryGetValue("in", out var input);
+                    Dictionary<string, dynamic> test4 = input;
+                    test4.TryGetValue("bytes", out var final);
+                    test.TryGetValue("@timestamp", out dynamic time);
+                    string test145 = time;
+                    long test144 = final;
+                    Data d = new Data
+                    {
+                        Bytes = test144,
+                        Timestamp = test145
+                    };
+                    Console.WriteLine(d.Bytes);
+                    data.Add(d);
+                    Console.WriteLine(data);
                 }
+            }
 
                 return data;
-            }
+        }
 
             /*
 
@@ -120,11 +123,11 @@ namespace DataAccess.Repositories
             {
                 throw;
             }
-        }
+}
 
-        public Task<ActionResult> UpdateByQueryAsync(Data entity, Data u1)
-        {
-            throw new NotImplementedException();
-        }
+public Task<ActionResult> UpdateByQueryAsync(Data entity, Data u1)
+{
+    throw new NotImplementedException();
+}
     }
 }
