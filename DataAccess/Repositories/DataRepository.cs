@@ -71,63 +71,41 @@ namespace DataAccess.Repositories
 
                     foreach (Hit<dynamic> item in dataResponse)
                     {
-                        Data d = item.Source;
+                        String timestamp = null;
+                        object bytesIn = 0;
+                        Dictionary<string, dynamic> test = item.Source;
+                        test.TryGetValue("host", out var host);
+                        Dictionary<string, dynamic> test2 = host;
+                        test2.TryGetValue("network", out var network);
+                        Dictionary<string, dynamic> test3 = network;
+                        test3.TryGetValue("in", out var input);
+                        Dictionary<string, dynamic> test4 = input;
+                        test4.TryGetValue("bytes", out var final);
+                        test.TryGetValue("@timestamp", out dynamic time);
+                        string test145 = time;
+                        long test144 = final;
+                        Data d = new Data
+                        {
+                            Bytes = test144,
+                            Timestamp = test145
+                        };
+                        Console.WriteLine(d.Bytes);
+                        data.Add(d);
+                        Console.WriteLine(data);
                     }
-                    String timestamp = null;
-                    object bytesIn = 0;
-                    Dictionary<string, dynamic> test = item.Source;
-                    test.TryGetValue("host", out var host);
-                    Dictionary<string, dynamic> test2 = host;
-                    test2.TryGetValue("network", out var network);
-                    Dictionary<string, dynamic> test3 = network;
-                    test3.TryGetValue("in", out var input);
-                    Dictionary<string, dynamic> test4 = input;
-                    test4.TryGetValue("bytes", out var final);
-                    test.TryGetValue("@timestamp", out dynamic time);
-                    string test145 = time;
-                    long test144 = final;
-                    Data d = new Data
-                    {
-                        Bytes = test144,
-                        Timestamp = test145
-                    };
-                    Console.WriteLine(d.Bytes);
-                    data.Add(d);
-                    Console.WriteLine(data);
                 }
-            }
 
                 return data;
-        }
-
-            /*
-
-            var dateHistogram = response.Aggregations.DateHistogram("myNetworkDateHistogram");
-            List<Object> list = new List<Object>();
-            foreach (DateHistogramBucket item in dateHistogram.Buckets)
-            {
-                Dictionary<string, dynamic> newlist = new Dictionary<string, dynamic>();
-                newlist.Add("Timestamp", item.KeyAsString);
-
-                foreach (var item2 in item.Keys)
-                {
-                    item.TryGetValue(item2, out IAggregate a);
-                    ValueAggregate valueAggregate = a as ValueAggregate;
-                    newlist.Add(item2, valueAggregate.Value);
-                }
-                list.Add(newlist);
             }
-            return Ok(JsonSerializer.Serialize(list));
-            */
-            catch (Exception)
+            catch (Exception e)
             {
                 throw;
             }
-}
+        }
 
-public Task<ActionResult> UpdateByQueryAsync(Data entity, Data u1)
-{
-    throw new NotImplementedException();
-}
+        public Task<ActionResult> UpdateByQueryAsync(Data entity, Data u1)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
