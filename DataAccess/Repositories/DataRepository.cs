@@ -41,6 +41,7 @@ namespace DataAccess.Repositories
 
                 var response = await ElasticConnection.Instance.client.SearchAsync<dynamic>(s => s
                 .Index("metricbeat-*")
+                    .Size(5)
                     .Query(q => q
                         .Bool(b => b
                             .Should(sh => sh
