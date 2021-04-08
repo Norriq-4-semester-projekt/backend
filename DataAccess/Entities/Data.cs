@@ -6,6 +6,7 @@ namespace DataAccess.Entities
     {
         public string Timestamp { get; set; }
 
-        public long Bytes { get; set; }
+        public long BytesIn { get; set; }
+
     }
 }

@@ -37,84 +37,59 @@ namespace DataAccess.Repositories
         {
             try
             {
-                List<Data> data = new List<Data>();
-
                 var response = await ElasticConnection.Instance.client.SearchAsync<dynamic>(s => s
                 .Index("metricbeat-*")
-                    .Size(5)
-                    .Query(q => q
-                        .Bool(b => b
-                            .Should(sh => sh
-                                .Exists(c => c
-                                    .Field("host.network.in.bytes")
-                            )
-                                ).Filter(f => f
-                                .DateRange(dr => dr
-                                    .Field("@timestamp")
-                                    .GreaterThanOrEquals("now-5m")
-                                    )
-                                )
-                            )
-                    )
-                    .Source(src => src
-                        .Includes(i => i
-                            .Field("host.network.in.bytes")
-                            .Field("@timestamp")
-                        )
-                    )
+                    .Size(0)
+               .Query(q => q
+                   .Bool(b => b
+                       .Should(sh => sh
+                           .MatchPhrase(mp => mp
+                               .Field("hostname").Query("vmi316085.contaboserver.net")
+                           )
+                       )
+                       .Filter(f => f
+                           .DateRange(dr => dr
+                               .Field("@timestamp")
+                               .GreaterThanOrEquals("now-15m")
+                               )
+                           )
+                       )
+                   )
+               .Aggregations(aggs => aggs
+                   .DateHistogram("myNetworkDateHistogram", date => date
+                   .Field("@timestamp")
+                   .CalendarInterval(DateInterval.Minute)
+                   .Aggregations(aggs => aggs
+                       .Average("BytesIn", avg => avg
+                       .Field("host.network.in.bytes"))
+                       )
+                   )
+                   )
                 );
-
-                if (response.Hits.Count > 0)
+                DataList list = new DataList();
+                list.BytesList = new List<Data>();
+                if (response.Aggregations.Count > 0)
                 {
-                    //Console.WriteLine(response.DebugInformation);
-                    var dataResponse = response.Hits;
-
-                    foreach (Hit<dynamic> item in dataResponse)
+                    foreach (DateHistogramBucket item in response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets)
                     {
-                        Dictionary<string, dynamic> test = item.Source;
-                        test.TryGetValue("host", out var host);
-                        Dictionary<string, dynamic> test2 = host;
-                        test2.TryGetValue("network", out var network);
-                        Dictionary<string, dynamic> test3 = network;
-                        test3.TryGetValue("in", out var input);
-                        Dictionary<string, dynamic> test4 = input;
-                        test4.TryGetValue("bytes", out var final);
-                        test.TryGetValue("@timestamp", out dynamic time);
-                        string ts = time;
-                        long b = final;
-                        Data d = new Data
+                        Data d = new Data();
+                        Dictionary<string, double?> netwirk = new Dictionary<string, double?>();
+                        foreach (var test in item.Keys)
                         {
-                            Bytes = b,
-                            Timestamp = ts
-                        };
-                        Console.WriteLine(d.Bytes);
-                        data.Add(d);
-                        Console.WriteLine(data);
+                            item.TryGetValue(test, out IAggregate a);
+                            ValueAggregate valueAggregate = a as ValueAggregate;
+                            d.BytesIn = (long)valueAggregate.Value;
+                            d.Timestamp = item.KeyAsString;
+                            netwirk.Add(test, valueAggregate.Value);
+                            Console.WriteLine(test + ": " + d.BytesIn + d.Timestamp);
+                        }
+
+                        list.BytesList.Add(d);
                     }
                 }
-
-                return data;
+                return (IEnumerable<Data>)list;
             }
 
-            /*
-
-            var dateHistogram = response.Aggregations.DateHistogram("myNetworkDateHistogram");
-            List<Object> list = new List<Object>();
-            foreach (DateHistogramBucket item in dateHistogram.Buckets)
-            {
-                Dictionary<string, dynamic> newlist = new Dictionary<string, dynamic>();
-                newlist.Add("Timestamp", item.KeyAsString);
-
-                foreach (var item2 in item.Keys)
-                {
-                    item.TryGetValue(item2, out IAggregate a);
-                    ValueAggregate valueAggregate = a as ValueAggregate;
-                    newlist.Add(item2, valueAggregate.Value);
-                }
-                list.Add(newlist);
-            }
-            return Ok(JsonSerializer.Serialize(list));
-            */
             catch (Exception)
             {
                 throw;
