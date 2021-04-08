@@ -66,7 +66,7 @@ namespace DataAccess.Repositories
                    )
                    )
                 );
-                DataList list = new DataList();
+                Data list = new Data();
                 list.BytesList = new List<Data>();
                 if (response.Aggregations.Count > 0)
                 {
@@ -81,7 +81,7 @@ namespace DataAccess.Repositories
                             d.BytesIn = (long)valueAggregate.Value;
                             d.Timestamp = item.KeyAsString;
                             netwirk.Add(test, valueAggregate.Value);
-                            Console.WriteLine(test + ": " + d.BytesIn + d.Timestamp);
+                            Console.WriteLine(test + ": " + d.BytesIn + " " + "Timestamp: " + d.Timestamp);
                         }
 
                         list.BytesList.Add(d);

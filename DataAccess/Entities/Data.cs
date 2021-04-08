@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace DataAccess.Entities
 {
@@ -7,6 +8,8 @@ namespace DataAccess.Entities
         public string Timestamp { get; set; }
 
         public long BytesIn { get; set; }
+
+        public List<Data> BytesList;
 
     }
 }
