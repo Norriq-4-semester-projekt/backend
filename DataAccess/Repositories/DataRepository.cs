@@ -36,8 +36,19 @@ namespace DataAccess.Repositories
 
         public async Task<IEnumerable<Data>> GetAll()
         {
-            var response = ElasticConnection.Instance.client.Search<Data>(s => s.Index("metricbeat-*").Query(q => q.Bool(b => b.Must(sh => sh.Exists(ex => ex.Field("host.network.in.bytes")))))
-                .DocValueFields(dvf => dvf.Fields("host.network.in.bytes", "@timestamp"))
+            var response = ElasticConnection.Instance.client.Search<Data>(s => s
+                .Index("metricbeat-*")
+                    .Query(q => q
+                        .Bool(b => b
+                            .Must(sh => sh
+                                .Exists(ex => ex
+                                    .Field("host.network.in.bytes")
+                                    )
+                                )
+                            )
+                        )
+                .DocValueFields(dvf => dvf
+                    .Fields("host.network.in.bytes", "@timestamp"))
                  );
 
             return response.Documents.AsEnumerable<Data>();
