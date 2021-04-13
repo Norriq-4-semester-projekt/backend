@@ -1,8 +1,12 @@
 ﻿using Microsoft.ML;
+using Microsoft.ML.Data;
 using Nest;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.Serialization.Json;
+using System.Text;
 
 namespace ML
 {
@@ -26,9 +30,9 @@ namespace ML
 
         private static async System.Threading.Tasks.Task Main()
         {
-            //DataContractJsonSerializer dj = new DataContractJsonSerializer(typeof(ProductsDataList));
-            //MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(await File.OpenText(DatasetRelativePath).ReadToEndAsync()));
-            //ProductsDataList training_data = (ProductsDataList)dj.ReadObject(ms);
+            DataContractJsonSerializer dj = new DataContractJsonSerializer(typeof(ProductsDataList));
+            MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(await File.OpenText(DatasetRelativePath).ReadToEndAsync()));
+            ProductsDataList training_data = (ProductsDataList)dj.ReadObject(ms);
 
             //ProductsDataList training_data = UpdateMLModel();
             NetworksDataList training_data = Network();
@@ -36,24 +40,30 @@ namespace ML
             // Create MLContext to be shared across the model creation workflow objects
             mlContext = new MLContext();
 
+            // Load Data
+               var dataView = mlContext.Data.LoadFromTextFile<NetworksData>(
+               DatasetPath,
+               separatorChar: ',',
+               hasHeader: true);
+
             //assign the Number of records in dataset file to cosntant variable
-            int size = training_data.Data.Count;
+            //int size = training_data.Data.Count;
 
             //Load the data into IDataView.
             //This dataset is used while prediction/detecting spikes or changes.
 
             //IDataView dataView = mlContext.Data.LoadFromTextFile<ProductSalesData>(path: DatasetPath, hasHeader: true, separatorChar: ',');
-            IDataView dataView = mlContext.Data.LoadFromEnumerable(training_data.Data);
+            //IDataView dataView = mlContext.Data.LoadFromEnumerable(training_data.Data);
 
             //To detech temporay changes in the pattern
-            DetectSpike(size, dataView);
+            //DetectSpike(size, dataView);
 
             //To detect persistent change in the pattern
-            DetectChangepoint(size, dataView);
+            //DetectChangepoint(size, dataView);
 
-            Console.WriteLine("=============== End of process, hit any key to finish ===============");
+            //Console.WriteLine("=============== End of process, hit any key to finish ===============");
 
-            Console.ReadLine();
+            //Console.ReadLine();
         }
 
         private static void DetectSpike(int size, IDataView dataView)
@@ -145,51 +155,7 @@ namespace ML
             return dv;
         }
 
-        //public static ProductsDataList UpdateMLModel()
-        //{
-        //    var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("packetbeat-*");
-        //    settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
-        //    settings.PrettyJson(); // Good for DEBUG
-        //    settings.BasicAuthentication("elastic", "changeme");
-        //    var client = new ElasticClient(settings);
-        //    ProductsDataList pdl = new ProductsDataList();
-        //    var rs = client.Search<dynamic>(s => s
-        //    .Aggregations(aggs => aggs
-        //    .DateHistogram("Data", dhg => dhg
-        //    .Field("@timestamp")
-        //    .CalendarInterval("1h")
-        //    .TimeZone("Europe/Copenhagen")))
-        //    .Size(0).Fields(fi => fi
-        //    .Field("@timestamp"))
-        //    .Query(q => q
-        //    .Bool(b => b.Must(mu => mu
-        //    .Match(ma => ma.Field("url.full")
-        //    .Query("http://thekrane.dk/")))
-        //    .Filter(fil => fil
-        //    .DateRange(dr => dr
-        //    .Field("@timestamp")
-        //    .GreaterThanOrEquals("now-14d")
-        //    .LessThanOrEquals("now"))))));
-
-        //    ProductsDataList list = new ProductsDataList();
-        //    list.Data = new List<ProductSalesData>();
-        //    if (rs.Aggregations.Count > 0)
-        //    {
-        //        foreach (DateHistogramBucket item in rs.Aggregations.DateHistogram("Data").Buckets)
-        //        {
-        //            ProductSalesData pd = new ProductSalesData();
-        //            pd.doc_count = item.DocCount.Value;
-        //            pd.key_as_string = item.KeyAsString;
-        //            list.Data.Add(pd);
-        //        }
-
-        //        //DateHistogramBucket list = rs.Aggregations.DateHistogram("Data").Buckets;
-        //        //list.Buckets.
-        //        //rs.Aggregations.DateHistogram().Buckets
-        //    }
-        //    //return new ObjectResult(JsonSerializer.Serialize(list));
-        //    return list;
-        //}
+        
         public static NetworksDataList Network()
         {
             var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("metricbeat-*");
@@ -256,6 +222,77 @@ namespace ML
                 }
             }
             return list;
+        }
+
+        public static void DetectNetworkAnomalies(MLContext mLContext)
+        {
+            var dataView = mlContext.Data.LoadFromTextFile<NetworksData>(
+               DatasetPath,
+               separatorChar: ',',
+               hasHeader: true);
+
+            ITransformer trainedModel = mlContext.Model.Load(ModelPath, out var modelInputSchema);
+
+            var transformedData = trainedModel.Transform(dataView);
+
+            // Getting the data of the newly created column as an IEnumerable
+            IEnumerable<NetworksDataPrediction> predictions =
+                mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, false);
+
+            var colCDN = dataView.GetColumn<float>("MAXnetIN").ToArray();
+            var colTime = dataView.GetColumn<DateTime>("key_as_string").ToArray();
+
+            // Output the input data and predictions
+            Console.WriteLine("======Displaying anomalies in the Power meter data=========");
+            Console.WriteLine("Date              \tReadingDiff\tAlert\tScore\tP-Value");
+
+            int i = 0;
+            foreach (var p in predictions)
+            {
+                if (p.Prediction[0] == 1)
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkYellow;
+                    Console.ForegroundColor = ConsoleColor.Black;
+                }
+                Console.WriteLine("{0}\t{1:0.0000}\t{2:0.00}\t{3:0.00}\t{4:0.00}",
+                    colTime[i], colCDN[i],
+                    p.Prediction[0], p.Prediction[1], p.Prediction[2]);
+                Console.ResetColor();
+                i++;
+            }
+        }
+
+        public static void BuildTrainingModel(MLContext mlContext)
+        {
+            var dataView = mlContext.Data.LoadFromTextFile<NetworksData>(
+               DatasetPath,
+               separatorChar: ',',
+               hasHeader: true);
+
+            // Configure the Estimator
+            const int PValueSize = 30;
+            const int SeasonalitySize = 30;
+            const int TrainingSize = 90;
+            const int ConfidenceInterval = 98;
+
+            string outputColumnName = nameof(NetworksDataPrediction.Prediction);
+            string inputColumnName = nameof(NetworksData.MAXnetIN);
+
+            var trainigPipeLine = mlContext.Transforms.DetectSpikeBySsa(
+                outputColumnName,
+                inputColumnName,
+                confidence: ConfidenceInterval,
+                pvalueHistoryLength: PValueSize,
+                trainingWindowSize: TrainingSize,
+                seasonalityWindowSize: SeasonalitySize);
+
+            ITransformer trainedModel = trainigPipeLine.Fit(dataView);
+
+            // STEP 6: Save/persist the trained model to a .ZIP file
+            mlContext.Model.Save(trainedModel, dataView.Schema, ModelPath);
+
+            Console.WriteLine("The model is saved to {0}", ModelPath);
+            Console.WriteLine("");
         }
     }
 }
