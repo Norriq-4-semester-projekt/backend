@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ML;
 
 namespace Api.Controllers.v1_0
 {
@@ -340,7 +341,7 @@ namespace Api.Controllers.v1_0
             }
         }
 
-            [HttpGet]
+        [HttpGet]
         public async Task<ActionResult> GetNetworkCpuTrafic()
         {
             try
@@ -436,6 +437,28 @@ namespace Api.Controllers.v1_0
             {
                 return new StatusCodeResult(500);
             }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> TrainModel()
+        {
+            ML.Program ml = new ML.Program();
+            if (ml.BuildTrainingModel())
+            {
+                return new ObjectResult("Model trained Successfully") { StatusCode = 200 };
+            }
+            else
+            {
+                return new StatusCodeResult(500);
+            }
+            //try
+            //{
+            //    return new ObjectResult(JsonSerializer.Serialize(await _unitOfWork.Data.GetAll())) { StatusCode = 200 };
+            //}
+            //catch (Exception)
+            //{
+            //    return new StatusCodeResult(500);
+            //}
         }
     }
 }

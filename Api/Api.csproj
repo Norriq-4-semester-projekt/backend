@@ -33,6 +33,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
+    <ProjectReference Include="..\ML\ML.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Helpers\" />

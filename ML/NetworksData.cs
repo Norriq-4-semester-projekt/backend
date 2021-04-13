@@ -5,10 +5,10 @@ namespace ML
     public class NetworksData
     {
         [LoadColumn(0)]
-        public string key_as_string;
+        public string Timestamp;
 
         [LoadColumn(1)]
-        public float MAXnetIN;
+        public float Host__Network__In__Bytes;
 
         //[LoadColumn(2)]
         //public float MAXnetOUT;
