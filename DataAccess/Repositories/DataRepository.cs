@@ -38,6 +38,10 @@ namespace DataAccess.Repositories
         {
             var response = ElasticConnection.Instance.client.Search<Data>(s => s
                 .Index("metricbeat-*")
+                .Size(1000)
+                .Sort(ss => ss
+                .Descending(de => de.Timestamp))
+               
                     .Query(q => q
                         .Bool(b => b
                             .Must(sh => sh
@@ -51,6 +55,7 @@ namespace DataAccess.Repositories
                     .Fields("host.network.in.bytes", "@timestamp"))
                  );
 
+            Console.WriteLine(response.DebugInformation);
             return response.Documents.AsEnumerable<Data>();
 
             //try

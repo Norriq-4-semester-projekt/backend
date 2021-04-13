@@ -328,6 +328,19 @@ namespace Api.Controllers.v1_0
         }
 
         [HttpGet]
+        public async Task<ActionResult> GetStatus()
+        {
+            try
+            {
+                return new ObjectResult(JsonSerializer.Serialize(await _unitOfWork.HttpStatus.GetAll())) { StatusCode = 200 };
+            }
+            catch (Exception)
+            {
+                return new StatusCodeResult(500);
+            }
+        }
+
+            [HttpGet]
         public async Task<ActionResult> GetNetworkCpuTrafic()
         {
             try
