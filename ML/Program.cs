@@ -13,7 +13,7 @@ namespace ML
 {
     public class Program
     {
-        private static string BaseDatasetsRelativePath = @"../../../../Data";
+        private static string BaseDatasetsRelativePath = @"..\..\..\Data";
 
         private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/rs.csv";
         //private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/response.json";
