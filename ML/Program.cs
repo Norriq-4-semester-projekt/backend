@@ -14,8 +14,8 @@ namespace ML
     {
         private static string BaseDatasetsRelativePath = @"../../../../Data";
 
-        //private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/product-sales.csv";
-        private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/response.json";
+        private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/rs.csv";
+        //private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/response.json";
 
         //private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/http.csv";
 
@@ -30,40 +30,40 @@ namespace ML
 
         private static async System.Threading.Tasks.Task Main()
         {
-            DataContractJsonSerializer dj = new DataContractJsonSerializer(typeof(ProductsDataList));
-            MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(await File.OpenText(DatasetRelativePath).ReadToEndAsync()));
-            ProductsDataList training_data = (ProductsDataList)dj.ReadObject(ms);
+            //DataContractJsonSerializer dj = new DataContractJsonSerializer(typeof(ProductsDataList));
+            //MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(await File.OpenText(DatasetRelativePath).ReadToEndAsync()));
+            //ProductsDataList training_data = (ProductsDataList)dj.ReadObject(ms);
 
             //ProductsDataList training_data = UpdateMLModel();
-            NetworksDataList training_data = Network();
+            //NetworksDataList training_data = Network();
 
             // Create MLContext to be shared across the model creation workflow objects
             mlContext = new MLContext();
 
             // Load Data
-               var dataView = mlContext.Data.LoadFromTextFile<NetworksData>(
-               DatasetPath,
-               separatorChar: ',',
-               hasHeader: true);
+            var dataView = mlContext.Data.LoadFromTextFile<NetworksData>(
+            DatasetPath,
+            separatorChar: ',',
+            hasHeader: true);
 
             //assign the Number of records in dataset file to cosntant variable
-            //int size = training_data.Data.Count;
+            int size = 5000;
 
             //Load the data into IDataView.
-            //This dataset is used while prediction/detecting spikes or changes.
+            //This dataset is used while prediction / detecting spikes or changes.
 
             //IDataView dataView = mlContext.Data.LoadFromTextFile<ProductSalesData>(path: DatasetPath, hasHeader: true, separatorChar: ',');
             //IDataView dataView = mlContext.Data.LoadFromEnumerable(training_data.Data);
 
             //To detech temporay changes in the pattern
-            //DetectSpike(size, dataView);
+            DetectSpike(size, dataView);
 
             //To detect persistent change in the pattern
             //DetectChangepoint(size, dataView);
 
-            //Console.WriteLine("=============== End of process, hit any key to finish ===============");
+            Console.WriteLine("=============== End of process, hit any key to finish ===============");
 
-            //Console.ReadLine();
+            Console.ReadLine();
         }
 
         private static void DetectSpike(int size, IDataView dataView)
@@ -73,7 +73,7 @@ namespace ML
             ////STEP 1: Create Esimtator
             ////var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 99, pvalueHistoryLength: size / 4);
             ////var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 99, pvalueHistoryLength: size / 4);
-            var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(NetworksData.MAXnetIN), confidence: 95, pvalueHistoryLength: size / 4);
+            var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(NetworksData.Host__Network__In__Bytes), confidence: 95, pvalueHistoryLength: size / 4);
 
             //STEP 2:The Transformed Model.
             //In IID Spike detection, we don't need to do training, we just need to do transformation.
@@ -88,15 +88,24 @@ namespace ML
             IEnumerable<NetworksDataPrediction> predictions = mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, reuseRowObject: false);
 
             Console.WriteLine("Alert\tScore\tP-Value");
+            List<string> spikeList = new List<string>();
             foreach (var p in predictions)
             {
                 if (p.Prediction[0] == 1)
                 {
                     Console.BackgroundColor = ConsoleColor.DarkYellow;
                     Console.ForegroundColor = ConsoleColor.Black;
+                    spikeList.Add(p.Prediction[2].ToString());
                 }
                 Console.WriteLine("{0}\t{1:0.00}\t{2:0.00}", p.Prediction[0], p.Prediction[1], p.Prediction[2]);
                 Console.ResetColor();
+            }
+            Console.WriteLine("===============Results===============");
+            Console.WriteLine("Number of spikes: " + spikeList.Count);
+            Console.WriteLine("");
+            foreach (var item in spikeList)
+            {
+                Console.WriteLine(item);
             }
             Console.WriteLine("");
         }
@@ -107,7 +116,7 @@ namespace ML
 
             //STEP 1: Setup transformations using DetectIidChangePoint
             //var estimator = mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 95, changeHistoryLength: size / 4);
-            var estimator = mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(NetworksData.MAXnetIN), confidence: 95, changeHistoryLength: size / 4);
+            var estimator = mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(NetworksData.Host__Network__In__Bytes), confidence: 95, changeHistoryLength: size / 4);
 
             //STEP 2:The Transformed Model.
             //In IID Change point detection, we don't need need to do training, we just need to do transformation.
@@ -155,7 +164,6 @@ namespace ML
             return dv;
         }
 
-        
         public static NetworksDataList Network()
         {
             var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("metricbeat-*");
@@ -212,8 +220,8 @@ namespace ML
                     {
                         item.TryGetValue(test, out IAggregate a);
                         ValueAggregate valueAggregate = a as ValueAggregate;
-                        nd.MAXnetIN = (float)valueAggregate.Value;
-                        nd.key_as_string = item.KeyAsString;
+                        nd.Host__Network__In__Bytes = (float)valueAggregate.Value;
+                        nd.Timestamp = item.KeyAsString;
                         netwirk.Add(test, valueAggregate.Value);
                         Console.WriteLine(test + ": " + valueAggregate.Value);
                     }
@@ -276,7 +284,7 @@ namespace ML
             const int ConfidenceInterval = 98;
 
             string outputColumnName = nameof(NetworksDataPrediction.Prediction);
-            string inputColumnName = nameof(NetworksData.MAXnetIN);
+            string inputColumnName = nameof(NetworksData.Host__Network__In__Bytes);
 
             var trainigPipeLine = mlContext.Transforms.DetectSpikeBySsa(
                 outputColumnName,
