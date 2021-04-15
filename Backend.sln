@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess.Test", "DataAcce
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ML", "ML\ML.csproj", "{A5810315-2245-42E1-AF0D-966E29C57802}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ML.Api", "ML.Api\ML.Api.csproj", "{CDD8CCA5-AF31-4D9F-8766-C0D90A20C78E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{A5810315-2245-42E1-AF0D-966E29C57802}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5810315-2245-42E1-AF0D-966E29C57802}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A5810315-2245-42E1-AF0D-966E29C57802}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDD8CCA5-AF31-4D9F-8766-C0D90A20C78E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDD8CCA5-AF31-4D9F-8766-C0D90A20C78E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDD8CCA5-AF31-4D9F-8766-C0D90A20C78E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDD8CCA5-AF31-4D9F-8766-C0D90A20C78E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

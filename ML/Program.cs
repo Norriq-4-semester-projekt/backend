@@ -15,17 +15,9 @@ namespace ML
     {
         private static string BaseDatasetsRelativePath = @"../../../../Data";
 
-        //private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/rs.csv";
         private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/trainingdata.json";
 
-        //private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/http.csv";
-
         private static string DatasetPath = GetAbsolutePath(DatasetRelativePath);
-
-        private static string BaseModelsRelativePath = @"../../../../MLModels";
-        private static string ModelRelativePath = $"{BaseModelsRelativePath}/ProductSalesModel.zip";
-
-        private static string ModelPath = GetAbsolutePath(ModelRelativePath);
 
         private static MLContext mlContext;
         private static List<Data> training_data = new List<Data>();
@@ -34,9 +26,6 @@ namespace ML
         {
             string json = File.ReadAllText(DatasetPath);
             List<NetworksData> data = JsonConvert.DeserializeObject<List<NetworksData>>(json);
-            //DataContractJsonSerializer dj = new DataContractJsonSerializer(typeof(NetworksDataList));
-            //MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(await File.OpenText(DatasetPath).ReadToEndAsync()));
-            //NetworksDataList training_data = (NetworksDataList)dj.ReadObject(ms);
 
             foreach (var item in data)
             {
@@ -45,103 +34,52 @@ namespace ML
                 networksData.Timestamp = item.Timestamp;
                 training_data.Add(networksData);
             }
-            //ProductsDataList training_data = UpdateMLModel();
-            //NetworksDataList training_data = Network();
 
             // Create MLContext to be shared across the model creation workflow objects
             mlContext = new MLContext();
 
             // Load Data
-            //var dataView = mlContext.Data.LoadFromTextFile<NetworksData>(
-            //DatasetPath,
-            //separatorChar: ',',
-            //hasHeader: true);
-
             var dataView = mlContext.Data.LoadFromEnumerable<Data>(training_data);
 
             //assign the Number of records in dataset file to cosntant variable
-            int size = 5000;
-
-            //Load the data into IDataView.
-            //This dataset is used while prediction / detecting spikes or changes.
-
-            //IDataView dataView = mlContext.Data.LoadFromTextFile<ProductSalesData>(path: DatasetPath, hasHeader: true, separatorChar: ',');
-            //IDataView dataView = mlContext.Data.LoadFromEnumerable(training_data.Data);
+            int size = training_data.Count;
 
             //To detech temporay changes in the pattern
             DetectSpike(size, dataView);
 
             //To detect persistent change in the pattern
             //DetectChangepoint(size, dataView);
-
-            Console.WriteLine("=============== End of process, hit any key to finish ===============");
-
-            Console.ReadLine();
         }
 
         private static void DetectSpike(int size, IDataView dataView)
         {
-            Console.WriteLine("===============Detect temporary changes in pattern===============");
-
             ////STEP 1: Create Esimtator
-            ////var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 99, pvalueHistoryLength: size / 4);
-            ////var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 99, pvalueHistoryLength: size / 4);
-            var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(Data.Bytes), confidence: 95, pvalueHistoryLength: size / 4);
+            var estimator = mlContext.Microsoft.ML.Transforms.TimeSeries.IidSpikeEstimator.DetectIidSpike(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(Data.Bytes), confidence: 95, pvalueHistoryLength: size / 4);
 
             //STEP 2:The Transformed Model.
-            //In IID Spike detection, we don't need to do training, we just need to do transformation.
-            //As you are not training the model, there is no need to load IDataView with real data, you just need schema of data.
-            //So create empty data view and pass to Fit() method.
             ITransformer tansformedModel = estimator.Fit(CreateEmptyDataView());
 
             //STEP 3: Use/test model
             //Apply data transformation to create predictions.
             IDataView transformedData = tansformedModel.Transform(dataView);
-            //var predictions = mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, reuseRowObject: false);
             IEnumerable<NetworksDataPrediction> predictions = mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, reuseRowObject: false);
 
-            Console.WriteLine("Alert\tScore\tP-Value");
             List<string> spikeList = new List<string>();
             List<int> spikeDates = new List<int>();
-            //for (int i = 0; i < predictions.Count(); i++)
-            //{
-            //    if (predictions.ElementAt(i).Prediction[0] == 1)
-            //    {
-            //        Console.BackgroundColor = ConsoleColor.DarkYellow;
-            //        Console.ForegroundColor = ConsoleColor.Black;
-            //        spikeDates.Add(i);
-            //        spikeList.Add(predictions.ElementAt(i).Prediction[2].ToString());
-            //    }
-            //    Console.WriteLine("{0}\t{1:0.00}\t{2:0.00}", predictions.ElementAt(i).Prediction[0], predictions.ElementAt(i).Prediction[1], predictions.ElementAt(i).Prediction[2]);
-            //    Console.ResetColor();
-            //}
             int i = 0;
             foreach (var p in predictions)
             {
                 if (p.Prediction[0] == 1)
                 {
-                    Console.BackgroundColor = ConsoleColor.DarkYellow;
-                    Console.ForegroundColor = ConsoleColor.Black;
                     spikeList.Add(p.Prediction[2].ToString());
-                    Console.WriteLine(training_data.ElementAt(i).Timestamp);
                 }
                 Console.WriteLine("{0}\t{1:0.00}\t{2:0.00}", p.Prediction[0], p.Prediction[1], p.Prediction[2]);
                 Console.ResetColor();
                 i++;
             }
-            Console.WriteLine("===============Results===============");
-            Console.WriteLine("Number of spikes: " + spikeList.Count);
-            Console.WriteLine("Dates of spikes: " + spikeList.Count);
             foreach (var item in spikeDates)
             {
-                Console.WriteLine(training_data.ElementAt(item).Timestamp);
             }
-            Console.WriteLine("");
-            //foreach (var item in spikeList)
-            //{
-            //    Console.WriteLine(item);
-            //}
-            Console.WriteLine("");
         }
 
         private static void DetectChangepoint(int size, IDataView dataView)
