@@ -5,18 +5,24 @@ namespace ML
     public class NetworksData
     {
         [LoadColumn(0)]
-        public string Timestamp;
+        public string Timestamp { get; set; }
 
+        public Host Host { get; set; }
+    }
+
+    public class Host
+    {
+        public Network Network { get; set; }
+    }
+
+    public class Network
+    {
+        public In In { get; set; }
+    }
+
+    public class In
+    {
         [LoadColumn(1)]
-        public float Host__Network__In__Bytes;
-
-        //[LoadColumn(2)]
-        //public float MAXnetOUT;
-
-        //[LoadColumn(3)]
-        //public float AVGnetOUT;
-
-        //[LoadColumn(4)]
-        //public float AVGnetIN;
+        public long Bytes { get; set; }
     }
 }

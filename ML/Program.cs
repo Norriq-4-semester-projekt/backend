@@ -1,6 +1,7 @@
 ﻿using Microsoft.ML;
 using Microsoft.ML.Data;
 using Nest;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,8 +15,8 @@ namespace ML
     {
         private static string BaseDatasetsRelativePath = @"../../../../Data";
 
-        private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/rs.csv";
-        //private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/response.json";
+        //private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/rs.csv";
+        private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/trainingdata.json";
 
         //private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/http.csv";
 
@@ -27,13 +28,23 @@ namespace ML
         private static string ModelPath = GetAbsolutePath(ModelRelativePath);
 
         private static MLContext mlContext;
+        private static List<Data> training_data = new List<Data>();
 
         private static async System.Threading.Tasks.Task Main()
         {
-            //DataContractJsonSerializer dj = new DataContractJsonSerializer(typeof(ProductsDataList));
-            //MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(await File.OpenText(DatasetRelativePath).ReadToEndAsync()));
-            //ProductsDataList training_data = (ProductsDataList)dj.ReadObject(ms);
+            string json = File.ReadAllText(DatasetPath);
+            List<NetworksData> data = JsonConvert.DeserializeObject<List<NetworksData>>(json);
+            //DataContractJsonSerializer dj = new DataContractJsonSerializer(typeof(NetworksDataList));
+            //MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(await File.OpenText(DatasetPath).ReadToEndAsync()));
+            //NetworksDataList training_data = (NetworksDataList)dj.ReadObject(ms);
 
+            foreach (var item in data)
+            {
+                Data networksData = new Data();
+                networksData.Bytes = item.Host.Network.In.Bytes;
+                networksData.Timestamp = item.Timestamp;
+                training_data.Add(networksData);
+            }
             //ProductsDataList training_data = UpdateMLModel();
             //NetworksDataList training_data = Network();
 
@@ -41,10 +52,12 @@ namespace ML
             mlContext = new MLContext();
 
             // Load Data
-            var dataView = mlContext.Data.LoadFromTextFile<NetworksData>(
-            DatasetPath,
-            separatorChar: ',',
-            hasHeader: true);
+            //var dataView = mlContext.Data.LoadFromTextFile<NetworksData>(
+            //DatasetPath,
+            //separatorChar: ',',
+            //hasHeader: true);
+
+            var dataView = mlContext.Data.LoadFromEnumerable<Data>(training_data);
 
             //assign the Number of records in dataset file to cosntant variable
             int size = 5000;
@@ -73,7 +86,7 @@ namespace ML
             ////STEP 1: Create Esimtator
             ////var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 99, pvalueHistoryLength: size / 4);
             ////var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 99, pvalueHistoryLength: size / 4);
-            var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(NetworksData.Host__Network__In__Bytes), confidence: 95, pvalueHistoryLength: size / 4);
+            var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(Data.Bytes), confidence: 95, pvalueHistoryLength: size / 4);
 
             //STEP 2:The Transformed Model.
             //In IID Spike detection, we don't need to do training, we just need to do transformation.
@@ -89,6 +102,20 @@ namespace ML
 
             Console.WriteLine("Alert\tScore\tP-Value");
             List<string> spikeList = new List<string>();
+            List<int> spikeDates = new List<int>();
+            //for (int i = 0; i < predictions.Count(); i++)
+            //{
+            //    if (predictions.ElementAt(i).Prediction[0] == 1)
+            //    {
+            //        Console.BackgroundColor = ConsoleColor.DarkYellow;
+            //        Console.ForegroundColor = ConsoleColor.Black;
+            //        spikeDates.Add(i);
+            //        spikeList.Add(predictions.ElementAt(i).Prediction[2].ToString());
+            //    }
+            //    Console.WriteLine("{0}\t{1:0.00}\t{2:0.00}", predictions.ElementAt(i).Prediction[0], predictions.ElementAt(i).Prediction[1], predictions.ElementAt(i).Prediction[2]);
+            //    Console.ResetColor();
+            //}
+            int i = 0;
             foreach (var p in predictions)
             {
                 if (p.Prediction[0] == 1)
@@ -96,17 +123,24 @@ namespace ML
                     Console.BackgroundColor = ConsoleColor.DarkYellow;
                     Console.ForegroundColor = ConsoleColor.Black;
                     spikeList.Add(p.Prediction[2].ToString());
+                    Console.WriteLine(training_data.ElementAt(i).Timestamp);
                 }
                 Console.WriteLine("{0}\t{1:0.00}\t{2:0.00}", p.Prediction[0], p.Prediction[1], p.Prediction[2]);
                 Console.ResetColor();
+                i++;
             }
             Console.WriteLine("===============Results===============");
             Console.WriteLine("Number of spikes: " + spikeList.Count);
-            Console.WriteLine("");
-            foreach (var item in spikeList)
+            Console.WriteLine("Dates of spikes: " + spikeList.Count);
+            foreach (var item in spikeDates)
             {
-                Console.WriteLine(item);
+                Console.WriteLine(training_data.ElementAt(item).Timestamp);
             }
+            Console.WriteLine("");
+            //foreach (var item in spikeList)
+            //{
+            //    Console.WriteLine(item);
+            //}
             Console.WriteLine("");
         }
 
@@ -116,7 +150,7 @@ namespace ML
 
             //STEP 1: Setup transformations using DetectIidChangePoint
             //var estimator = mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 95, changeHistoryLength: size / 4);
-            var estimator = mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(NetworksData.Host__Network__In__Bytes), confidence: 95, changeHistoryLength: size / 4);
+            var estimator = mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(Data.Bytes), confidence: 95, changeHistoryLength: size / 4);
 
             //STEP 2:The Transformed Model.
             //In IID Change point detection, we don't need need to do training, we just need to do transformation.
@@ -159,78 +193,78 @@ namespace ML
         private static IDataView CreateEmptyDataView()
         {
             //Create empty DataView. We just need the schema to call fit()
-            IEnumerable<NetworksData> enumerableData = new List<NetworksData>();
+            IEnumerable<Data> enumerableData = new List<Data>();
             var dv = mlContext.Data.LoadFromEnumerable(enumerableData);
             return dv;
         }
 
-        public static NetworksDataList Network()
-        {
-            var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("metricbeat-*");
-            settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
-            settings.PrettyJson(); // Good for DEBUG
-            settings.BasicAuthentication("elastic", "changeme");
-            var client = new ElasticClient(settings);
+        //public static NetworksDataList Network()
+        //{
+        //    var settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("metricbeat-*");
+        //    settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
+        //    settings.PrettyJson(); // Good for DEBUG
+        //    settings.BasicAuthentication("elastic", "changeme");
+        //    var client = new ElasticClient(settings);
 
-            var response = client.Search<dynamic>(s => s
-               .Size(0)
-               .Query(q => q
-                   .Bool(b => b
-                       .Should(sh => sh
-                           .MatchPhrase(mp => mp
-                               .Field("hostname").Query("vmi316085.contaboserver.net")
-                               .Field("event.dataset").Query("system.network")
-                           )
-                       )
-                       .Filter(f => f
-                           .DateRange(dr => dr
-                               .Field("@timestamp")
-                               .GreaterThanOrEquals("now-1h")
-                               )
-                           )
-                       )
-                   )
-               .Aggregations(aggs => aggs
-                   .DateHistogram("myNetworkDateHistogram", date => date
-                   .Field("@timestamp")
-                   .CalendarInterval(DateInterval.Minute)
-                   .Aggregations(aggs => aggs
-                       //.Average("AVGnetIN", avg => avg
-                       //.Field("host.network.in.bytes"))
-                       //.Average("AVGnetOut", avg => avg
-                       //.Field("host.network.out.bytes"))
-                       .Max("MAXnetIN", max => max
-                       .Field("host.network.in.bytes"))
-                       //.Max("MAXnetOUT", max => max
-                       //.Field("host.network.out.bytes"))
-                       )
-                   )
-                   )
-                );
+        //    var response = client.Search<dynamic>(s => s
+        //       .Size(0)
+        //       .Query(q => q
+        //           .Bool(b => b
+        //               .Should(sh => sh
+        //                   .MatchPhrase(mp => mp
+        //                       .Field("hostname").Query("vmi316085.contaboserver.net")
+        //                       .Field("event.dataset").Query("system.network")
+        //                   )
+        //               )
+        //               .Filter(f => f
+        //                   .DateRange(dr => dr
+        //                       .Field("@timestamp")
+        //                       .GreaterThanOrEquals("now-1h")
+        //                       )
+        //                   )
+        //               )
+        //           )
+        //       .Aggregations(aggs => aggs
+        //           .DateHistogram("myNetworkDateHistogram", date => date
+        //           .Field("@timestamp")
+        //           .CalendarInterval(DateInterval.Minute)
+        //           .Aggregations(aggs => aggs
+        //               //.Average("AVGnetIN", avg => avg
+        //               //.Field("host.network.in.bytes"))
+        //               //.Average("AVGnetOut", avg => avg
+        //               //.Field("host.network.out.bytes"))
+        //               .Max("MAXnetIN", max => max
+        //               .Field("host.network.in.bytes"))
+        //               //.Max("MAXnetOUT", max => max
+        //               //.Field("host.network.out.bytes"))
+        //               )
+        //           )
+        //           )
+        //        );
 
-            NetworksDataList list = new NetworksDataList();
-            list.Data = new List<NetworksData>();
-            if (response.Aggregations.Count > 0)
-            {
-                foreach (DateHistogramBucket item in response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets)
-                {
-                    NetworksData nd = new NetworksData();
-                    Dictionary<string, double?> netwirk = new Dictionary<string, double?>();
-                    foreach (var test in item.Keys)
-                    {
-                        item.TryGetValue(test, out IAggregate a);
-                        ValueAggregate valueAggregate = a as ValueAggregate;
-                        nd.Host__Network__In__Bytes = (float)valueAggregate.Value;
-                        nd.Timestamp = item.KeyAsString;
-                        netwirk.Add(test, valueAggregate.Value);
-                        Console.WriteLine(test + ": " + valueAggregate.Value);
-                    }
+        //    NetworksDataList list = new NetworksDataList();
+        //    list.Data = new List<NetworksData>();
+        //    if (response.Aggregations.Count > 0)
+        //    {
+        //        foreach (DateHistogramBucket item in response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets)
+        //        {
+        //            NetworksData nd = new NetworksData();
+        //            Dictionary<string, double?> netwirk = new Dictionary<string, double?>();
+        //            foreach (var test in item.Keys)
+        //            {
+        //                item.TryGetValue(test, out IAggregate a);
+        //                ValueAggregate valueAggregate = a as ValueAggregate;
+        //                nd.Host__Network__In__Bytes = (float)valueAggregate.Value;
+        //                nd.Timestamp = item.KeyAsString;
+        //                netwirk.Add(test, valueAggregate.Value);
+        //                Console.WriteLine(test + ": " + valueAggregate.Value);
+        //            }
 
-                    list.Data.Add(nd);
-                }
-            }
-            return list;
-        }
+        //            list.Data.Add(nd);
+        //        }
+        //    }
+        //    return list;
+        //}
 
         public static void DetectNetworkAnomalies(MLContext mLContext)
         {
@@ -284,7 +318,7 @@ namespace ML
             const int ConfidenceInterval = 98;
 
             string outputColumnName = nameof(NetworksDataPrediction.Prediction);
-            string inputColumnName = nameof(NetworksData.Host__Network__In__Bytes);
+            string inputColumnName = nameof(Data.Bytes);
 
             var trainigPipeLine = mlContext.Transforms.DetectSpikeBySsa(
                 outputColumnName,
