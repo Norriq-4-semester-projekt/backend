@@ -14,18 +14,6 @@ namespace DataAccess.Repositories
 {
     public class DataRepository : IDataRepository
     {
-        private ElasticClient client;
-
-        //private ConnectionSettings settings = new ConnectionSettings(new Uri("http://localhost:9200")).DefaultIndex("users"); // localhost
-        private ConnectionSettings settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users"); // vps
-
-        public DataRepository()
-        {
-            settings.BasicAuthentication("elastic", "changeme"); // ElasticSearch Username and Password
-            settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
-            settings.PrettyJson(); // Good for DEBUG
-            client = new ElasticClient(settings);
-        }
 
         public Task<ActionResult> AddAsync(NetworksData entity)
         {
