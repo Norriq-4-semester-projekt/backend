@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.ML;
+using Microsoft.ML.TimeSeries;
 
 namespace ML.Api.Controllers
 {
@@ -37,7 +38,7 @@ namespace ML.Api.Controllers
             }
 
             // Create MLContext to be shared across the model creation workflow objects
-            mlContext = new Microsoft.ML.Data.MLContext();
+            mlContext = new MLContext();
         }
 
         [HttpPost]
