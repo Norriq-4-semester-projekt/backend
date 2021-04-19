@@ -131,6 +131,7 @@ namespace DataAccess.Repositories
                 .DocValueFields(dvf => dvf
                     .Fields("host.network.in.bytes", "@timestamp"))
                  );
+            Console.WriteLine(response.DebugInformation);
 
             var dataAsJson = JsonConvert.SerializeObject(response.Documents.AsEnumerable<NetworksData>().FirstOrDefault());
 
@@ -142,11 +143,13 @@ namespace DataAccess.Repositories
             HttpClient client = new HttpClient();
 
             // Call asynchronous network methods in a try/catch block to handle exceptions
+            bool test = false;
             try
             {
                 var httpResponse = await client.PostAsync("https://localhost:44368/ML", byteContent);
-                httpResponse.EnsureSuccessStatusCode();
                 string responseBody = await httpResponse.Content.ReadAsStringAsync();
+                test = JsonConvert.DeserializeObject<bool>(responseBody); 
+                httpResponse.EnsureSuccessStatusCode();
                 // Above three lines can be replaced with new helper method below
                 // string responseBody = await client.GetStringAsync(uri);
 
@@ -161,7 +164,7 @@ namespace DataAccess.Repositories
             // when done using it, so the app doesn't leak resources
             client.Dispose();
 
-            return true;
+            return test;
         }
 
         public Task<ActionResult> UpdateByQueryAsync(NetworksData entity, NetworksData u1)
