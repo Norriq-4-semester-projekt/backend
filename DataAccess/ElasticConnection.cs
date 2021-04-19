@@ -19,7 +19,7 @@ namespace DataAccess
             settings.PrettyJson(); // Good for DEBUG
             settings.BasicAuthentication("elastic", "changeme");
             settings.DisableDirectStreaming();
-            settings.DefaultMappingFor<Data>(m => m
+            settings.DefaultMappingFor<NetworksData>(m => m
                 .IndexName("metricbeat.*"));
             _client = new ElasticClient(settings);
         }

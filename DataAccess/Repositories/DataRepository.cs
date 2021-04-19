@@ -6,6 +6,9 @@ using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Net.Http;
+using Newtonsoft.Json;
+using System.Net.Http.Headers;
 
 namespace DataAccess.Repositories
 {
@@ -24,24 +27,24 @@ namespace DataAccess.Repositories
             client = new ElasticClient(settings);
         }
 
-        public Task<ActionResult> AddAsync(Data entity)
+        public Task<ActionResult> AddAsync(NetworksData entity)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ActionResult> DeleteByQueryAsync(Data entity)
+        public Task<ActionResult> DeleteByQueryAsync(NetworksData entity)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<Data>> GetAll()
+        public async Task<IEnumerable<NetworksData>> GetAll()
         {
-            var response = ElasticConnection.Instance.client.Search<Data>(s => s
+            var response = ElasticConnection.Instance.client.Search<NetworksData>(s => s
                 .Index("metricbeat-*")
                 .Size(1000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
-               
+
                     .Query(q => q
                         .Bool(b => b
                             .Must(sh => sh
@@ -56,7 +59,7 @@ namespace DataAccess.Repositories
                  );
 
             Console.WriteLine(response.DebugInformation);
-            return response.Documents.AsEnumerable<Data>();
+            return response.Documents.AsEnumerable<NetworksData>();
 
             //try
             //{
@@ -120,7 +123,60 @@ namespace DataAccess.Repositories
             //}
         }
 
-        public Task<ActionResult> UpdateByQueryAsync(Data entity, Data u1)
+        public async Task<bool> GetLatest()
+        {
+            var response = ElasticConnection.Instance.client.Search<NetworksData>(s => s
+                .Index("metricbeat-*")
+                .Size(1)
+                .Sort(ss => ss
+                .Descending(de => de.Timestamp))
+
+                    .Query(q => q
+                        .Bool(b => b
+                            .Must(sh => sh
+                                .Exists(ex => ex
+                                    .Field("host.network.in.bytes")
+                                    )
+                                )
+                            )
+                        )
+                .DocValueFields(dvf => dvf
+                    .Fields("host.network.in.bytes", "@timestamp"))
+                 );
+
+            var dataAsJson = JsonConvert.SerializeObject(response.Documents.AsEnumerable<NetworksData>().FirstOrDefault());
+
+            var buffer = System.Text.Encoding.UTF8.GetBytes(dataAsJson);
+            var byteContent = new ByteArrayContent(buffer);
+            byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            // Create a New HttpClient object.
+            HttpClient client = new HttpClient();
+
+            // Call asynchronous network methods in a try/catch block to handle exceptions
+            try
+            {
+                var httpResponse = await client.PostAsync("https://localhost:44368/ML", byteContent);
+                httpResponse.EnsureSuccessStatusCode();
+                string responseBody = await httpResponse.Content.ReadAsStringAsync();
+                // Above three lines can be replaced with new helper method below
+                // string responseBody = await client.GetStringAsync(uri);
+
+                Console.WriteLine(responseBody);
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine("\nException Caught!");
+                Console.WriteLine("Message :{0} ", e.Message);
+            }
+            // Need to call dispose on the HttpClient object
+            // when done using it, so the app doesn't leak resources
+            client.Dispose();
+
+            return true;
+        }
+
+        public Task<ActionResult> UpdateByQueryAsync(NetworksData entity, NetworksData u1)
         {
             throw new NotImplementedException();
         }

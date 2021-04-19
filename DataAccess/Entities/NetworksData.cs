@@ -4,13 +4,12 @@ using System.Collections.Generic;
 
 namespace DataAccess.Entities
 {
-    public class Data
+    public class NetworksData
     {
         [Text(Name = "@timestamp")]
         public string Timestamp { get; set; }
 
         public Host Host { get; set; }
-
     }
 
     public class Host

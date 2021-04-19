@@ -4,7 +4,6 @@ namespace ML.Api
 {
     public class NetworksData
     {
-        [LoadColumn(0)]
         public string Timestamp { get; set; }
 
         public Host Host { get; set; }
@@ -22,7 +21,6 @@ namespace ML.Api
 
     public class In
     {
-        [LoadColumn(1)]
         public long Bytes { get; set; }
     }
 }

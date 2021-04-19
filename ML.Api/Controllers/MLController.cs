@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.ML;
 using Microsoft.ML.TimeSeries;
+using System.Net.Http;
 
 namespace ML.Api.Controllers
 {
@@ -42,12 +43,20 @@ namespace ML.Api.Controllers
         }
 
         [HttpPost]
-        public void DetectSpike(NetworksData networksData)
+        public async Task<bool> DetectSpikeAsync(NetworksData networksData)
         {
+            Data latestData = new Data();
+
+            latestData.Bytes = networksData.Host.Network.In.Bytes;
+            latestData.Timestamp = networksData.Timestamp;
+
+            List<Data> testData = training_data;
+            testData.Add(latestData);
+
             // Load Data
             var dataView = mlContext.Data.LoadFromEnumerable<Data>(training_data);
             //assign the Number of records in dataset file to cosntant variable
-            int size = training_data.Count;
+            int size = testData.Count;
             //STEP 1: Create Esimtator
             var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(Data.Bytes), confidence: 95, pvalueHistoryLength: size / 4);
 
@@ -69,6 +78,15 @@ namespace ML.Api.Controllers
                     spikeList.Add(p.Prediction[2].ToString());
                 }
                 i++;
+            }
+
+            if (spikeList.Count > 80)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
             }
             foreach (var item in spikeDates)
             {
