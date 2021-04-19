@@ -27,19 +27,25 @@ namespace ML.Api.Controllers
 
         public MLController()
         {
-            string json = System.IO.File.ReadAllText(DatasetPath);
-            List<NetworksData> data = JsonConvert.DeserializeObject<List<NetworksData>>(json);
-
-            foreach (var item in data)
+            if (training_data.Count > 0)
             {
-                Data networksData = new Data();
-                networksData.Bytes = item.Host.Network.In.Bytes;
-                networksData.Timestamp = item.Timestamp;
-                training_data.Add(networksData);
             }
+            else
+            {
+                string json = System.IO.File.ReadAllText(DatasetPath);
+                List<NetworksData> data = JsonConvert.DeserializeObject<List<NetworksData>>(json);
 
-            // Create MLContext to be shared across the model creation workflow objects
-            mlContext = new MLContext();
+                foreach (var item in data)
+                {
+                    Data networksData = new Data();
+                    networksData.Bytes = item.Host.Network.In.Bytes;
+                    networksData.Timestamp = item.Timestamp;
+                    training_data.Add(networksData);
+                }
+
+                // Create MLContext to be shared across the model creation workflow objects
+                mlContext = new MLContext();
+            }
         }
 
         [HttpPost]
