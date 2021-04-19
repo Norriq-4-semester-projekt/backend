@@ -6,11 +6,13 @@ namespace DataAccess.Service
     {
         public IUserRepository Users { get; }
         public IDataRepository Data { get; }
+        public IHttpStatusRepository HttpStatus { get; set; }
 
-        public UnitOfWork(IUserRepository userRepository, IDataRepository dataRepository)
+        public UnitOfWork(IUserRepository userRepository, IDataRepository dataRepository, IHttpStatusRepository httpstatusRepository)
         {
             Users = userRepository;
             Data = dataRepository;
+            HttpStatus = httpstatusRepository;
         }
     }
 }
