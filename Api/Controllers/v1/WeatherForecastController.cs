@@ -438,27 +438,5 @@ namespace Api.Controllers.v1_0
                 return new StatusCodeResult(500);
             }
         }
-
-        [HttpGet]
-        public async Task<ActionResult> TrainModel()
-        {
-            ML.Program ml = new ML.Program();
-            if (ml.BuildTrainingModel())
-            {
-                return new ObjectResult("Model trained Successfully") { StatusCode = 200 };
-            }
-            else
-            {
-                return new StatusCodeResult(500);
-            }
-            //try
-            //{
-            //    return new ObjectResult(JsonSerializer.Serialize(await _unitOfWork.Data.GetAll())) { StatusCode = 200 };
-            //}
-            //catch (Exception)
-            //{
-            //    return new StatusCodeResult(500);
-            //}
-        }
     }
 }
