@@ -9,12 +9,13 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace DataAccess.Repositories
 {
     public class DataRepository : IDataRepository
     {
-
         public Task<ActionResult> AddAsync(NetworksData entity)
         {
             throw new NotImplementedException();
@@ -148,7 +149,7 @@ namespace DataAccess.Repositories
             {
                 var httpResponse = await client.PostAsync("https://localhost:44368/ML", byteContent);
                 string responseBody = await httpResponse.Content.ReadAsStringAsync();
-                test = JsonConvert.DeserializeObject<bool>(responseBody); 
+                test = JsonConvert.DeserializeObject<bool>(responseBody);
                 httpResponse.EnsureSuccessStatusCode();
                 // Above three lines can be replaced with new helper method below
                 // string responseBody = await client.GetStringAsync(uri);
@@ -163,6 +164,12 @@ namespace DataAccess.Repositories
             // Need to call dispose on the HttpClient object
             // when done using it, so the app doesn't leak resources
             client.Dispose();
+
+            if (test)
+            {
+                var telegramBot = new TelegramBotClient("1618808038:AAHs2nHXf_sYeOIgwiIr1nxqMz6Uul-w4nA");
+                await telegramBot.SendTextMessageAsync("-1001399759228", "Der kommer Spyyd!");
+            }
 
             return test;
         }

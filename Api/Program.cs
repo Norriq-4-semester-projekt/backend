@@ -1,13 +1,16 @@
+using DataAccess.Repositories;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Sinks.Elasticsearch;
 using System;
+using System.Timers;
 
 namespace Api
 {
     public class Program
     {
+        private static DataRepository dr = new DataRepository();
         /*
         private static ConnectionSettings settings;
         private static Uri node;
@@ -29,6 +32,22 @@ namespace Api
             Console.WriteLine(response.Status);
             Console.Read();
             */
+            SetTimer();
+        }
+
+        private static void SetTimer()
+        {
+            // Create a timer with a two second interval.
+            var aTimer = new System.Timers.Timer(20000);
+            // Hook up the Elapsed event for the timer.
+            aTimer.Elapsed += OnTimedEvent;
+            aTimer.AutoReset = true;
+            aTimer.Enabled = true;
+        }
+
+        private static async void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            await dr.GetLatest();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

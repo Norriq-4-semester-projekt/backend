@@ -27,25 +27,20 @@ namespace ML.Api.Controllers
 
         public MLController()
         {
-            if (training_data.Count > 0)
-            {
-            }
-            else
-            {
-                string json = System.IO.File.ReadAllText(DatasetPath);
-                List<NetworksData> data = JsonConvert.DeserializeObject<List<NetworksData>>(json);
+            training_data = new List<Data>();
+            string json = System.IO.File.ReadAllText(DatasetPath);
+            List<NetworksData> data = JsonConvert.DeserializeObject<List<NetworksData>>(json);
 
-                foreach (var item in data)
-                {
-                    Data networksData = new Data();
-                    networksData.Bytes = item.Host.Network.In.Bytes;
-                    networksData.Timestamp = item.Timestamp;
-                    training_data.Add(networksData);
-                }
-
-                // Create MLContext to be shared across the model creation workflow objects
-                mlContext = new MLContext();
+            foreach (var item in data)
+            {
+                Data networksData = new Data();
+                networksData.Bytes = item.Host.Network.In.Bytes;
+                networksData.Timestamp = item.Timestamp;
+                training_data.Add(networksData);
             }
+
+            // Create MLContext to be shared across the model creation workflow objects
+            mlContext = new MLContext();
         }
 
         [HttpPost]
@@ -60,7 +55,7 @@ namespace ML.Api.Controllers
             testData.Add(latestData);
 
             // Load Data
-            var dataView = mlContext.Data.LoadFromEnumerable<Data>(training_data);
+            var dataView = mlContext.Data.LoadFromEnumerable<Data>(testData);
             //assign the Number of records in dataset file to cosntant variable
             int size = testData.Count;
             //STEP 1: Create Esimtator
