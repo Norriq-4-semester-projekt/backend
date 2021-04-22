@@ -112,7 +112,7 @@ namespace DataAccess.Repositories
             //}
         }
 
-        public async Task<bool> GetLatest()
+        public async Task<NetworksData> GetLatest()
         {
             var response = ElasticConnection.Instance.client.Search<NetworksData>(s => s
                 .Index("metricbeat-*")
@@ -134,44 +134,44 @@ namespace DataAccess.Repositories
                  );
             Console.WriteLine(response.DebugInformation);
 
-            var dataAsJson = JsonConvert.SerializeObject(response.Documents.AsEnumerable<NetworksData>().FirstOrDefault());
+            return response.Documents.AsEnumerable<NetworksData>().FirstOrDefault();
 
-            var buffer = System.Text.Encoding.UTF8.GetBytes(dataAsJson);
-            var byteContent = new ByteArrayContent(buffer);
-            byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            //var buffer = System.Text.Encoding.UTF8.GetBytes(dataAsJson);
+            //var byteContent = new ByteArrayContent(buffer);
+            //byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            // Create a New HttpClient object.
-            HttpClient client = new HttpClient();
+            //// Create a New HttpClient object.
+            //HttpClient client = new HttpClient();
 
-            // Call asynchronous network methods in a try/catch block to handle exceptions
-            bool test = false;
-            try
-            {
-                var httpResponse = await client.PostAsync("https://localhost:44368/ML", byteContent);
-                string responseBody = await httpResponse.Content.ReadAsStringAsync();
-                test = JsonConvert.DeserializeObject<bool>(responseBody);
-                httpResponse.EnsureSuccessStatusCode();
-                // Above three lines can be replaced with new helper method below
-                // string responseBody = await client.GetStringAsync(uri);
+            //// Call asynchronous network methods in a try/catch block to handle exceptions
+            //bool test = false;
+            //try
+            //{
+            //    var httpResponse = await client.PostAsync("https://localhost:44368/ML", byteContent);
+            //    string responseBody = await httpResponse.Content.ReadAsStringAsync();
+            //    test = JsonConvert.DeserializeObject<bool>(responseBody);
+            //    httpResponse.EnsureSuccessStatusCode();
+            //    // Above three lines can be replaced with new helper method below
+            //    // string responseBody = await client.GetStringAsync(uri);
 
-                Console.WriteLine(responseBody);
-            }
-            catch (HttpRequestException e)
-            {
-                Console.WriteLine("\nException Caught!");
-                Console.WriteLine("Message :{0} ", e.Message);
-            }
-            // Need to call dispose on the HttpClient object
-            // when done using it, so the app doesn't leak resources
-            client.Dispose();
+            //    Console.WriteLine(responseBody);
+            //}
+            //catch (HttpRequestException e)
+            //{
+            //    Console.WriteLine("\nException Caught!");
+            //    Console.WriteLine("Message :{0} ", e.Message);
+            //}
+            //// Need to call dispose on the HttpClient object
+            //// when done using it, so the app doesn't leak resources
+            //client.Dispose();
 
-            if (test)
-            {
-                var telegramBot = new TelegramBotClient("1618808038:AAHs2nHXf_sYeOIgwiIr1nxqMz6Uul-w4nA");
-                await telegramBot.SendTextMessageAsync("-1001399759228", "Der kommer Spyyd!");
-            }
+            //if (test)
+            //{
+            //    var telegramBot = new TelegramBotClient("1618808038:AAHs2nHXf_sYeOIgwiIr1nxqMz6Uul-w4nA");
+            //    await telegramBot.SendTextMessageAsync("-1001399759228", "Der kommer Spyyd!");
+            //}
 
-            return test;
+            //return test;
         }
 
         public Task<ActionResult> UpdateByQueryAsync(NetworksData entity, NetworksData u1)
