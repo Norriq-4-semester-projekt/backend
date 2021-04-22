@@ -5,6 +5,6 @@ namespace DataAccess.Interfaces
 {
     public interface IDataRepository : IGenericRepository<NetworksData>
     {
-        Task<NetworksData> GetLatest();
+        Task<Data> GetLatest();
     }
 }

@@ -112,30 +112,63 @@ namespace DataAccess.Repositories
             //}
         }
 
-        public async Task<NetworksData> GetLatest()
+        public async Task<Data> GetLatest()
         {
-            var response = ElasticConnection.Instance.client.Search<NetworksData>(s => s
+            var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
                 .Index("metricbeat-*")
-                .Size(1)
-                .Sort(ss => ss
-                .Descending(de => de.Timestamp))
-
+                    .Size(0)
                     .Query(q => q
                         .Bool(b => b
                             .Must(sh => sh
                                 .Exists(ex => ex
                                     .Field("host.network.in.bytes")
                                     )
+                                ).Filter(f => f
+                                .DateRange(dr => dr
+                                    .Field("@timestamp")
+                                    .GreaterThanOrEquals("now-1m")
+                                    )
                                 )
                             )
+                            )
+                    .Aggregations(aggs => aggs
+                        .DateHistogram("myNetworkDateHistogram", date => date
+                        .Field("@timestamp")
+                        .CalendarInterval(DateInterval.Minute)
+                        .Aggregations(aggs => aggs
+                            .Average("AVGnetIN", avg => avg
+                            .Field("host.network.in.bytes"))
                         )
-                .DocValueFields(dvf => dvf
-                    .Fields("host.network.in.bytes", "@timestamp"))
-                 );
+                    )
+                ));
+            Data networksData = new Data();
+            networksData.Timestamp = response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets.FirstOrDefault().KeyAsString;
+            networksData.Bytes = (float)response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets.FirstOrDefault().AverageBucket("AVGnetIN").Value.Value;
+            return networksData;
+            //networksData.Host.Network.In.Bytes = (ValueAggregate)buckets.Values.FirstOrDefault().
+
+            //var response = ElasticConnection.Instance.client.Search<NetworksData>(s => s
+            //    .Index("metricbeat-*")
+            //    .Size(1)
+            //    .Sort(ss => ss
+            //    .Descending(de => de.Timestamp))
+
+            //        .Query(q => q
+            //            .Bool(b => b
+            //                .Must(sh => sh
+            //                    .Exists(ex => ex
+            //                        .Field("host.network.in.bytes")
+            //                        )
+            //                    )
+            //                )
+            //            )
+            //    .DocValueFields(dvf => dvf
+            //        .Fields("host.network.in.bytes", "@timestamp"))
+            //     );
             Console.WriteLine(response.DebugInformation);
 
-            return response.Documents.AsEnumerable<NetworksData>().FirstOrDefault();
-
+            //return response.Documents.AsEnumerable<NetworksData>().FirstOrDefault();
+            return null;
             //var buffer = System.Text.Encoding.UTF8.GetBytes(dataAsJson);
             //var byteContent = new ByteArrayContent(buffer);
             //byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
