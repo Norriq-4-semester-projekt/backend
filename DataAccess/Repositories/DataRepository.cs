@@ -143,7 +143,7 @@ namespace DataAccess.Repositories
                 ));
             Data networksData = new Data();
             networksData.Timestamp = response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets.FirstOrDefault().KeyAsString;
-            networksData.Bytes = (float)response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets.FirstOrDefault().AverageBucket("AVGnetIN").Value.Value;
+            networksData.Value = (float)response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets.FirstOrDefault().AverageBucket("AVGnetIN").Value.Value;
             return networksData;
             //networksData.Host.Network.In.Bytes = (ValueAggregate)buckets.Values.FirstOrDefault().
 

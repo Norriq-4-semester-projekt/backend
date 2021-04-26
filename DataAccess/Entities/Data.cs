@@ -10,6 +10,6 @@ namespace DataAccess.Entities
     {
         public string Timestamp { get; set; }
 
-        public float Bytes { get; set; }
+        public float Value { get; set; }
     }
 }
