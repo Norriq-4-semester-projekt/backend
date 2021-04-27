@@ -289,6 +289,18 @@ namespace Api.Controllers.v1_0
                 return new StatusCodeResult(500);
             }
         }
+        [HttpGet]
+        public async Task<ActionResult> DetectSpikesMonth()
+        {
+            try
+            {
+                return new ObjectResult(JsonSerializer.Serialize(await _unitOfWork.Data.GetLatestMonth())) { StatusCode = 200 };
+            }
+            catch (Exception)
+            {
+                return new StatusCodeResult(500);
+            }
+        }
 
         [HttpGet]
         public async Task<ActionResult> GetNetworkTrafic()
