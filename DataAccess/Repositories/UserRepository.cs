@@ -125,22 +125,6 @@ namespace DataAccess.Repositories
             }
         }
 
-        //public async Task<ActionResult> GetByQueryAsync(User entity)
-        //{
-        //    try
-        //    {
-        //        var rs = await client.SearchAsync<User>(s => s
-        //            .Query(q => q
-        //                .MatchPhrase(mp => mp
-        //                            .Field("username").Query(entity.Username))));
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return new StatusCodeResult(50);
-        //    }
-        //    return new StatusCodeResult(200);
-        //}
-
         public async Task<ActionResult> UpdateByQueryAsync(User currentUser, User newUser)
         {
             try

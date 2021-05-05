@@ -49,67 +49,6 @@ namespace DataAccess.Repositories
 
             Console.WriteLine(response.DebugInformation);
             return response.Documents.AsEnumerable<NetworksData>();
-
-            //try
-            //{
-            //    var response = await ElasticConnection.Instance.client.SearchAsync<dynamic>(s => s
-            //    .Index("metricbeat-*")
-            //        .Size(0)
-            //   .Query(q => q
-            //       .Bool(b => b
-            //           .Should(sh => sh
-            //               .MatchPhrase(mp => mp
-            //                   .Field("hostname").Query("vmi316085.contaboserver.net")
-            //               )
-            //           )
-            //           .Filter(f => f
-            //               .DateRange(dr => dr
-            //                   .Field("@timestamp")
-            //                   .GreaterThanOrEquals("now-30s")
-            //                   )
-            //               )
-            //           )
-            //       )
-            //   .Aggregations(aggs => aggs
-            //       .DateHistogram("myNetworkDateHistogram", date => date
-            //       .Field("@timestamp")
-            //       .CalendarInterval(DateInterval.Minute)
-            //       .Aggregations(aggs => aggs
-            //           .Average("BytesIn", avg => avg
-            //           .Field("host.network.in.bytes"))
-            //           )
-            //       )
-            //       )
-            //    );
-            //    Data list = new Data();
-            //    list.BytesList = new List<Data>();
-            //    if (response.Aggregations.Count > 0)
-            //    {
-            //        response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets.GetEnumerator().MoveNext();
-            //        DateHistogramBucket keys = response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets.GetEnumerator().Current;
-            //        foreach (DateHistogramBucket item in response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets)
-            //        {
-            //            Data d = new Data();
-            //            Dictionary<string, double?> netwirk = new Dictionary<string, double?>();
-            //            foreach (var test in item.Keys)
-            //            {
-            //                item.TryGetValue(test, out IAggregate a);
-            //                ValueAggregate valueAggregate = a as ValueAggregate;
-            //                d.BytesIn = (long)valueAggregate.Value;
-            //                d.Timestamp = item.KeyAsString;
-            //                netwirk.Add(test, valueAggregate.Value);
-            //                Console.WriteLine(test + ": " + d.BytesIn + " " + "Timestamp: " + d.Timestamp);
-            //            }
-
-            //            list.BytesList.Add(d);
-            //        }
-            //    }
-            //    return (IEnumerable<Data>)list;
-            //}
-            //catch (Exception)
-            //{
-            //    throw;
-            //}
         }
 
         public async Task<Data> GetLatest()
