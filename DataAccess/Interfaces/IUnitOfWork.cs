@@ -7,5 +7,6 @@ namespace DataAccess.Interfaces
         public IUserRepository Users { get; }
         public IDataRepository Data { get; }
         public IHttpStatusRepository HttpStatus { get; set; }
+        public ICpuRepository CpuCalc { get; }
     }
 }

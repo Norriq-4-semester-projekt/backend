@@ -27,3 +27,8 @@ namespace DataAccess.Entities
         public long Bytes { get; set; }
     }
 }
+
+//                    .Field("system.cpu.user.pct")
+//                .Field("system.cpu.system.pct")
+//                .Field("system.cpu.cores")
+

@@ -14,6 +14,8 @@ namespace DataAccess
             services.AddTransient<IUnitOfWork, UnitOfWork>();
             services.AddTransient<IDataRepository, DataRepository>();
             services.AddTransient<IHttpStatusRepository, HttpStatusRepository>();
+            services.AddTransient<ICpuRepository, CpuRepository>();
+
         }
     }
 }

@@ -28,5 +28,17 @@ namespace Api.Controllers.v1
                 return this.CatchResponse(Ex, Ex.Message, 501);
             }
         }
+        [HttpGet]
+        public async Task<ActionResult> CpuCalcData()
+        {
+            try
+            {
+                return this.ReturnResponse(await UnitOfWork.CpuCalc.GetLatest(), 200);
+            }
+            catch (Exception Ex)
+            {
+                return this.CatchResponse(Ex, Ex.Message, 501);
+            }
+        }
     }
 }

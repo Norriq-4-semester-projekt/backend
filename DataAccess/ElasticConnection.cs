@@ -23,8 +23,8 @@ namespace DataAccess
             settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
             settings.PrettyJson(); // Good for DEBUG
             settings.DisableDirectStreaming();
-            settings.DefaultMappingFor<NetworksData>(m => m
-                .IndexName("metricbeat.*"));
+            //settings.DefaultMappingFor<NetworksData>(m => m
+            //    .IndexName("metricbeat.*"));
             _client = new ElasticClient(settings);
         }
 

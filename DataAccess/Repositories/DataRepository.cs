@@ -62,7 +62,8 @@ namespace DataAccess.Repositories
                                 .Exists(ex => ex
                                     .Field("host.network.in.bytes")
                                     )
-                                ).Filter(f => f
+                                )
+                            .Filter(f => f
                                 .DateRange(dr => dr
                                     .Field("@timestamp")
                                     .GreaterThanOrEquals("now-1m")

@@ -10,7 +10,6 @@ namespace Api
 {
     public class Program
     {
-        private static DataRepository dr = new DataRepository();
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
