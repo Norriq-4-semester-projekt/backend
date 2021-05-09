@@ -21,7 +21,7 @@ namespace Api.Controllers.v1
         {
             try
             {
-                return this.ReturnResponse(await UnitOfWork.Data.GetLatestBytesIn(), 200);
+                return this.ReturnResponse(await UnitOfWork.NetworkData.GetLatestBytesIn(), 200);
             }
             catch (Exception Ex)
             {
@@ -33,7 +33,7 @@ namespace Api.Controllers.v1
         {
             try
             {
-                return this.ReturnResponse(await UnitOfWork.Data.GetLatestBytesOut(), 200);
+                return this.ReturnResponse(await UnitOfWork.NetworkData.GetLatestBytesOut(), 200);
             }
             catch (Exception Ex)
             {
@@ -58,6 +58,18 @@ namespace Api.Controllers.v1
             try
             {
                 return this.ReturnResponse(await UnitOfWork.MemoryData.GetLatest(), 200);
+            }
+            catch (Exception Ex)
+            {
+                return this.CatchResponse(Ex, Ex.Message, 501);
+            }
+        }
+        [HttpGet]
+        public async Task<ActionResult> GetLatestSystemLoadData()
+        {
+            try
+            {
+                return this.ReturnResponse(await UnitOfWork.SystemLoadData.GetLatest(), 200);
             }
             catch (Exception Ex)
             {

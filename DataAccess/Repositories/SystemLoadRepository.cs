@@ -27,7 +27,7 @@ namespace DataAccess.Repositories
             throw new NotImplementedException();
         }
 
-        public async Task<Data> GetLatestLoad15Data()
+        public async Task<Data> GetLatest()
         {
             var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
                 .Index("metricbeat-*")
@@ -57,10 +57,10 @@ namespace DataAccess.Repositories
                         )
                     )
                 ));
-            Data networksData = new Data();
-            networksData.Timestamp = response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets.FirstOrDefault().KeyAsString;
-            networksData.Value = (float)response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets.FirstOrDefault().AverageBucket("AVGnetIN").Value.Value;
-            return networksData;
+            Data systemloadData = new Data();
+            systemloadData.Timestamp = response.Aggregations.DateHistogram("SystemLoadDateHistogram").Buckets.FirstOrDefault().KeyAsString;
+            systemloadData.Value = (float)response.Aggregations.DateHistogram("SystemLoadDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgSystemLoad").Value.Value;
+            return systemloadData;
 
             Console.WriteLine(response.DebugInformation);
 

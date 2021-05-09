@@ -9,6 +9,6 @@ namespace DataAccess.Interfaces
 {
     public interface ISystemLoadRepository : IGenericRepository<SystemLoadData>
     {
-        Task<Data> GetLatestLoad15Data();
+        Task<Data> GetLatest();
     }
 }

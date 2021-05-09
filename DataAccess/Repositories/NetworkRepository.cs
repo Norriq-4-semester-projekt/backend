@@ -36,7 +36,7 @@ namespace DataAccess.Repositories
         {
             var response = ElasticConnection.Instance.client.Search<NetworkData>(s => s
                 .Index("metricbeat-*")
-                .Size(1000)
+                .Size(5000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
 
@@ -60,7 +60,7 @@ namespace DataAccess.Repositories
         {
             var response = ElasticConnection.Instance.client.Search<NetworkData>(s => s
                 .Index("metricbeat-*")
-                .Size(1000)
+                .Size(5000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
 
@@ -112,8 +112,8 @@ namespace DataAccess.Repositories
                     )
                 ));
             Data networksData = new Data();
-            networksData.Timestamp = response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets.FirstOrDefault().KeyAsString;
-            networksData.Value = (float)response.Aggregations.DateHistogram("myNetworkDateHistogram").Buckets.FirstOrDefault().AverageBucket("AVGnetIN").Value.Value;
+            networksData.Timestamp = response.Aggregations.DateHistogram("NetworkBytesInDateHistogram").Buckets.FirstOrDefault().KeyAsString;
+            networksData.Value = (float)response.Aggregations.DateHistogram("NetworkBytesInDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgBytesIn").Value.Value;
             return networksData;
 
             Console.WriteLine(response.DebugInformation);
