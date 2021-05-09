@@ -2,6 +2,7 @@
 using Nest;
 using System;
 using Microsoft.Extensions.Configuration;
+using DataAccess.Entities.Network;
 
 namespace DataAccess
 {
@@ -23,7 +24,7 @@ namespace DataAccess
             settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
             settings.PrettyJson(); // Good for DEBUG
             settings.DisableDirectStreaming();
-            //settings.DefaultMappingFor<NetworksData>(m => m
+            //settings.DefaultMappingFor<NetworkData>(m => m
             //    .IndexName("metricbeat.*"));
             _client = new ElasticClient(settings);
         }
@@ -60,8 +61,8 @@ namespace DataAccess
             settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
             settings.PrettyJson(); // Good for DEBUG
             settings.DisableDirectStreaming();
-            settings.DefaultMappingFor<NetworksData>(m => m
-                .IndexName(indexName));
+            //settings.DefaultMappingFor<NetworkData>(m => m
+            //    .IndexName(indexName));
             _client = new ElasticClient(settings);
         }
     }

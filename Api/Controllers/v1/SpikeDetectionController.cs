@@ -17,11 +17,11 @@ namespace Api.Controllers.v1
         }
 
         [HttpGet]
-        public async Task<ActionResult> NetworkBytesIn()
+        public async Task<ActionResult> GetLatestNetworkBytesIn()
         {
             try
             {
-                return this.ReturnResponse(await UnitOfWork.Data.GetLatest(), 200);
+                return this.ReturnResponse(await UnitOfWork.Data.GetLatestBytesIn(), 200);
             }
             catch (Exception Ex)
             {
@@ -29,11 +29,35 @@ namespace Api.Controllers.v1
             }
         }
         [HttpGet]
-        public async Task<ActionResult> CpuCalcData()
+        public async Task<ActionResult> GetLatestNetworkBytesOut()
         {
             try
             {
-                return this.ReturnResponse(await UnitOfWork.CpuCalc.GetLatest(), 200);
+                return this.ReturnResponse(await UnitOfWork.Data.GetLatestBytesOut(), 200);
+            }
+            catch (Exception Ex)
+            {
+                return this.CatchResponse(Ex, Ex.Message, 501);
+            }
+        }
+        [HttpGet]
+        public async Task<ActionResult> GetLatestCpuData()
+        {
+            try
+            {
+                return this.ReturnResponse(await UnitOfWork.CpuData.GetLatest(), 200);
+            }
+            catch (Exception Ex)
+            {
+                return this.CatchResponse(Ex, Ex.Message, 501);
+            }
+        }
+        [HttpGet]
+        public async Task<ActionResult> GetLatestMemoryData()
+        {
+            try
+            {
+                return this.ReturnResponse(await UnitOfWork.MemoryData.GetLatest(), 200);
             }
             catch (Exception Ex)
             {

@@ -2,9 +2,9 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace DataAccess.Entities
+namespace DataAccess.Entities.Network
 {
-    public class NetworksData
+    public class NetworkData
     {
         [Text(Name = "@timestamp")]
         public string Timestamp { get; set; }
@@ -20,6 +20,12 @@ namespace DataAccess.Entities
     public class Network
     {
         public In In { get; set; }
+        public Out Out { get; set; }
+
+    }
+    public class Out
+    {
+        public long Bytes { get; set; }
     }
 
     public class In
@@ -28,7 +34,4 @@ namespace DataAccess.Entities
     }
 }
 
-//                    .Field("system.cpu.user.pct")
-//                .Field("system.cpu.system.pct")
-//                .Field("system.cpu.cores")
 

@@ -5,19 +5,26 @@ namespace DataAccess.Service
     public class UnitOfWork : IUnitOfWork
     {
         public IUserRepository Users { get; }
-        public IDataRepository Data { get; }
-        public ICpuRepository CpuCalc { get; set; }
+        public INetworkRepository Data { get; }
+        public ICpuRepository CpuData { get; set; }
         public IHttpStatusRepository HttpStatus { get; set; }
+        public IMemoryRepository MemoryData { get; set; }
+        public ISystemLoadRepository SystemLoadData { get; set; }
+
 
         public UnitOfWork(IUserRepository userRepository,
-                          IDataRepository dataRepository,
+                          INetworkRepository dataRepository,
                           IHttpStatusRepository httpstatusRepository,
+                          IMemoryRepository memoryRepository,
+                          ISystemLoadRepository systemloadRepository,
                           ICpuRepository cpuRepository)
         {
             Users = userRepository;
             Data = dataRepository;
             HttpStatus = httpstatusRepository;
-            CpuCalc = cpuRepository;
+            CpuData = cpuRepository;
+            MemoryData = memoryRepository;
+            SystemLoadData = systemloadRepository;
         }
     }
 }
