@@ -20,7 +20,7 @@ namespace WorkerService
                     services.AddHostedService<MemorySpikeDetection>();
                     services.AddHostedService<SystemLoadSpikeDetection>();
                     services.AddHostedService<CpuSpikeDetection>();
-
+                    services.AddHostedService<UpdateML>();
                     //services.AddHostedService<NetworkChangePointDetection>();
 
                     services.AddHostedService<Worker>();

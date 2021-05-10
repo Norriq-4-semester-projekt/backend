@@ -1,4 +1,6 @@
 ﻿using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace WorkerService
 {
@@ -12,6 +14,20 @@ namespace WorkerService
             string fullPath = Path.Combine(assemblyFolderPath, relativePath);
 
             return fullPath;
+        }
+
+        public static async Task<string> GetJsonResponse(string endPoint)
+        {
+            HttpClientHandler handler = new HttpClientHandler()
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+            HttpClient httpClient = new HttpClient(handler);
+
+            HttpResponseMessage cpuResponse = await httpClient.GetAsync(endPoint);
+            cpuResponse.EnsureSuccessStatusCode();
+            string responseBody = await cpuResponse.Content.ReadAsStringAsync();
+            return responseBody;
         }
     }
 }
