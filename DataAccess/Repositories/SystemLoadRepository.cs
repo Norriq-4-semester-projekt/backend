@@ -22,9 +22,29 @@ namespace DataAccess.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<SystemLoadData>> GetAll()
+        public async Task<IEnumerable<SystemLoadData>> GetAll()
         {
-            throw new NotImplementedException();
+            var response = ElasticConnection.Instance.client.Search<SystemLoadData>(s => s
+                .Index("metricbeat-*")
+                .Size(1000)
+                .Sort(ss => ss
+                .Descending(de => de.Timestamp))
+
+                    .Query(q => q
+                        .Bool(b => b
+                            .Must(sh => sh
+                                .Exists(ex => ex
+                                    .Field("system.load.15")
+                                    )
+                                )
+                            )
+                        )
+                .DocValueFields(dvf => dvf
+                    .Fields("system.load.15", "@timestamp"))
+                 );
+
+            Console.WriteLine(response.DebugInformation);
+            return response.Documents.AsEnumerable<SystemLoadData>();
         }
 
         public async Task<Data> GetLatest()

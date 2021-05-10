@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Api.Controllers.v1
@@ -30,6 +28,7 @@ namespace Api.Controllers.v1
                 return this.CatchResponse(Ex, Ex.Message, 501);
             }
         }
+
         [HttpGet]
         public async Task<ActionResult> GetNetworkBytesOut()
         {
@@ -43,5 +42,43 @@ namespace Api.Controllers.v1
             }
         }
 
+        [HttpGet]
+        public async Task<ActionResult> GetMemoryData()
+        {
+            try
+            {
+                return this.ReturnResponse(await UnitOfWork.MemoryData.GetAll(), 200);
+            }
+            catch (Exception Ex)
+            {
+                return this.CatchResponse(Ex, Ex.Message, 501);
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetSystemLoadData()
+        {
+            try
+            {
+                return this.ReturnResponse(await UnitOfWork.SystemLoadData.GetAll(), 200);
+            }
+            catch (Exception Ex)
+            {
+                return this.CatchResponse(Ex, Ex.Message, 501);
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetCpuData()
+        {
+            try
+            {
+                return this.ReturnResponse(await UnitOfWork.CpuData.GetAll(), 200);
+            }
+            catch (Exception Ex)
+            {
+                return this.CatchResponse(Ex, Ex.Message, 501);
+            }
+        }
     }
 }

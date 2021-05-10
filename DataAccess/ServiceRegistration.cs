@@ -17,7 +17,6 @@ namespace DataAccess
             services.AddTransient<ICpuRepository, CpuRepository>();
             services.AddTransient<IMemoryRepository, MemoryRepository>();
             services.AddTransient<ISystemLoadRepository, SystemLoadRepository>();
-
         }
     }
 }

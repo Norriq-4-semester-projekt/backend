@@ -1,6 +1,4 @@
 ﻿using Nest;
-using Newtonsoft.Json;
-using System.Collections.Generic;
 
 namespace DataAccess.Entities.Network
 {
@@ -21,8 +19,8 @@ namespace DataAccess.Entities.Network
     {
         public In In { get; set; }
         public Out Out { get; set; }
-
     }
+
     public class Out
     {
         public long Bytes { get; set; }
@@ -33,5 +31,3 @@ namespace DataAccess.Entities.Network
         public long Bytes { get; set; }
     }
 }
-
-

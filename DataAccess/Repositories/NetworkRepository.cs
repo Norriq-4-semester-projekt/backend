@@ -1,17 +1,12 @@
 ﻿using DataAccess.Entities;
+using DataAccess.Entities.Network;
 using DataAccess.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Nest;
-using System.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using System.Net.Http;
-using Newtonsoft.Json;
-using System.Net.Http.Headers;
-using Telegram.Bot;
-using Telegram.Bot.Types;
-using DataAccess.Entities.Network;
 
 namespace DataAccess.Repositories
 {
@@ -56,6 +51,7 @@ namespace DataAccess.Repositories
             Console.WriteLine(response.DebugInformation);
             return response.Documents.AsEnumerable<NetworkData>();
         }
+
         public async Task<IEnumerable<NetworkData>> GetAllBytesOut()
         {
             var response = ElasticConnection.Instance.client.Search<NetworkData>(s => s
@@ -120,6 +116,7 @@ namespace DataAccess.Repositories
 
             return null;
         }
+
         public async Task<Data> GetLatestBytesOut()
         {
             var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
@@ -159,6 +156,7 @@ namespace DataAccess.Repositories
 
             return null;
         }
+
         public async Task<List<Data>> GetLatestMonth()
         {
             var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
@@ -193,18 +191,15 @@ namespace DataAccess.Repositories
             var dateHistogram = response.Aggregations.DateHistogram("myNetworkDateHistogram");
             foreach (var item in dateHistogram.Buckets)
             {
-            Data networksData = new Data();
-            networksData.Timestamp = item.KeyAsString;
-            networksData.Value = (float)item.AverageBucket("AVGnetIN").Value.Value;
-            networksDataList.Add(networksData);
-
+                Data networksData = new Data();
+                networksData.Timestamp = item.KeyAsString;
+                networksData.Value = (float)item.AverageBucket("AVGnetIN").Value.Value;
+                networksDataList.Add(networksData);
             }
-            
+
             Console.WriteLine(response.DebugInformation);
             return networksDataList;
             return null;
-
-
         }
 
         public Task<ActionResult> UpdateByQueryAsync(NetworkData entity, NetworkData u1)

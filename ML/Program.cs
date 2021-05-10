@@ -1,13 +1,11 @@
 ﻿using Microsoft.ML;
 using Microsoft.ML.Data;
-using Nest;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Json;
-using System.Text;
+
 namespace ML
 {
     internal static class Program

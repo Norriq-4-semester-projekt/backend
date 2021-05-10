@@ -1,8 +1,4 @@
 ﻿using Nest;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace DataAccess.Entities.Memory
 {
@@ -12,8 +8,6 @@ namespace DataAccess.Entities.Memory
         public string Timestamp { get; set; }
 
         public System System { get; set; }
-
-        public float Value { get; set; }
     }
 
     public class System
@@ -30,6 +24,7 @@ namespace DataAccess.Entities.Memory
     {
         public Used Used { get; set; }
     }
+
     public class Used
     {
         public long Bytes { get; set; }

@@ -22,7 +22,7 @@ namespace DataAccess.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<MemoryData>> GetAll()
+        public async Task<IEnumerable<MemoryData>> GetAll()
         {
             var response = ElasticConnection.Instance.client.Search<MemoryData>(s => s
                 .Index("metricbeat-*")
@@ -44,7 +44,7 @@ namespace DataAccess.Repositories
                  );
 
             Console.WriteLine(response.DebugInformation);
-            return (Task<IEnumerable<MemoryData>>)response.Documents.AsEnumerable<MemoryData>();
+            return response.Documents.AsEnumerable<MemoryData>();
         }
 
         public async Task<Data> GetLatest()
@@ -72,14 +72,14 @@ namespace DataAccess.Repositories
                         .Field("@timestamp")
                         .CalendarInterval(DateInterval.Minute)
                         .Aggregations(aggs => aggs
-                            .Average("MemoryUsedByte", avg => avg
+                            .Average("AvgMemory", avg => avg
                             .Field("system.memory.actual.used.bytes"))
                         )
                     )
                 ));
             Data memoryData = new Data();
             memoryData.Timestamp = response.Aggregations.DateHistogram("MemoryDateHistogram").Buckets.FirstOrDefault().KeyAsString;
-            memoryData.Value = (float)response.Aggregations.DateHistogram("MemoryDateHistogram").Buckets.FirstOrDefault().AverageBucket("MemoryUsedByte").Value.Value;
+            memoryData.Value = (float)response.Aggregations.DateHistogram("MemoryDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgMemory").Value.Value;
             return memoryData;
 
             Console.WriteLine(response.DebugInformation);

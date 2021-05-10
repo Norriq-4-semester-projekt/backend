@@ -1,8 +1,6 @@
-﻿using DataAccess.Entities;
+﻿using Microsoft.Extensions.Configuration;
 using Nest;
 using System;
-using Microsoft.Extensions.Configuration;
-using DataAccess.Entities.Network;
 
 namespace DataAccess
 {
@@ -13,7 +11,7 @@ namespace DataAccess
         private static ConnectionSettings settings;
         private ElasticClient _client;
         public ElasticClient client { get => _client; }
-        IConfiguration _configuration;
+        private IConfiguration _configuration;
 
         private ElasticConnection()
         {

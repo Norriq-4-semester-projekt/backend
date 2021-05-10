@@ -104,22 +104,41 @@ namespace DataAccess.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<CpuData>> GetAll()
+        public async Task<IEnumerable<CpuData>> GetAll()
         {
-            throw new NotImplementedException();
+            var response = ElasticConnection.Instance.client.Search<CpuData>(s => s
+                .Index("metricbeat-*")
+                .Size(1000)
+                .Sort(ss => ss
+                .Descending(de => de.Timestamp))
+
+                    .Query(q => q
+                        .Bool(b => b
+                            .Must(sh => sh
+                                .Exists(ex => ex
+                                    .Field("host.cpu.pct")
+                                    )
+                                )
+                            )
+                        )
+                .DocValueFields(dvf => dvf
+                    .Fields("host.cpu.pct", "@timestamp"))
+                 );
+
+            Console.WriteLine(response.DebugInformation);
+            return response.Documents.AsEnumerable();
         }
 
         public async Task<Data> GetLatest()
         {
             var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
                 .Index("metricbeat-*")
+                    .Size(0)
                     .Query(q => q
                         .Bool(b => b
                             .Must(sh => sh
                                 .Exists(ex => ex
-                                    .Field("system.cpu.user.pct")
-                                    .Field("system.cpu.system.pct")
-                                    .Field("system.cpu.cores")
+                                    .Field("host.cpu.pct")
                                     )
                                 )
                             .Filter(f => f
@@ -129,32 +148,20 @@ namespace DataAccess.Repositories
                                     )
                                 )
                             )
-                        )
-                    .Aggregations(aggs1 => aggs1
-                        .DateHistogram("myCpuDateHistogram", date => date
+                            )
+                    .Aggregations(aggs => aggs
+                        .DateHistogram("CpuDateHistogram", date => date
                         .Field("@timestamp")
                         .CalendarInterval(DateInterval.Minute)
                         .Aggregations(aggs => aggs
-                            .Average("AvgUserCpu", auc => auc
-                            .Field("system.cpu.user.pct")
-                            )
-                        .Average("AvgSystemCpu", asc => asc
-                        .Field("system.cpu.system.pct")
+                            .Average("AvgCpu", avg => avg
+                            .Field("host.cpu.pct"))
                         )
-                        .Max("CpuCoresMax", mcpu => mcpu
-                        .Field("system.cpu.cores")
-                    ).BucketScript("CpuCalc", bs => bs
-                        .BucketsPath(bp => bp
-                        .Add("user", "AvgUserCpu")
-                        .Add("system", "AvgSystemCpu")
-                        .Add("cores", "CpuCoresMax"))
-                        .Script("(params.user + params.system) / params.cores")))
-                )
-                        )
-            );
+                    )
+                ));
             Data cpuData = new Data();
-            cpuData.Timestamp = response.Aggregations.DateHistogram("myCpuDateHistogram").Buckets.FirstOrDefault().KeyAsString;
-            cpuData.Value = (float)response.Aggregations.DateHistogram("myCpuDateHistogram").Buckets.FirstOrDefault().AverageBucket("CpuCalc").Value.Value;
+            cpuData.Timestamp = response.Aggregations.DateHistogram("CpuDateHistogram").Buckets.FirstOrDefault().KeyAsString;
+            cpuData.Value = (float)response.Aggregations.DateHistogram("CpuDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgCpu").Value.Value;
             return cpuData;
 
             Console.WriteLine(response.DebugInformation);

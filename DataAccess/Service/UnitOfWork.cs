@@ -11,7 +11,6 @@ namespace DataAccess.Service
         public IMemoryRepository MemoryData { get; set; }
         public ISystemLoadRepository SystemLoadData { get; set; }
 
-
         public UnitOfWork(IUserRepository userRepository,
                           INetworkRepository networkRepository,
                           IHttpStatusRepository httpstatusRepository,

@@ -1,4 +1,4 @@
-﻿using DataAccess.Entities.Network;
+﻿using DataAccess.Entities.Load;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.ML;
@@ -14,14 +14,14 @@ using WorkerService.Entities;
 
 namespace WorkerService.Services
 {
-    internal class NetworkBytesOutSpikeDetection : IHostedService, IDisposable
+    internal class SystemLoadSpikeDetection : IHostedService, IDisposable
     {
         private int executionCount = 0;
-        private readonly ILogger<NetworkBytesOutSpikeDetection> _logger;
+        private readonly ILogger<SystemLoadSpikeDetection> _logger;
         private Timer _timer;
 
         private static string BaseDatasetsRelativePath = @"../../../../Input";
-        private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/network_bytes_out_trainingdata.json";
+        private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/systemload_trainingdata.json";
         private static string DatasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
 
         private static MLContext mlContext;
@@ -35,7 +35,7 @@ namespace WorkerService.Services
 
         private HttpClient httpClient;
 
-        public NetworkBytesOutSpikeDetection(ILogger<NetworkBytesOutSpikeDetection> logger)
+        public SystemLoadSpikeDetection(ILogger<SystemLoadSpikeDetection> logger)
         {
             httpClient = new HttpClient(handler);
             _logger = logger;
@@ -44,14 +44,14 @@ namespace WorkerService.Services
         public Task StartAsync(CancellationToken stoppingToken)
         {
             string json = System.IO.File.ReadAllText(DatasetPath);
-            List<NetworkData> data = JsonConvert.DeserializeObject<List<NetworkData>>(json);
+            List<SystemLoadData> data = JsonConvert.DeserializeObject<List<SystemLoadData>>(json);
 
             foreach (var item in data)
             {
-                Data networksData = new Data();
-                networksData.Value = item.Host.Network.Out.Bytes;
-                networksData.Timestamp = item.Timestamp;
-                trainingData.Add(networksData);
+                Data systemloadData = new Data();
+                systemloadData.Value = item.System.Load.GetI();
+                systemloadData.Timestamp = item.Timestamp;
+                trainingData.Add(systemloadData);
             }
             Data emptyList = new Data();
             var spikeResult = SpikeDetection<Data>.DetectSpikeAsync(emptyList, trainingData, startSpikes);
@@ -86,7 +86,7 @@ namespace WorkerService.Services
             {
                 Data latestData = new Data();
                 //HttpResponseMessage response = await httpClient.GetAsync("https://localhost:5001/v1/GetLatestNetworkBytesIn");
-                HttpResponseMessage response = await httpClient.GetAsync("https://localhost:44394/v1/SpikeDetection/GetLatestNetworkBytesOut");
+                HttpResponseMessage response = await httpClient.GetAsync("https://localhost:44394/v1/SpikeDetection/GetLatestNetworkBytesIn");
 
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
@@ -104,7 +104,7 @@ namespace WorkerService.Services
             {
                 var telegramBot = new TelegramBotClient("1618808038:AAHs2nHXf_sYeOIgwiIr1nxqMz6Uul-w4nA");
                 await telegramBot.SendTextMessageAsync("-1001399759228", "Network Spike Detected!\n\n" +
-                    "Average Bytes Out: " + spikes.Last().Value + "\n" +
+                    "Average Bytes In: " + spikes.Last().Value + "\n" +
                     "Date: " + spikes.Last().Timestamp);
             }
 
@@ -126,3 +126,4 @@ namespace WorkerService.Services
         }
     }
 }
+

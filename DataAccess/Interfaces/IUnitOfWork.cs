@@ -10,6 +10,5 @@ namespace DataAccess.Interfaces
         public ICpuRepository CpuData { get; }
         public IMemoryRepository MemoryData { get; }
         public ISystemLoadRepository SystemLoadData { get; }
-
     }
 }

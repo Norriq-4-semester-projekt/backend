@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DataAccess.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using DataAccess.Interfaces;
 
 namespace Api.Controllers.v1
 {
@@ -28,6 +28,7 @@ namespace Api.Controllers.v1
                 return this.CatchResponse(Ex, Ex.Message, 501);
             }
         }
+
         [HttpGet]
         public async Task<ActionResult> GetLatestNetworkBytesOut()
         {
@@ -40,6 +41,7 @@ namespace Api.Controllers.v1
                 return this.CatchResponse(Ex, Ex.Message, 501);
             }
         }
+
         [HttpGet]
         public async Task<ActionResult> GetLatestCpuData()
         {
@@ -52,6 +54,7 @@ namespace Api.Controllers.v1
                 return this.CatchResponse(Ex, Ex.Message, 501);
             }
         }
+
         [HttpGet]
         public async Task<ActionResult> GetLatestMemoryData()
         {
@@ -64,6 +67,7 @@ namespace Api.Controllers.v1
                 return this.CatchResponse(Ex, Ex.Message, 501);
             }
         }
+
         [HttpGet]
         public async Task<ActionResult> GetLatestSystemLoadData()
         {

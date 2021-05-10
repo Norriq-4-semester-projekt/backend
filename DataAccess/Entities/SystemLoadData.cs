@@ -1,4 +1,5 @@
 ﻿using Nest;
+using System;
 
 namespace DataAccess.Entities.Load
 {
@@ -7,7 +8,6 @@ namespace DataAccess.Entities.Load
         [Text(Name = "@timestamp")]
         public string Timestamp { get; set; }
 
-        public float Value { get; set; }
         public System System { get; set; }
     }
 
@@ -18,6 +18,16 @@ namespace DataAccess.Entities.Load
 
     public class Load
     {
-        public int number { get; set; }
+        public float i = 15;
+
+        public float GetI()
+        {
+            return i;
+        }
+
+        public void SetI(float value)
+        {
+            i = value;
+        }
     }
 }

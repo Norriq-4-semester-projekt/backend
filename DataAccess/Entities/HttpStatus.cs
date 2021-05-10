@@ -1,6 +1,4 @@
 ﻿using Nest;
-using Newtonsoft.Json;
-using System.Collections.Generic;
 
 namespace DataAccess.Entities
 {
@@ -10,7 +8,6 @@ namespace DataAccess.Entities
         public string Timestamp { get; set; }
 
         public string Status { get; set; }
-
     }
 
     //public class Host

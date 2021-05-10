@@ -1,9 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using WorkerService.Services;
 
 namespace WorkerService
@@ -21,6 +17,9 @@ namespace WorkerService
                 {
                     services.AddHostedService<NetworkBytesOutSpikeDetection>();
                     services.AddHostedService<NetworkBytesInSpikeDetection>();
+                    services.AddHostedService<MemorySpikeDetection>();
+                    services.AddHostedService<SystemLoadSpikeDetection>();
+
 
                     //services.AddHostedService<NetworkChangePointDetection>();
 

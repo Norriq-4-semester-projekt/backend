@@ -16,6 +16,7 @@ namespace Api.Controllers.v1
             _configuration = configuration;
             _unitOfWork = unitOfWork;
         }
+
         protected IUnitOfWork UnitOfWork
         {
             get { return _unitOfWork; }

@@ -1,5 +1,4 @@
 ﻿using DataAccess.Service;
-using DataAccess.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Nest;
 using System;
