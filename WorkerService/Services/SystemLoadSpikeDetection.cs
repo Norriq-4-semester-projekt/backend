@@ -103,8 +103,8 @@ namespace WorkerService.Services
             if (spikeDetected)
             {
                 var telegramBot = new TelegramBotClient("1618808038:AAHs2nHXf_sYeOIgwiIr1nxqMz6Uul-w4nA");
-                await telegramBot.SendTextMessageAsync("-1001399759228", "Network Spike Detected!\n\n" +
-                    "Average Bytes In: " + spikes.Last().Value + "\n" +
+                await telegramBot.SendTextMessageAsync("-1001399759228", "System Load Spike Detected!\n\n" +
+                    "Average System Load 15: " + spikes.Last().Value + "\n" +
                     "Date: " + spikes.Last().Timestamp);
             }
 
