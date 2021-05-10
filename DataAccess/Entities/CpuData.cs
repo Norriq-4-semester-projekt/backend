@@ -17,6 +17,6 @@ namespace DataAccess.Entities.Cpu
 
     public class Cpu
     {
-        public long Pct { get; set; }
+        public float Pct { get; set; }
     }
 }

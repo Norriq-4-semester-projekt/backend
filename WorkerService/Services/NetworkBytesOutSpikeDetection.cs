@@ -85,8 +85,7 @@ namespace WorkerService.Services
             try
             {
                 Data latestData = new Data();
-                //HttpResponseMessage response = await httpClient.GetAsync("https://localhost:5001/v1/GetLatestNetworkBytesIn");
-                HttpResponseMessage response = await httpClient.GetAsync("https://localhost:44394/v1/SpikeDetection/GetLatestNetworkBytesOut");
+                HttpResponseMessage response = await httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesIn");
 
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();

@@ -15,11 +15,11 @@ namespace WorkerService
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    //services.AddHostedService<NetworkBytesOutSpikeDetection>();
+                    services.AddHostedService<NetworkBytesOutSpikeDetection>();
                     services.AddHostedService<NetworkBytesInSpikeDetection>();
                     services.AddHostedService<MemorySpikeDetection>();
                     services.AddHostedService<SystemLoadSpikeDetection>();
-
+                    services.AddHostedService<CpuSpikeDetection>();
 
                     //services.AddHostedService<NetworkChangePointDetection>();
 

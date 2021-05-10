@@ -49,7 +49,7 @@ namespace WorkerService.Services
             foreach (var item in data)
             {
                 Data systemloadData = new Data();
-                systemloadData.Value = item.System.Load.GetI();
+                systemloadData.Value = item.System.Load.Number;
                 systemloadData.Timestamp = item.Timestamp;
                 trainingData.Add(systemloadData);
             }
@@ -85,8 +85,7 @@ namespace WorkerService.Services
             try
             {
                 Data latestData = new Data();
-                //HttpResponseMessage response = await httpClient.GetAsync("https://localhost:5001/v1/GetLatestNetworkBytesIn");
-                HttpResponseMessage response = await httpClient.GetAsync("https://localhost:44394/v1/SpikeDetection/GetLatestNetworkBytesIn");
+                HttpResponseMessage response = await httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesIn");
 
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
@@ -126,4 +125,3 @@ namespace WorkerService.Services
         }
     }
 }
-

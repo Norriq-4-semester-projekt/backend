@@ -18,16 +18,7 @@ namespace DataAccess.Entities.Load
 
     public class Load
     {
-        public float i = 15;
-
-        public float GetI()
-        {
-            return i;
-        }
-
-        public void SetI(float value)
-        {
-            i = value;
-        }
+        [Text(Name = "15")]
+        public float Number { get; set; }
     }
 }
