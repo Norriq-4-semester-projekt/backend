@@ -49,7 +49,6 @@ namespace WorkerService.Services
             foreach (var item in data)
             {
                 Data memoryData = new Data();
-                memoryData.FieldType = "MemUsedInBytes";
                 memoryData.Value = item.System.Memory.Actual.Used.Bytes;
                 memoryData.Timestamp = item.Timestamp;
                 trainingData.Add(memoryData);
@@ -91,6 +90,7 @@ namespace WorkerService.Services
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
                 latestData = JsonConvert.DeserializeObject<Data>(responseBody);
+                latestData.FieldType = "MemUsedInBytes";
 
                 var spikeResult = SpikeDetection.DetectSpikeAsync(latestData, trainingData, startSpikes);
                 spikes = spikeResult.Item2;

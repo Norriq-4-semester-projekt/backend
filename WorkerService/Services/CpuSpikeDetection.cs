@@ -51,7 +51,6 @@ namespace WorkerService.Services
             foreach (var item in data)
             {
                 Data cpuData = new Data();
-                cpuData.FieldType = "CpuPct";
                 cpuData.Value = item.Host.Cpu.Pct;
                 cpuData.Timestamp = item.Timestamp;
                 trainingData.Add(cpuData);
@@ -93,6 +92,7 @@ namespace WorkerService.Services
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
                 latestData = JsonConvert.DeserializeObject<Data>(responseBody);
+                latestData.FieldType = "CpuPct";
 
                 var spikeResult = SpikeDetection.DetectSpikeAsync(latestData, trainingData, startSpikes);
                 spike = spikeResult.Item2.Last();

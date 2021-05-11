@@ -49,7 +49,6 @@ namespace WorkerService.Services
             foreach (var item in data)
             {
                 Data networksData = new Data();
-                networksData.FieldType = "NetworkBytesIn";
                 networksData.Value = item.Host.Network.In.Bytes;
                 networksData.Timestamp = item.Timestamp;
                 trainingData.Add(networksData);
@@ -91,6 +90,7 @@ namespace WorkerService.Services
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
                 latestData = JsonConvert.DeserializeObject<Data>(responseBody);
+                latestData.FieldType = "NetworkBytesIn";
 
                 var spikeResult = SpikeDetection.DetectSpikeAsync(latestData, trainingData, startSpikes);
                 spikes = spikeResult.Item2;

@@ -49,7 +49,6 @@ namespace WorkerService.Services
             foreach (var item in data)
             {
                 Data systemloadData = new Data();
-                systemloadData.FieldType = "SystemLoad";
                 systemloadData.Value = item.System.Load.Number;
                 systemloadData.Timestamp = item.Timestamp;
                 trainingData.Add(systemloadData);
@@ -91,6 +90,7 @@ namespace WorkerService.Services
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
                 latestData = JsonConvert.DeserializeObject<Data>(responseBody);
+                latestData.FieldType = "SystemLoad";
 
                 var spikeResult = SpikeDetection.DetectSpikeAsync(latestData, trainingData, startSpikes);
                 spikes = spikeResult.Item2;

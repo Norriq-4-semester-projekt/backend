@@ -12,6 +12,7 @@ namespace WorkerService
     {
         private static MLContext mlContext = new MLContext();
         private static HttpClient httpClient;
+        private static bool firstRun = true;
 
         private static HttpClientHandler handler = new HttpClientHandler()
         {
@@ -24,6 +25,7 @@ namespace WorkerService
             List<Data> testData = new List<Data>(trainingData);
             if (startSpikes > 0)
             {
+                firstRun = false;
                 testData.Add(latestData);
             }
 
@@ -70,9 +72,12 @@ namespace WorkerService
 
         private static async void LogDataAsync(Data data)
         {
-            var StringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-            HttpResponseMessage response2 = await httpClient.PostAsync("https://localhost:5001/v1/SpikeDetection/PostDetectionData", StringContent);
-            response2.EnsureSuccessStatusCode();
+            if (!firstRun)
+            {
+                var StringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                HttpResponseMessage response2 = await httpClient.PostAsync("https://localhost:5001/v1/SpikeDetection/PostDetectionData", StringContent);
+                response2.EnsureSuccessStatusCode();
+            }
         }
 
         private static IDataView CreateEmptyDataView()
