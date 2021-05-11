@@ -102,5 +102,17 @@ namespace Api.Controllers.v1
                 return this.CatchResponse(Ex, Ex.Message, 501);
             }
         }
+        [HttpGet]
+        public async Task<ActionResult> GetGraphData()
+        {
+            try
+            {
+                return this.ReturnResponse(await UnitOfWork.DetectionLogging.GetAll(), 200);
+            }
+            catch (Exception Ex)
+            {
+                return this.CatchResponse(Ex, Ex.Message, 501);
+            }
+        }
     }
 }

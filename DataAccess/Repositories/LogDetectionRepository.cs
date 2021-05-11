@@ -20,9 +20,33 @@ namespace DataAccess.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Data>> GetAll()
+        public async Task<IEnumerable<Data>> GetAll()
         {
-            throw new NotImplementedException();
+            var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
+               .Index("mldetection")
+               .Size(5000)
+               .Sort(ss => ss
+               .Descending(de => de.Timestamp))
+
+                   .Query(q => q
+                        .Bool(b => b
+                            .Must(m => m
+                                .MatchAll()
+                                )
+                            //.Filter(f => f
+                            //    .DateRange(dr => dr
+                            //        .Field("@timestamp")
+                            //        .GreaterThanOrEquals("now-1d")
+                            //        //.GreaterThanOrEquals(entity.DateRange)
+
+                            //        )
+                            //    )
+                            )
+                        )
+                   );
+
+            Console.WriteLine(response.DebugInformation);
+            return response.Documents.AsEnumerable();
         }
 
         public bool LogDetectionData(Data data)
