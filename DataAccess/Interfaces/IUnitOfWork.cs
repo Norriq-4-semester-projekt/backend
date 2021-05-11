@@ -1,4 +1,7 @@
-﻿using DataAccess.Service;
+﻿using DataAccess.Entities;
+using DataAccess.Service;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace DataAccess.Interfaces
 {
@@ -10,5 +13,6 @@ namespace DataAccess.Interfaces
         public ICpuRepository CpuData { get; }
         public IMemoryRepository MemoryData { get; }
         public ISystemLoadRepository SystemLoadData { get; }
+        public ILogDetectionRepository DetectionLogging { get; set; }
     }
 }

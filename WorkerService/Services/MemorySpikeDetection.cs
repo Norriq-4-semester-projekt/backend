@@ -49,12 +49,13 @@ namespace WorkerService.Services
             foreach (var item in data)
             {
                 Data memoryData = new Data();
+                memoryData.FieldType = "MemUsedInBytes";
                 memoryData.Value = item.System.Memory.Actual.Used.Bytes;
                 memoryData.Timestamp = item.Timestamp;
                 trainingData.Add(memoryData);
             }
             Data emptyList = new Data();
-            var spikeResult = SpikeDetection<Data>.DetectSpikeAsync(emptyList, trainingData, startSpikes);
+            var spikeResult = SpikeDetection.DetectSpikeAsync(emptyList, trainingData, startSpikes);
             startSpikes = spikeResult.Item2.Count;
 
             // Create MLContext to be shared across the model creation workflow objects
@@ -63,7 +64,7 @@ namespace WorkerService.Services
             _logger.LogInformation("Timed Hosted Service running.");
 
             _timer = new Timer(DoWork, null, TimeSpan.Zero,
-                TimeSpan.FromSeconds(20));
+                TimeSpan.FromSeconds(60));
 
             return Task.CompletedTask;
         }
@@ -91,7 +92,7 @@ namespace WorkerService.Services
                 string responseBody = await response.Content.ReadAsStringAsync();
                 latestData = JsonConvert.DeserializeObject<Data>(responseBody);
 
-                var spikeResult = SpikeDetection<Data>.DetectSpikeAsync(latestData, trainingData, startSpikes);
+                var spikeResult = SpikeDetection.DetectSpikeAsync(latestData, trainingData, startSpikes);
                 spikes = spikeResult.Item2;
                 spikeDetected = spikeResult.Item1;
             }

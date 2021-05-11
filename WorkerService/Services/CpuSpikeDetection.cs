@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -50,12 +51,13 @@ namespace WorkerService.Services
             foreach (var item in data)
             {
                 Data cpuData = new Data();
+                cpuData.FieldType = "CpuPct";
                 cpuData.Value = item.Host.Cpu.Pct;
                 cpuData.Timestamp = item.Timestamp;
                 trainingData.Add(cpuData);
             }
             Data emptyList = new Data();
-            var spikeResult = SpikeDetection<Data>.DetectSpikeAsync(emptyList, trainingData, startSpikes);
+            var spikeResult = SpikeDetection.DetectSpikeAsync(emptyList, trainingData, startSpikes);
             startSpikes = spikeResult.Item2.Count;
 
             // Create MLContext to be shared across the model creation workflow objects
@@ -64,7 +66,7 @@ namespace WorkerService.Services
             _logger.LogInformation("Timed Hosted Service running.");
 
             _timer = new Timer(DoWork, null, TimeSpan.Zero,
-                TimeSpan.FromSeconds(20));
+                TimeSpan.FromSeconds(60));
 
             return Task.CompletedTask;
         }
@@ -82,7 +84,7 @@ namespace WorkerService.Services
         public async Task<bool> DetectSpikeAsync()
         {
             bool spikeDetected = false;
-            List<Data> spikes;
+            Data spike;
             try
             {
                 Data latestData = new Data();
@@ -92,8 +94,8 @@ namespace WorkerService.Services
                 string responseBody = await response.Content.ReadAsStringAsync();
                 latestData = JsonConvert.DeserializeObject<Data>(responseBody);
 
-                var spikeResult = SpikeDetection<Data>.DetectSpikeAsync(latestData, trainingData, startSpikes);
-                spikes = spikeResult.Item2;
+                var spikeResult = SpikeDetection.DetectSpikeAsync(latestData, trainingData, startSpikes);
+                spike = spikeResult.Item2.Last();
                 spikeDetected = spikeResult.Item1;
             }
             catch (Exception)
@@ -104,8 +106,8 @@ namespace WorkerService.Services
             {
                 var telegramBot = new TelegramBotClient("1618808038:AAHs2nHXf_sYeOIgwiIr1nxqMz6Uul-w4nA");
                 await telegramBot.SendTextMessageAsync("-1001399759228", "CPU Spike Detected!\n\n" +
-                    "CPU % Used: " + spikes.Last().Value + "\n" +
-                    "Date: " + spikes.Last().Timestamp);
+                    "CPU % Used: " + spike.Value + "\n" +
+                    "Date: " + spike.Timestamp);
             }
 
             return spikeDetected;

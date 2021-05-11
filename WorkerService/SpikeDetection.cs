@@ -1,24 +1,34 @@
 ﻿using Microsoft.ML;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using WorkerService.Entities;
 
 namespace WorkerService
 {
-    public static class SpikeDetection<T> where T : class
+    public static class SpikeDetection
     {
         private static MLContext mlContext = new MLContext();
+        private static HttpClient httpClient;
 
-        public static (bool, List<T>) DetectSpikeAsync(T latestData, List<T> trainingData, int startSpikes)
+        private static HttpClientHandler handler = new HttpClientHandler()
         {
-            List<T> testData = new List<T>(trainingData);
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        };
+
+        public static (bool, List<Data>) DetectSpikeAsync(Data latestData, List<Data> trainingData, int startSpikes)
+        {
+            httpClient = new HttpClient(handler);
+            List<Data> testData = new List<Data>(trainingData);
             if (startSpikes > 0)
             {
                 testData.Add(latestData);
             }
 
             // Load Data
-            var dataView = mlContext.Data.LoadFromEnumerable<T>(testData);
+            var dataView = mlContext.Data.LoadFromEnumerable<Data>(testData);
             //assign the Number of records in dataset file to cosntant variable
             int size = testData.Count;
             //STEP 1: Create Esimtator
@@ -33,7 +43,7 @@ namespace WorkerService
             IEnumerable<Predictions> predictions = mlContext.Data.CreateEnumerable<Predictions>(transformedData, reuseRowObject: false);
 
             List<string> spikeList = new List<string>();
-            List<T> spikes = new List<T>();
+            List<Data> spikes = new List<Data>();
             int i = 0;
             foreach (var p in predictions)
             {
@@ -47,18 +57,28 @@ namespace WorkerService
 
             if (spikeList.Count > startSpikes)
             {
+                spikes.Last().IsSpike = true;
+                LogDataAsync(spikes.Last());
                 return (true, spikes);
             }
             else
             {
+                LogDataAsync(latestData);
                 return (false, spikes);
             }
+        }
+
+        private static async void LogDataAsync(Data data)
+        {
+            var StringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+            HttpResponseMessage response2 = await httpClient.PostAsync("https://localhost:5001/v1/SpikeDetection/PostDetectionData", StringContent);
+            response2.EnsureSuccessStatusCode();
         }
 
         private static IDataView CreateEmptyDataView()
         {
             //Create empty DataView. We just need the schema to call fit()
-            IEnumerable<T> enumerableData = new List<T>();
+            IEnumerable<Data> enumerableData = new List<Data>();
             var dv = mlContext.Data.LoadFromEnumerable(enumerableData);
             return dv;
         }

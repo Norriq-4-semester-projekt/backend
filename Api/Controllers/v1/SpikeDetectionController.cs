@@ -1,4 +1,5 @@
-﻿using DataAccess.Interfaces;
+﻿using DataAccess.Entities;
+using DataAccess.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -74,6 +75,27 @@ namespace Api.Controllers.v1
             try
             {
                 return this.ReturnResponse(await UnitOfWork.SystemLoadData.GetLatest(), 200);
+            }
+            catch (Exception Ex)
+            {
+                return this.CatchResponse(Ex, Ex.Message, 501);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> PostDetectionData(Data data)
+        {
+            try
+            {
+                bool isValid = UnitOfWork.DetectionLogging.LogDetectionData(data);
+                if (isValid)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
             }
             catch (Exception Ex)
             {
