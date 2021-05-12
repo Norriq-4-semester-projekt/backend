@@ -16,9 +16,9 @@ namespace DataAccess
         private ElasticConnection()
         {
             //ToDo tilføje configuration til singelton
-            //settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200"));
-            //settings.BasicAuthentication("elastic", "changeme");
-            settings = new ConnectionSettings(new Uri("http://20.82.178.74:9200"));
+            settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200"));
+            settings.BasicAuthentication("elastic", "changeme");
+            //settings = new ConnectionSettings(new Uri("http://20.82.178.74:9200"));
             settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
             settings.PrettyJson(); // Good for DEBUG
             settings.DisableDirectStreaming();
