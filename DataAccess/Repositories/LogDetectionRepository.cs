@@ -45,7 +45,6 @@ namespace DataAccess.Repositories
                         )
                    );
 
-            Console.WriteLine(response.DebugInformation);
             return response.Documents.AsEnumerable();
         }
 

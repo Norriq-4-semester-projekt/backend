@@ -125,7 +125,6 @@ namespace DataAccess.Repositories
                     .Fields("host.cpu.pct", "@timestamp"))
                  );
 
-            Console.WriteLine(response.DebugInformation);
             return response.Documents.AsEnumerable();
         }
 
@@ -164,7 +163,6 @@ namespace DataAccess.Repositories
             cpuData.Value = (float)response.Aggregations.DateHistogram("CpuDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgCpu").Value.Value;
             return cpuData;
 
-            Console.WriteLine(response.DebugInformation);
 
             return null;
         }

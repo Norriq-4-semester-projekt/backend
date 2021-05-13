@@ -54,7 +54,6 @@ namespace DataAccess.Repositories
                     .Fields("status", "@timestamp"))
                  );
 
-            Console.WriteLine(response.DebugInformation);
             return response.Documents.AsEnumerable<Entities.HttpStatus>();
         }
 

@@ -43,7 +43,6 @@ namespace DataAccess.Repositories
                     .Fields("system.load.15", "@timestamp"))
                  );
 
-            Console.WriteLine(response.DebugInformation);
             return response.Documents.AsEnumerable<SystemLoadData>();
         }
 
@@ -82,7 +81,6 @@ namespace DataAccess.Repositories
             systemloadData.Value = (float)response.Aggregations.DateHistogram("SystemLoadDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgSystemLoad").Value.Value;
             return systemloadData;
 
-            Console.WriteLine(response.DebugInformation);
 
             return null;
         }

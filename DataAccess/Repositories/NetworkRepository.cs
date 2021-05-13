@@ -48,7 +48,6 @@ namespace DataAccess.Repositories
                     .Fields("host.network.in.bytes", "@timestamp"))
                  );
 
-            Console.WriteLine(response.DebugInformation);
             return response.Documents.AsEnumerable<NetworkData>();
         }
 
@@ -73,7 +72,6 @@ namespace DataAccess.Repositories
                     .Fields("host.network.out.bytes", "@timestamp"))
                  );
 
-            Console.WriteLine(response.DebugInformation);
             return response.Documents.AsEnumerable<NetworkData>();
         }
 
@@ -112,7 +110,6 @@ namespace DataAccess.Repositories
             networksData.Value = (float)response.Aggregations.DateHistogram("NetworkBytesInDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgBytesIn").Value.Value;
             return networksData;
 
-            Console.WriteLine(response.DebugInformation);
 
             return null;
         }
@@ -152,7 +149,6 @@ namespace DataAccess.Repositories
             networksData.Value = (float)response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgBytesOut").Value.Value;
             return networksData;
 
-            Console.WriteLine(response.DebugInformation);
 
             return null;
         }
@@ -197,7 +193,6 @@ namespace DataAccess.Repositories
                 networksDataList.Add(networksData);
             }
 
-            Console.WriteLine(response.DebugInformation);
             return networksDataList;
             return null;
         }

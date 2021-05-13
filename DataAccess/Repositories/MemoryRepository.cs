@@ -43,7 +43,6 @@ namespace DataAccess.Repositories
                     .Fields("system.memory.actual.used.bytes", "@timestamp"))
                  );
 
-            Console.WriteLine(response.DebugInformation);
             return response.Documents.AsEnumerable<MemoryData>();
         }
 
@@ -82,7 +81,6 @@ namespace DataAccess.Repositories
             memoryData.Value = (float)response.Aggregations.DateHistogram("MemoryDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgMemory").Value.Value;
             return memoryData;
 
-            Console.WriteLine(response.DebugInformation);
 
             return null;
         }
