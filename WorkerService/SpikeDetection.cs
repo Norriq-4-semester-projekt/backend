@@ -34,7 +34,10 @@ namespace WorkerService
             //assign the Number of records in dataset file to cosntant variable
             int size = testData.Count;
             //STEP 1: Create Esimtator
-            var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(Predictions.Prediction), inputColumnName: "Value", confidence: 99, pvalueHistoryLength: size / 4);
+            var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(Predictions.Prediction),
+                                                                inputColumnName: "Value",
+                                                                confidence: 99,
+                                                                pvalueHistoryLength: size / 4);
 
             //STEP 2:The Transformed Model.
             ITransformer transformedModel = estimator.Fit(CreateEmptyDataView());

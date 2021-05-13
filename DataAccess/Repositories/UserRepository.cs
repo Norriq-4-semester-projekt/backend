@@ -12,24 +12,13 @@ namespace DataAccess.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private ElasticClient client;
-
-        //private ConnectionSettings settings = new ConnectionSettings(new Uri("http://localhost:9200")).DefaultIndex("users"); // localhost
-        private ConnectionSettings settings = new ConnectionSettings(new Uri("http://164.68.106.245:9200")).DefaultIndex("users"); // vps
-
-        public UserRepository()
-        {
-            settings.BasicAuthentication("elastic", "changeme"); // ElasticSearch Username and Password
-            settings.ThrowExceptions(alwaysThrow: true); // I like exceptions
-            settings.PrettyJson(); // Good for DEBUG
-            client = new ElasticClient(settings);
-        }
+        
 
         public async Task<ActionResult> Login(User entity)
         {
             try
             {
-                var rs = await client.SearchAsync<User>(s => s
+                var rs = await ElasticConnection.Instance.client.SearchAsync<User>(s => s
                     .Query(q => q
                         .MatchPhrase(mp => mp
                                     .Field("username").Query(entity.Username))));
@@ -69,7 +58,7 @@ namespace DataAccess.Repositories
 
             try
             {
-                var rs = await client.SearchAsync<User>(s => s
+                var rs = await ElasticConnection.Instance.client.SearchAsync<User>(s => s
                     .Query(q => q
                         .MatchPhrase(mp => mp
                                     .Field("username").Query(entity.Username))));
@@ -89,7 +78,7 @@ namespace DataAccess.Repositories
             entity.Password = null;
             try
             {
-                client.IndexDocument<User>(entity);
+                ElasticConnection.Instance.client.IndexDocument<User>(entity);
 
                 return new StatusCodeResult(200);
             }
@@ -104,7 +93,7 @@ namespace DataAccess.Repositories
             try
             {
                 List<User> users = new List<User>();
-                var rs = await client.SearchAsync<User>(s => s
+                var rs = await ElasticConnection.Instance.client.SearchAsync<User>(s => s
                     .Query(q => q
                         .MatchAll()));
 
@@ -129,7 +118,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                var response = await client.UpdateByQueryAsync<User>(q => q
+                var response = await ElasticConnection.Instance.client.UpdateByQueryAsync<User>(q => q
                .Query(rq => rq
                    .MatchPhrase(m => m
                    .Field("username")
@@ -155,7 +144,7 @@ namespace DataAccess.Repositories
         {
             try
             {
-                var response = await client.DeleteByQueryAsync<User>(q => q
+                var response = await ElasticConnection.Instance.client.DeleteByQueryAsync<User>(q => q
                .Query(rq => rq
                    .MatchPhrase(m => m
                    .Field("username")
