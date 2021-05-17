@@ -13,10 +13,10 @@ namespace WorkerService
         private static MLContext mlContext = new MLContext();
         private static bool firstRun = true;
 
-        private static HttpClientHandler handler = new HttpClientHandler()
-        {
-            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        };
+        //private static HttpClientHandler handler = new HttpClientHandler()
+        //{
+        //    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        //};
 
         public static (bool, List<Data>) DetectSpikeAsync(Data latestData, List<Data> trainingData, int startSpikes)
         {
@@ -75,13 +75,17 @@ namespace WorkerService
         {
             if (!firstRun)
             {
-                using (var httpClient = new HttpClient(handler)) {
+                using (HttpClientHandler handler = new HttpClientHandler())
+                {
+                    handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
-                    var StringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-                    HttpResponseMessage response2 = await httpClient.PostAsync("https://localhost:5001/v1/SpikeDetection/PostDetectionData", StringContent);
-                    response2.EnsureSuccessStatusCode();
+                    using (var httpClient = new HttpClient(handler))
+                    {
+                        var StringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                        HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostDetectionData", StringContent);
+                        response2.EnsureSuccessStatusCode();
+                    }
                 }
-                    
             }
         }
 

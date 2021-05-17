@@ -50,7 +50,7 @@ namespace DataAccess.Repositories
 
         public bool LogDetectionData(Data data)
         {
-            var indexResponse = ElasticConnection.Instance.client.Index<Data>(data, i => i.Index("mldetection"));
+            var indexResponse = ElasticConnection.Instance.client.Index<Data>(data, i => i.Index("detectml"));
             return indexResponse.IsValid;
         }
 
