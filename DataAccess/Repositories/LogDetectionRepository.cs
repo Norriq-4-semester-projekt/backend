@@ -23,7 +23,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<Data>> GetAll()
         {
             var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
-               .Index("mldetection")
+               .Index("detectml")
                .Size(5000)
                .Sort(ss => ss
                .Descending(de => de.Timestamp))
