@@ -14,5 +14,6 @@ namespace DataAccess.Interfaces
         public IMemoryRepository MemoryData { get; }
         public ISystemLoadRepository SystemLoadData { get; }
         public ILogDetectionRepository DetectionLogging { get; set; }
+        public ITestClass TestClass { get; set; }
     }
 }

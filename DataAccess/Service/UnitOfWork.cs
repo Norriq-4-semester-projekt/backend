@@ -12,13 +12,16 @@ namespace DataAccess.Service
         public ISystemLoadRepository SystemLoadData { get; set; }
         public ILogDetectionRepository DetectionLogging { get; set; }
 
+        public ITestClass TestClass { get; set; }
+
         public UnitOfWork(IUserRepository userRepository,
                           INetworkRepository networkRepository,
                           IHttpStatusRepository httpstatusRepository,
                           IMemoryRepository memoryRepository,
                           ISystemLoadRepository systemloadRepository,
                           ICpuRepository cpuRepository,
-                          ILogDetectionRepository logDetectionRepository)
+                          ILogDetectionRepository logDetectionRepository,
+                          ITestClass testClass)
         {
             Users = userRepository;
             NetworkData = networkRepository;
@@ -27,6 +30,7 @@ namespace DataAccess.Service
             MemoryData = memoryRepository;
             SystemLoadData = systemloadRepository;
             DetectionLogging = logDetectionRepository;
+            TestClass = testClass;
         }
     }
 }

@@ -18,6 +18,7 @@ namespace DataAccess
             services.AddTransient<IMemoryRepository, MemoryRepository>();
             services.AddTransient<ISystemLoadRepository, SystemLoadRepository>();
             services.AddTransient<ILogDetectionRepository, LogDetectionRepository>();
+            services.AddTransient<ITestClass, TestClassRepository>();
         }
     }
 }
