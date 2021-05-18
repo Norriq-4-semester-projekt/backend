@@ -36,7 +36,7 @@ namespace WorkerService.Services
             _logger.LogInformation("Timed Hosted Service running.");
 
             _timer = new Timer(DoWork, null, TimeSpan.Zero,
-                TimeSpan.FromDays(1));
+                TimeSpan.FromDays(7));
 
             return Task.CompletedTask;
         }

@@ -26,7 +26,7 @@ namespace DataAccess.Repositories
         {
             var response = ElasticConnection.Instance.client.Search<SystemLoadData>(s => s
                 .Index("metricbeat-*")
-                .Size(1000)
+                .Size(10000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
 
@@ -80,7 +80,6 @@ namespace DataAccess.Repositories
             systemloadData.Timestamp = response.Aggregations.DateHistogram("SystemLoadDateHistogram").Buckets.FirstOrDefault().KeyAsString;
             systemloadData.Value = (float)response.Aggregations.DateHistogram("SystemLoadDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgSystemLoad").Value.Value;
             return systemloadData;
-
 
             return null;
         }

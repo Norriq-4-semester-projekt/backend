@@ -102,12 +102,47 @@ namespace Api.Controllers.v1
                 return this.CatchResponse(Ex, Ex.Message, 501);
             }
         }
+
+        [HttpPost]
+        public async Task<ActionResult> PostPredictionData(Data data)
+        {
+            try
+            {
+                bool isValid = UnitOfWork.DetectionLogging.LogPredictionData(data);
+                if (isValid)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception Ex)
+            {
+                return this.CatchResponse(Ex, Ex.Message, 501);
+            }
+        }
+
         [HttpGet]
         public async Task<ActionResult> GetGraphData()
         {
             try
             {
                 return this.ReturnResponse(await UnitOfWork.DetectionLogging.GetAll(), 200);
+            }
+            catch (Exception Ex)
+            {
+                return this.CatchResponse(Ex, Ex.Message, 501);
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetPredictionGraphData()
+        {
+            try
+            {
+                return this.ReturnResponse(await UnitOfWork.DetectionLogging.GetAllPredictions(), 200);
             }
             catch (Exception Ex)
             {

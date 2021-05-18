@@ -31,7 +31,7 @@ namespace DataAccess.Repositories
         {
             var response = ElasticConnection.Instance.client.Search<NetworkData>(s => s
                 .Index("metricbeat-*")
-                .Size(5000)
+                .Size(10000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
 
@@ -110,7 +110,6 @@ namespace DataAccess.Repositories
             networksData.Value = (float)response.Aggregations.DateHistogram("NetworkBytesInDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgBytesIn").Value.Value;
             return networksData;
 
-
             return null;
         }
 
@@ -148,7 +147,6 @@ namespace DataAccess.Repositories
             networksData.Timestamp = response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets.FirstOrDefault().KeyAsString;
             networksData.Value = (float)response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgBytesOut").Value.Value;
             return networksData;
-
 
             return null;
         }
