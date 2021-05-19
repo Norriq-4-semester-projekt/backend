@@ -22,10 +22,10 @@ namespace Api.Controllers.v1
         }
 
         [HttpGet]
-        public ContentResult chart()
+        public ContentResult spike()
         {
-            string filepath = @"../../../../TestData/chart.html";
-            string filename = "chart.html";
+            string filepath = @"../../../../TestData/spike.html";
+            string filename = "spike.html";
 
             FileInfo _dataRoot = new FileInfo(typeof(Program).Assembly.Location);
             string assemblyFolderPath = _dataRoot.Directory.FullName;
@@ -33,7 +33,27 @@ namespace Api.Controllers.v1
             string fullPath = Path.Combine(assemblyFolderPath, filepath);
 
             var fileContent = System.IO.File.ReadAllText(fullPath);
-            //ByteArrayContent fileContent = new ByteArrayContent(System.IO.File.ReadAllBytes(fullPath));
+
+            return new ContentResult
+            {
+                ContentType = "text/html",
+                StatusCode = 200,
+                Content = fileContent
+            };
+        }
+
+        [HttpGet]
+        public ContentResult prediction()
+        {
+            string filepath = @"../../../../TestData/prediction.html";
+            string filename = "prediction.html";
+
+            FileInfo _dataRoot = new FileInfo(typeof(Program).Assembly.Location);
+            string assemblyFolderPath = _dataRoot.Directory.FullName;
+
+            string fullPath = Path.Combine(assemblyFolderPath, filepath);
+
+            var fileContent = System.IO.File.ReadAllText(fullPath);
 
             return new ContentResult
             {

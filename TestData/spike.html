@@ -12,7 +12,7 @@
       <div id="chart"></div>
     </div>
     <script>
-      fetch("https://localhost:5001/v1/SpikeDetection/GetGraphData")
+      fetch("http://40.127.205.41:5010/v1/SpikeDetection/GetGraphData")
         .then((response) => response.json())
         .then((data) => {
           var options = {
