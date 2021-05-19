@@ -26,7 +26,7 @@ namespace DataAccess.Repositories
         {
             var response = ElasticConnection.Instance.client.Search<MemoryData>(s => s
                 .Index("metricbeat-*")
-                .Size(1000)
+                .Size(10000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
 
@@ -80,7 +80,6 @@ namespace DataAccess.Repositories
             memoryData.Timestamp = response.Aggregations.DateHistogram("MemoryDateHistogram").Buckets.FirstOrDefault().KeyAsString;
             memoryData.Value = (float)response.Aggregations.DateHistogram("MemoryDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgMemory").Value.Value;
             return memoryData;
-
 
             return null;
         }

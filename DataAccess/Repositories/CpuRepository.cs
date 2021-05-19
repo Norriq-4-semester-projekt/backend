@@ -108,7 +108,7 @@ namespace DataAccess.Repositories
         {
             var response = ElasticConnection.Instance.client.Search<CpuData>(s => s
                 .Index("metricbeat-*")
-                .Size(5000)
+                .Size(10000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
 
@@ -162,7 +162,6 @@ namespace DataAccess.Repositories
             cpuData.Timestamp = response.Aggregations.DateHistogram("CpuDateHistogram").Buckets.FirstOrDefault().KeyAsString;
             cpuData.Value = (float)response.Aggregations.DateHistogram("CpuDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgCpu").Value.Value;
             return cpuData;
-
 
             return null;
         }

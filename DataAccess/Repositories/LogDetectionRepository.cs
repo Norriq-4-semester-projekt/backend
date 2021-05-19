@@ -24,7 +24,35 @@ namespace DataAccess.Repositories
         {
             var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
                .Index("detectml")
-               .Size(5000)
+               .Size(10000)
+               .Sort(ss => ss
+               .Descending(de => de.Timestamp))
+
+                   .Query(q => q
+                        .Bool(b => b
+                            .Must(m => m
+                                .MatchAll()
+                                )
+                            //.Filter(f => f
+                            //    .DateRange(dr => dr
+                            //        .Field("@timestamp")
+                            //        .GreaterThanOrEquals("now-1d")
+                            //        //.GreaterThanOrEquals(entity.DateRange)
+
+                            //        )
+                            //    )
+                            )
+                        )
+                   );
+
+            return response.Documents.AsEnumerable();
+        }
+
+        public async Task<IEnumerable<Data>> GetAllPredictions()
+        {
+            var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
+               .Index("predictml")
+               .Size(10000)
                .Sort(ss => ss
                .Descending(de => de.Timestamp))
 
@@ -51,6 +79,12 @@ namespace DataAccess.Repositories
         public bool LogDetectionData(Data data)
         {
             var indexResponse = ElasticConnection.Instance.client.Index<Data>(data, i => i.Index("detectml"));
+            return indexResponse.IsValid;
+        }
+
+        public bool LogPredictionData(Data data)
+        {
+            var indexResponse = ElasticConnection.Instance.client.Index<Data>(data, i => i.Index("predictml"));
             return indexResponse.IsValid;
         }
 
