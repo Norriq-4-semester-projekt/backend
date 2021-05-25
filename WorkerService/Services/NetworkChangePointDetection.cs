@@ -8,8 +8,8 @@ using System.Threading;
 using Microsoft.ML;
 using Newtonsoft.Json;
 using System.Net.Http;
-using DataAccess.Entities;
 using Telegram.Bot;
+using WorkerService.Entities;
 
 namespace WorkerService.services
 {
@@ -42,28 +42,30 @@ namespace WorkerService.services
 
         public Task StartAsync(CancellationToken stoppingToken)
         {
-            //string json = System.IO.File.ReadAllText(DatasetPath);
-            //List<NetworksData> data = JsonConvert.DeserializeObject<List<NetworksData>>(json);
+            string json = System.IO.File.ReadAllText(_datasetPath);
+            List<Data> data = JsonConvert.DeserializeObject<List<Data>>(json);
 
-            //foreach (var item in data)
-            //{
-            //    Data networksData = new Data();
-            //    networksData.Value = item.Host.Network.In.Bytes;
-            //    networksData.Timestamp = item.Timestamp;
-            //    trainingData.Add(networksData);
-            //}
-            //Data emptyList = new Data();
-            //var spikeResult = SpikeDetection<Data>.DetectSpikeAsync(emptyList, trainingData, startSpikes);
-            //startSpikes = spikeResult.Item2.Count;
+            if (data != null)
+            {
+                foreach (var item in data)
+                {
+                    Data networksData = new Data();
+                    networksData.Value = item.Value;
+                    networksData.Timestamp = item.Timestamp;
+                    _trainingData.Add(networksData);
+                }
+                Data emptyList = new Data();
+                var spikeResult = ChangePointDetection.DetectChangepoint(emptyList, _trainingData, _startSpikes);
+                _startSpikes = spikeResult.Item2.Count;
 
-            // Create MLContext to be shared across the model creation workflow objects
-            _mlContext = new MLContext();
+                // Create MLContext to be shared across the model creation workflow objects
+                _mlContext = new MLContext();
 
-            _logger.LogInformation("Timed Hosted Service running.");
+                _logger.LogInformation("Timed Hosted Service running.");
 
-            _timer = new Timer(DoWork, null, TimeSpan.Zero,
-                TimeSpan.FromSeconds(20));
-
+                _timer = new Timer(DoWork, null, TimeSpan.Zero,
+                    TimeSpan.FromSeconds(60));
+            }
             return Task.CompletedTask;
         }
 
@@ -83,13 +85,13 @@ namespace WorkerService.services
             List<Data> spikes;
             try
             {
-                List<Data> latestData = new List<Data>();
-                HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5001/v1/DetectSpikesMonth");
+                Data latestData = new Data();
+                HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesOut");
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
-                latestData = JsonConvert.DeserializeObject<List<Data>>(responseBody);
+                latestData = JsonConvert.DeserializeObject<Data>(responseBody);
 
-                var spikeResult = ChangePointDetection<Data>.DetectChangepoint(latestData);
+                var spikeResult = ChangePointDetection.DetectChangepoint(latestData, _trainingData, _startSpikes);
                 spikes = spikeResult.Item2;
                 spikeDetected = spikeResult.Item1;
             }
