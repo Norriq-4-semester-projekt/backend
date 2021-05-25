@@ -22,7 +22,7 @@ namespace DataAccess.Repositories
 
         public async Task<IEnumerable<Data>> GetAll()
         {
-            var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
+            var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
                .Index("detectml")
                .Size(10000)
                .Sort(ss => ss
@@ -50,7 +50,7 @@ namespace DataAccess.Repositories
 
         public async Task<IEnumerable<Data>> GetAllPredictions()
         {
-            var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
+            var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
                .Index("predictml")
                .Size(10000)
                .Sort(ss => ss
@@ -78,13 +78,13 @@ namespace DataAccess.Repositories
 
         public bool LogDetectionData(Data data)
         {
-            var indexResponse = ElasticConnection.Instance.client.Index<Data>(data, i => i.Index("detectml"));
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("detectml"));
             return indexResponse.IsValid;
         }
 
         public bool LogPredictionData(Data data)
         {
-            var indexResponse = ElasticConnection.Instance.client.Index<Data>(data, i => i.Index("predictml"));
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("predictml"));
             return indexResponse.IsValid;
         }
 

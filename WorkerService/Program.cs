@@ -11,18 +11,17 @@ namespace WorkerService
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    //services.AddHostedService<NetworkBytesOutSpikeDetection>();
-                    //services.AddHostedService<NetworkBytesInSpikeDetection>();
-                    //services.AddHostedService<MemorySpikeDetection>();
-                    //services.AddHostedService<SystemLoadSpikeDetection>();
-                    //services.AddHostedService<CpuSpikeDetection>();
-                    //services.AddHostedService<UpdateML>();
-                    services.AddHostedService<NetworkBytesOutPrediciton>();
-                    //services.AddHostedService<NetworkChangePointDetection>();
+                    services.AddHostedService<NetworkBytesOutSpikeDetection>();
+                    services.AddHostedService<NetworkBytesInSpikeDetection>();
+                    services.AddHostedService<MemorySpikeDetection>();
+                    services.AddHostedService<SystemLoadSpikeDetection>();
+                    services.AddHostedService<CpuSpikeDetection>();
+                    services.AddHostedService<UpdateMl>();
+                    services.AddHostedService<NetworkBytesOutPrediction>();
 
                     services.AddHostedService<Worker>();
                 });

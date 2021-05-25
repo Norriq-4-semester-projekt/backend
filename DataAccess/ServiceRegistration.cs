@@ -13,7 +13,6 @@ namespace DataAccess
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<IUnitOfWork, UnitOfWork>();
             services.AddTransient<INetworkRepository, NetworkRepository>();
-            services.AddTransient<IHttpStatusRepository, HttpStatusRepository>();
             services.AddTransient<ICpuRepository, CpuRepository>();
             services.AddTransient<IMemoryRepository, MemoryRepository>();
             services.AddTransient<ISystemLoadRepository, SystemLoadRepository>();

@@ -1,10 +1,7 @@
 ﻿using DataAccess.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Api.Controllers.v1
@@ -24,11 +21,11 @@ namespace Api.Controllers.v1
         {
             try
             {
-                return this.ReturnResponse(await UnitOfWork.TestClass.TestBytesIn(), 200);
+                return ReturnResponse(await UnitOfWork.TestClass.TestBytesIn(), 200);
             }
-            catch (Exception Ex)
+            catch (Exception ex)
             {
-                return this.CatchResponse(Ex, Ex.Message, 501);
+                return CatchResponse(ex, ex.Message, 501);
             }
         }
     }

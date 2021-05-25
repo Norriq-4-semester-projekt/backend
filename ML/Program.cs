@@ -10,66 +10,47 @@ namespace ML
 {
     internal static class Program
     {
-        private static string BaseDatasetsRelativePath = @"../../../../Data";
+        private const string BaseDatasetsRelativePath = @"../../../../Data";
 
-        //private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/rs.csv";
-        private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/trainingdata.json";
+        private static readonly string DatasetRelativePath = $"{BaseDatasetsRelativePath}/trainingdata.json";
+        
+        private static readonly string DatasetPath = GetAbsolutePath(DatasetRelativePath);
 
-        //private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/http.csv";
+        private const string BaseModelsRelativePath = @"../../../../MLModels";
+        private static readonly string ModelRelativePath = $"{BaseModelsRelativePath}/ProductSalesModel.zip";
 
-        private static string DatasetPath = GetAbsolutePath(DatasetRelativePath);
+        private static readonly string ModelPath = GetAbsolutePath(ModelRelativePath);
 
-        private static string BaseModelsRelativePath = @"../../../../MLModels";
-        private static string ModelRelativePath = $"{BaseModelsRelativePath}/ProductSalesModel.zip";
-
-        private static string ModelPath = GetAbsolutePath(ModelRelativePath);
-
-        private static MLContext mlContext;
-        private static List<Data> training_data = new List<Data>();
+        private static MLContext _mlContext;
+        private static readonly List<Data> TrainingData = new List<Data>();
 
         private static async System.Threading.Tasks.Task Main()
         {
-            string json = File.ReadAllText(DatasetPath);
+            string json = await File.ReadAllTextAsync(DatasetPath);
             List<NetworksData> data = JsonConvert.DeserializeObject<List<NetworksData>>(json);
-            //DataContractJsonSerializer dj = new DataContractJsonSerializer(typeof(NetworksDataList));
-            //MemoryStream ms = new MemoryStream(Encoding.ASCII.GetBytes(await File.OpenText(DatasetPath).ReadToEndAsync()));
-            //NetworksDataList training_data = (NetworksDataList)dj.ReadObject(ms);
 
             foreach (var item in data)
             {
-                Data networksData = new Data();
-                networksData.Bytes = item.Host.Network.In.Bytes;
-                networksData.Timestamp = item.Timestamp;
-                training_data.Add(networksData);
+                Data networksData = new Data
+                {
+                    Bytes = item.Host.Network.In.Bytes, 
+                    Timestamp = item.Timestamp
+                };
+                TrainingData.Add(networksData);
             }
-            //ProductsDataList training_data = UpdateMLModel();
-            //NetworksDataList training_data = Network();
+            
+            _mlContext = new MLContext();
 
-            // Create MLContext to be shared across the model creation workflow objects
-            mlContext = new MLContext();
+            var dataView = _mlContext.Data.LoadFromEnumerable<Data>(TrainingData);
 
-            // Load Data
-            //var dataView = mlContext.Data.LoadFromTextFile<NetworksData>(
-            //DatasetPath,
-            //separatorChar: ',',
-            //hasHeader: true);
-
-            var dataView = mlContext.Data.LoadFromEnumerable<Data>(training_data);
-
-            //assign the Number of records in dataset file to cosntant variable
-            int size = 5000;
+            //assign the Number of records in dataset file to constant variable
+            const int size = 5000;
 
             //Load the data into IDataView.
             //This dataset is used while prediction / detecting spikes or changes.
 
-            //IDataView dataView = mlContext.Data.LoadFromTextFile<ProductSalesData>(path: DatasetPath, hasHeader: true, separatorChar: ',');
-            //IDataView dataView = mlContext.Data.LoadFromEnumerable(training_data.Data);
-
-            //To detech temporay changes in the pattern
+            //To detect temporary changes in the pattern
             DetectSpike(size, dataView);
-
-            //To detect persistent change in the pattern
-            //DetectChangepoint(size, dataView);
 
             Console.WriteLine("=============== End of process, hit any key to finish ===============");
 
@@ -80,38 +61,24 @@ namespace ML
         {
             Console.WriteLine("===============Detect temporary changes in pattern===============");
 
-            ////STEP 1: Create Esimtator
-            ////var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 99, pvalueHistoryLength: size / 4);
-            ////var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 99, pvalueHistoryLength: size / 4);
-            var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(Data.Bytes), confidence: 95, pvalueHistoryLength: size / 4);
+            ////STEP 1: Create Estimator
+            var estimator = _mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(Data.Bytes), confidence: 95, pvalueHistoryLength: size / 4);
 
             //STEP 2:The Transformed Model.
             //In IID Spike detection, we don't need to do training, we just need to do transformation.
             //As you are not training the model, there is no need to load IDataView with real data, you just need schema of data.
             //So create empty data view and pass to Fit() method.
-            ITransformer tansformedModel = estimator.Fit(CreateEmptyDataView());
+            ITransformer transformedModel = estimator.Fit(CreateEmptyDataView());
 
             //STEP 3: Use/test model
             //Apply data transformation to create predictions.
-            IDataView transformedData = tansformedModel.Transform(dataView);
-            //var predictions = mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, reuseRowObject: false);
-            IEnumerable<NetworksDataPrediction> predictions = mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, reuseRowObject: false);
+            IDataView transformedData = transformedModel.Transform(dataView);
+            IEnumerable<NetworksDataPrediction> predictions = _mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, reuseRowObject: false);
 
             Console.WriteLine("Alert\tScore\tP-Value");
             List<string> spikeList = new List<string>();
             List<int> spikeDates = new List<int>();
-            //for (int i = 0; i < predictions.Count(); i++)
-            //{
-            //    if (predictions.ElementAt(i).Prediction[0] == 1)
-            //    {
-            //        Console.BackgroundColor = ConsoleColor.DarkYellow;
-            //        Console.ForegroundColor = ConsoleColor.Black;
-            //        spikeDates.Add(i);
-            //        spikeList.Add(predictions.ElementAt(i).Prediction[2].ToString());
-            //    }
-            //    Console.WriteLine("{0}\t{1:0.00}\t{2:0.00}", predictions.ElementAt(i).Prediction[0], predictions.ElementAt(i).Prediction[1], predictions.ElementAt(i).Prediction[2]);
-            //    Console.ResetColor();
-            //}
+            
             int i = 0;
             foreach (var p in predictions)
             {
@@ -120,7 +87,7 @@ namespace ML
                     Console.BackgroundColor = ConsoleColor.DarkYellow;
                     Console.ForegroundColor = ConsoleColor.Black;
                     spikeList.Add(p.Prediction[2].ToString());
-                    Console.WriteLine(training_data.ElementAt(i).Timestamp);
+                    Console.WriteLine(TrainingData.ElementAt(i).Timestamp);
                 }
                 Console.WriteLine("{0}\t{1:0.00}\t{2:0.00}", p.Prediction[0], p.Prediction[1], p.Prediction[2]);
                 Console.ResetColor();
@@ -131,34 +98,29 @@ namespace ML
             Console.WriteLine("Dates of spikes: " + spikeList.Count);
             foreach (var item in spikeDates)
             {
-                Console.WriteLine(training_data.ElementAt(item).Timestamp);
+                Console.WriteLine(TrainingData.ElementAt(item).Timestamp);
             }
             Console.WriteLine("");
-            //foreach (var item in spikeList)
-            //{
-            //    Console.WriteLine(item);
-            //}
             Console.WriteLine("");
         }
 
-        private static void DetectChangepoint(int size, IDataView dataView)
+        private static void DetectChangePoint(int size, IDataView dataView)
         {
             Console.WriteLine("===============Detect Persistent changes in pattern===============");
 
             //STEP 1: Setup transformations using DetectIidChangePoint
-            //var estimator = mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(ProductSalesPrediction.Prediction), inputColumnName: nameof(ProductSalesData.doc_count), confidence: 95, changeHistoryLength: size / 4);
-            var estimator = mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(Data.Bytes), confidence: 95, changeHistoryLength: size / 4);
+            var estimator = _mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(Data.Bytes), confidence: 95, changeHistoryLength: size / 4);
 
             //STEP 2:The Transformed Model.
             //In IID Change point detection, we don't need need to do training, we just need to do transformation.
             //As you are not training the model, there is no need to load IDataView with real data, you just need schema of data.
             //So create empty data view and pass to Fit() method.
-            ITransformer tansformedModel = estimator.Fit(CreateEmptyDataView());
+            ITransformer transformedModel = estimator.Fit(CreateEmptyDataView());
 
             //STEP 3: Use/test model
             //Apply data transformation to create predictions.
-            IDataView transformedData = tansformedModel.Transform(dataView);
-            var predictions = mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, reuseRowObject: false);
+            IDataView transformedData = transformedModel.Transform(dataView);
+            var predictions = _mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, reuseRowObject: false);
 
             Console.WriteLine($"{nameof(NetworksDataPrediction.Prediction)} column obtained post-transformation.");
             Console.WriteLine("Alert\tScore\tP-Value\tvalue");
@@ -179,8 +141,8 @@ namespace ML
 
         public static string GetAbsolutePath(string relativePath)
         {
-            FileInfo _dataRoot = new FileInfo(typeof(Program).Assembly.Location);
-            string assemblyFolderPath = _dataRoot.Directory.FullName;
+            FileInfo dataRoot = new FileInfo(typeof(Program).Assembly.Location);
+            string assemblyFolderPath = dataRoot.Directory.FullName;
 
             string fullPath = Path.Combine(assemblyFolderPath, relativePath);
 
@@ -191,7 +153,7 @@ namespace ML
         {
             //Create empty DataView. We just need the schema to call fit()
             IEnumerable<Data> enumerableData = new List<Data>();
-            var dv = mlContext.Data.LoadFromEnumerable(enumerableData);
+            var dv = _mlContext.Data.LoadFromEnumerable(enumerableData);
             return dv;
         }
 
@@ -265,18 +227,18 @@ namespace ML
 
         public static void DetectNetworkAnomalies(MLContext mLContext)
         {
-            var dataView = mlContext.Data.LoadFromTextFile<NetworksData>(
+            var dataView = _mlContext.Data.LoadFromTextFile<NetworksData>(
                DatasetPath,
                separatorChar: ',',
                hasHeader: true);
 
-            ITransformer trainedModel = mlContext.Model.Load(ModelPath, out var modelInputSchema);
+            ITransformer trainedModel = _mlContext.Model.Load(ModelPath, out var modelInputSchema);
 
             var transformedData = trainedModel.Transform(dataView);
 
             // Getting the data of the newly created column as an IEnumerable
             IEnumerable<NetworksDataPrediction> predictions =
-                mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, false);
+                _mlContext.Data.CreateEnumerable<NetworksDataPrediction>(transformedData, false);
 
             var colCDN = dataView.GetColumn<float>("MAXnetIN").ToArray();
             var colTime = dataView.GetColumn<DateTime>("key_as_string").ToArray();
@@ -309,10 +271,10 @@ namespace ML
                hasHeader: true);
 
             // Configure the Estimator
-            const int PValueSize = 30;
-            const int SeasonalitySize = 30;
-            const int TrainingSize = 90;
-            const int ConfidenceInterval = 98;
+            const int pValueSize = 30;
+            const int seasonalitySize = 30;
+            const int trainingSize = 90;
+            const int confidenceInterval = 98;
 
             string outputColumnName = nameof(NetworksDataPrediction.Prediction);
             string inputColumnName = nameof(Data.Bytes);
@@ -320,10 +282,10 @@ namespace ML
             var trainigPipeLine = mlContext.Transforms.DetectSpikeBySsa(
                 outputColumnName,
                 inputColumnName,
-                confidence: ConfidenceInterval,
-                pvalueHistoryLength: PValueSize,
-                trainingWindowSize: TrainingSize,
-                seasonalityWindowSize: SeasonalitySize);
+                confidence: confidenceInterval,
+                pvalueHistoryLength: pValueSize,
+                trainingWindowSize: trainingSize,
+                seasonalityWindowSize: seasonalitySize);
 
             ITransformer trainedModel = trainigPipeLine.Fit(dataView);
 

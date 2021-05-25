@@ -24,7 +24,7 @@ namespace DataAccess.Repositories
 
         public async Task<IEnumerable<SystemLoadData>> GetAll()
         {
-            var response = ElasticConnection.Instance.client.Search<SystemLoadData>(s => s
+            var response = await ElasticConnection.Instance.Client.SearchAsync<SystemLoadData>(s => s
                 .Index("metricbeat-*")
                 .Size(10000)
                 .Sort(ss => ss
@@ -48,7 +48,7 @@ namespace DataAccess.Repositories
 
         public async Task<Data> GetLatest()
         {
-            var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
+            var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
                 .Index("metricbeat-*")
                     .Size(0)
                     .Query(q => q
@@ -76,12 +76,14 @@ namespace DataAccess.Repositories
                         )
                     )
                 ));
-            Data systemloadData = new Data();
-            systemloadData.Timestamp = response.Aggregations.DateHistogram("SystemLoadDateHistogram").Buckets.FirstOrDefault().KeyAsString;
-            systemloadData.Value = (float)response.Aggregations.DateHistogram("SystemLoadDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgSystemLoad").Value.Value;
+            Data systemloadData = new Data
+            {
+                Timestamp = response.Aggregations.DateHistogram("SystemLoadDateHistogram").Buckets.FirstOrDefault()
+                    .KeyAsString,
+                Value = (float) response.Aggregations.DateHistogram("SystemLoadDateHistogram").Buckets.FirstOrDefault()
+                    .AverageBucket("AvgSystemLoad").Value.Value
+            };
             return systemloadData;
-
-            return null;
         }
 
         public Task<ActionResult> UpdateByQueryAsync(SystemLoadData entity, SystemLoadData u1)

@@ -29,7 +29,7 @@ namespace DataAccess.Repositories
 
         public async Task<IEnumerable<NetworkData>> GetAllBytesIn()
         {
-            var response = ElasticConnection.Instance.client.Search<NetworkData>(s => s
+            var response = await ElasticConnection.Instance.Client.SearchAsync<NetworkData>(s => s
                 .Index("metricbeat-*")
                 .Size(10000)
                 .Sort(ss => ss
@@ -53,9 +53,9 @@ namespace DataAccess.Repositories
 
         public async Task<IEnumerable<NetworkData>> GetAllBytesOut()
         {
-            var response = ElasticConnection.Instance.client.Search<NetworkData>(s => s
+            var response = await ElasticConnection.Instance.Client.SearchAsync<NetworkData>(s => s
                 .Index("metricbeat-*")
-                .Size(5000)
+                .Size(10000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
 
@@ -77,7 +77,7 @@ namespace DataAccess.Repositories
 
         public async Task<Data> GetLatestBytesIn()
         {
-            var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
+            var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
                 .Index("metricbeat-*")
                     .Size(0)
                     .Query(q => q
@@ -105,17 +105,19 @@ namespace DataAccess.Repositories
                         )
                     )
                 ));
-            Data networksData = new Data();
-            networksData.Timestamp = response.Aggregations.DateHistogram("NetworkBytesInDateHistogram").Buckets.FirstOrDefault().KeyAsString;
-            networksData.Value = (float)response.Aggregations.DateHistogram("NetworkBytesInDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgBytesIn").Value.Value;
+            Data networksData = new Data
+            {
+                Timestamp = response.Aggregations.DateHistogram("NetworkBytesInDateHistogram").Buckets.FirstOrDefault()
+                    .KeyAsString,
+                Value = (float) response.Aggregations.DateHistogram("NetworkBytesInDateHistogram").Buckets
+                    .FirstOrDefault().AverageBucket("AvgBytesIn").Value.Value
+            };
             return networksData;
-
-            return null;
         }
 
         public async Task<Data> GetLatestBytesOut()
         {
-            var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
+            var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
                 .Index("metricbeat-*")
                     .Size(0)
                     .Query(q => q
@@ -143,56 +145,14 @@ namespace DataAccess.Repositories
                         )
                     )
                 ));
-            Data networksData = new Data();
-            networksData.Timestamp = response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets.FirstOrDefault().KeyAsString;
-            networksData.Value = (float)response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgBytesOut").Value.Value;
-            return networksData;
-
-            return null;
-        }
-
-        public async Task<List<Data>> GetLatestMonth()
-        {
-            var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
-                .Index("metricbeat-*")
-                    .Size(0)
-                    .Query(q => q
-                        .Bool(b => b
-                            .Must(sh => sh
-                                .Exists(ex => ex
-                                    .Field("host.network.in.bytes")
-                                    )
-                                ).Filter(f => f
-                                .DateRange(dr => dr
-                                    .Field("@timestamp")
-                                    .GreaterThanOrEquals("now-1M")
-                                    )
-                                )
-                            )
-                            )
-                    .Aggregations(aggs => aggs
-                        .DateHistogram("myNetworkDateHistogram", date => date
-                        .Field("@timestamp")
-                        .CalendarInterval(DateInterval.Minute)
-                        .Aggregations(aggs => aggs
-                            .Average("AVGnetIN", avg => avg
-                            .Field("host.network.in.bytes"))
-                        )
-                    )
-                ));
-
-            List<Data> networksDataList = new List<Data>();
-            var dateHistogram = response.Aggregations.DateHistogram("myNetworkDateHistogram");
-            foreach (var item in dateHistogram.Buckets)
+            Data networksData = new Data
             {
-                Data networksData = new Data();
-                networksData.Timestamp = item.KeyAsString;
-                networksData.Value = (float)item.AverageBucket("AVGnetIN").Value.Value;
-                networksDataList.Add(networksData);
-            }
-
-            return networksDataList;
-            return null;
+                Timestamp = response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets.FirstOrDefault()
+                    .KeyAsString,
+                Value = (float) response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets
+                    .FirstOrDefault().AverageBucket("AvgBytesOut").Value.Value
+            };
+            return networksData;
         }
 
         public Task<ActionResult> UpdateByQueryAsync(NetworkData entity, NetworkData u1)

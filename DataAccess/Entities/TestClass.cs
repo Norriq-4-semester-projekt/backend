@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace DataAccess.Entities.Test
+﻿namespace DataAccess.Entities.Test
 {
     public class TestClass
     {

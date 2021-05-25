@@ -29,14 +29,14 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> Login(String Username, String Password)
+        public async Task<ActionResult> Login(string username, string password)
         {
-            User u = new User(Username, Password);
+            User u = new User(username, password);
             try
             {
                 ObjectResult result = await _unitOfWork.Users.Login(u) as ObjectResult;
-                User user = result.Value as User;
-                return Ok(GenerateJWTToken(user));
+                User user = result?.Value as User;
+                return Ok(GenerateJwtToken(user));
             }
             catch (Exception ex)
             {
@@ -45,7 +45,7 @@ namespace Api.Controllers
         }
 
         //Opretter JWT token
-        private string GenerateJWTToken(User user)
+        private string GenerateJwtToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtToken:SecretKey"]));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -57,9 +57,7 @@ namespace Api.Controllers
                 new Claim("username", user.Username),
                 new Claim("LoggedOn", DateTime.Now.ToString())
             };
-
-            //ToDo add claims with user info!
-            //Gør den ikke det i forvejen?
+            
             var token = new JwtSecurityToken(
             issuer,
             audience,
@@ -72,9 +70,9 @@ namespace Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Register(string Username, string Password)
+        public async Task<ActionResult> Register(string username, string password)
         {
-            User user = new User(Username, Password);
+            User user = new User(username, password);
             try
             {
                 return await _unitOfWork.Users.AddAsync(user);
@@ -87,9 +85,9 @@ namespace Api.Controllers
 
         //Sletter en User ud fra Username
         [HttpPost]
-        public async Task<ActionResult> Delete(string Username)
+        public async Task<ActionResult> Delete(string username)
         {
-            User u = new User(Username);
+            User u = new User(username);
             try
             {
                 return await _unitOfWork.Users.DeleteByQueryAsync(u);
@@ -102,10 +100,10 @@ namespace Api.Controllers
 
         //Opdaterer username på en user
         [HttpPost]
-        public async Task<ActionResult> Update(string Username, string NewUsername)
+        public async Task<ActionResult> Update(string username, string newUsername)
         {
-            User u = new User(Username);
-            User u1 = new User(NewUsername);
+            User u = new User(username);
+            User u1 = new User(newUsername);
             try
             {
                 return await _unitOfWork.Users.UpdateByQueryAsync(u, u1);
@@ -115,23 +113,6 @@ namespace Api.Controllers
                 throw new Exception("Update Failed", ex);
             }
         }
-
-        //public async Task<ActionResult> GetBy(string Username)
-        //{
-        //    User u = new User(Username);
-        //    //var result;
-
-        //    try
-        //    {
-        //        var result = await _unitOfWork.Users.GetByQueryAsync(u);
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return StatusCode(500);
-        //    }
-
-        //    return new StatusCodeResult(200);
-        //}
 
         [HttpGet]
         public async Task<ActionResult> GetAll()

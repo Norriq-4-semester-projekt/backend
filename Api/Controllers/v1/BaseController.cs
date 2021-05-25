@@ -9,28 +9,23 @@ namespace Api.Controllers.v1
     public class BaseController : ControllerBase
     {
         private readonly IConfiguration _configuration;
-        protected readonly IUnitOfWork _unitOfWork;
 
         public BaseController(IConfiguration configuration, IUnitOfWork unitOfWork)
         {
             _configuration = configuration;
-            _unitOfWork = unitOfWork;
+            UnitOfWork = unitOfWork;
         }
 
-        protected IUnitOfWork UnitOfWork
+        protected IUnitOfWork UnitOfWork { get; }
+
+        protected ActionResult CatchResponse(Exception ex, string message, int statusCode)
         {
-            get { return _unitOfWork; }
+            return new ObjectResult(message) { StatusCode = statusCode };
         }
 
-        protected ActionResult CatchResponse(Exception Ex, string Message, int StatusCode)
+        protected ActionResult ReturnResponse(dynamic json, int statusCode)
         {
-            //ToDo Gem evt exception et eller andet sted
-            return new ObjectResult(Message) { StatusCode = StatusCode };
-        }
-
-        protected ActionResult ReturnResponse(dynamic json, int StatusCode)
-        {
-            return new ObjectResult(JsonSerializer.Serialize(json)) { StatusCode = StatusCode };
+            return new ObjectResult(JsonSerializer.Serialize(json)) { StatusCode = statusCode };
         }
     }
 }

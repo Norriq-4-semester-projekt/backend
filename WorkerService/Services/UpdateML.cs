@@ -15,18 +15,15 @@ using WorkerService.Entities;
 
 namespace WorkerService.Services
 {
-    internal class UpdateML : IHostedService, IDisposable
+    internal class UpdateMl : IHostedService, IDisposable
     {
-        private int executionCount = 0;
-        private readonly ILogger<UpdateML> _logger;
+        private int _executionCount;
+        private readonly ILogger<UpdateMl> _logger;
         private Timer _timer;
 
-        private static string FileName;
-        private static string BaseDatasetsRelativePath = @"../../../../Input";
-        //private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/{FileName}.json";
-        //private static string DatasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
-
-        public UpdateML(ILogger<UpdateML> logger)
+        private const string BaseDatasetsRelativePath = @"../../../../Input";
+        
+        public UpdateMl(ILogger<UpdateMl> logger)
         {
             _logger = logger;
         }
@@ -43,7 +40,7 @@ namespace WorkerService.Services
 
         private async void DoWork(object state)
         {
-            var count = Interlocked.Increment(ref executionCount);
+            var count = Interlocked.Increment(ref _executionCount);
 
             _logger.LogInformation(
                 "Timed Hosted Service is working. Count: {Count}", count);
@@ -51,34 +48,36 @@ namespace WorkerService.Services
             await UpdateTrainingModel();
         }
 
-        private async Task UpdateTrainingModel()
+        private static async Task UpdateTrainingModel()
         {
-            Dictionary<String, String> endPoints = new Dictionary<string, string>();
-            endPoints.Add("cpu_trainingdata", "https://localhost:5001/v1/TrainingData/GetCpuData");
-            endPoints.Add("network_bytes_in_trainingdata", "https://localhost:5001/v1/TrainingData/GetNetworkBytesIn");
-            endPoints.Add("memory_trainingdata", "https://localhost:5001/v1/TrainingData/GetMemoryData");
-            endPoints.Add("network_bytes_out_trainingdata", "https://localhost:5001/v1/TrainingData/GetNetworkBytesOut");
-            endPoints.Add("systemload_trainingdata", "https://localhost:5001/v1/TrainingData/GetSystemLoadData");
-            Dictionary<String, String> responses = new Dictionary<string, string>();
-
-            foreach (var item in endPoints)
+            Dictionary<string, string> endPoints = new Dictionary<string, string>
             {
-                responses.Add(item.Key, PathHelper.GetJsonResponse(item.Value).Result);
+                {"cpu_trainingdata", "https://localhost:5001/v1/TrainingData/GetCpuData"},
+                {"network_bytes_in_trainingdata", "https://localhost:5001/v1/TrainingData/GetNetworkBytesIn"},
+                {"memory_trainingdata", "https://localhost:5001/v1/TrainingData/GetMemoryData"},
+                {"network_bytes_out_trainingdata", "https://localhost:5001/v1/TrainingData/GetNetworkBytesOut"},
+                {"systemload_trainingdata", "https://localhost:5001/v1/TrainingData/GetSystemLoadData"}
+            };
+            Dictionary<string, string> responses = new Dictionary<string, string>();
+
+            foreach (var (key, value) in endPoints)
+            {
+                responses.Add(key, PathHelper.GetJsonResponse(value).Result);
             }
 
             foreach (var item in responses)
             {
-                string DatasetRelativePath = $"{BaseDatasetsRelativePath}/{item.Key}.json";
-                string oldLocation = PathHelper.GetAbsolutePath(DatasetRelativePath);
+                string datasetRelativePath = $"{BaseDatasetsRelativePath}/{item.Key}.json";
+                string oldLocation = PathHelper.GetAbsolutePath(datasetRelativePath);
 
                 string backupName = item.Key + "_BACKUP";
-                DatasetRelativePath = $"{BaseDatasetsRelativePath}/{backupName}.json";
-                string newLocation = PathHelper.GetAbsolutePath(DatasetRelativePath);
+                datasetRelativePath = $"{BaseDatasetsRelativePath}/{backupName}.json";
+                string newLocation = PathHelper.GetAbsolutePath(datasetRelativePath);
 
                 File.Delete(newLocation);
                 File.Move(oldLocation, newLocation);
 
-                File.WriteAllText(oldLocation, item.Value);
+                await File.WriteAllTextAsync(oldLocation, item.Value);
             }
         }
 

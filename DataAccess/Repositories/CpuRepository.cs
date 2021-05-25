@@ -106,7 +106,7 @@ namespace DataAccess.Repositories
 
         public async Task<IEnumerable<CpuData>> GetAll()
         {
-            var response = ElasticConnection.Instance.client.Search<CpuData>(s => s
+            var response = await ElasticConnection.Instance.Client.SearchAsync<CpuData>(s => s
                 .Index("metricbeat-*")
                 .Size(10000)
                 .Sort(ss => ss
@@ -130,7 +130,7 @@ namespace DataAccess.Repositories
 
         public async Task<Data> GetLatest()
         {
-            var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
+            var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
                 .Index("metricbeat-*")
                     .Size(0)
                     .Query(q => q
@@ -158,17 +158,14 @@ namespace DataAccess.Repositories
                         )
                     )
                 ));
-            Data cpuData = new Data();
-            cpuData.Timestamp = response.Aggregations.DateHistogram("CpuDateHistogram").Buckets.FirstOrDefault().KeyAsString;
-            cpuData.Value = (float)response.Aggregations.DateHistogram("CpuDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgCpu").Value.Value;
+            Data cpuData = new Data
+            {
+                Timestamp =
+                    response.Aggregations.DateHistogram("CpuDateHistogram").Buckets.FirstOrDefault().KeyAsString,
+                Value = (float) response.Aggregations.DateHistogram("CpuDateHistogram").Buckets.FirstOrDefault()
+                    .AverageBucket("AvgCpu").Value.Value
+            };
             return cpuData;
-
-            return null;
-        }
-
-        public Task<List<CpuData>> GetLatestMonth()
-        {
-            throw new NotImplementedException();
         }
 
         public Task<ActionResult> UpdateByQueryAsync(CpuData entity, CpuData u1)

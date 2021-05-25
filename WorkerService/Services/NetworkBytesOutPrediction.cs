@@ -16,22 +16,22 @@ using WorkerService.Entities;
 
 namespace WorkerService.Services
 {
-    internal class NetworkBytesOutPrediciton : IHostedService, IDisposable
+    internal class NetworkBytesOutPrediction : IHostedService, IDisposable
     {
-        private int executionCount = 0;
-        private readonly ILogger<NetworkBytesOutPrediciton> _logger;
+        private int _executionCount;
+        private readonly ILogger<NetworkBytesOutPrediction> _logger;
         private Timer _timer;
 
-        private HttpClientHandler handler = new HttpClientHandler()
+        private readonly HttpClientHandler _handler = new HttpClientHandler()
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };
 
-        private HttpClient httpClient;
+        private readonly HttpClient _httpClient;
 
-        public NetworkBytesOutPrediciton(ILogger<NetworkBytesOutPrediciton> logger)
+        public NetworkBytesOutPrediction(ILogger<NetworkBytesOutPrediction> logger)
         {
-            httpClient = new HttpClient(handler);
+            _httpClient = new HttpClient(_handler);
             _logger = logger;
         }
 
@@ -47,7 +47,7 @@ namespace WorkerService.Services
 
         private async void DoWork(object state)
         {
-            var count = Interlocked.Increment(ref executionCount);
+            var count = Interlocked.Increment(ref _executionCount);
 
             _logger.LogInformation(
                 "Timed Hosted Service is working. Count: {Count}", count);
@@ -57,40 +57,30 @@ namespace WorkerService.Services
 
         private async Task<float> PredictDataAsync()
         {
-            Data cpuData = new Data();
-            HttpResponseMessage cpuResponse = await httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestCpuData");
-
+            HttpResponseMessage cpuResponse = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestCpuData");
             cpuResponse.EnsureSuccessStatusCode();
             string cpuResponseBody = await cpuResponse.Content.ReadAsStringAsync();
-            cpuData = JsonConvert.DeserializeObject<Data>(cpuResponseBody);
-
-            Data memoryData = new Data();
-            HttpResponseMessage memResponse = await httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestMemoryData");
-
+            Data cpuData = JsonConvert.DeserializeObject<Data>(cpuResponseBody);
+            
+            HttpResponseMessage memResponse = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestMemoryData");
             memResponse.EnsureSuccessStatusCode();
             string memResponseBody = await memResponse.Content.ReadAsStringAsync();
-            memoryData = JsonConvert.DeserializeObject<Data>(memResponseBody);
-
-            Data bytesInData = new Data();
-            HttpResponseMessage bytesInResponse = await httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesIn");
-
+            Data memoryData = JsonConvert.DeserializeObject<Data>(memResponseBody);
+            
+            HttpResponseMessage bytesInResponse = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesIn");
             bytesInResponse.EnsureSuccessStatusCode();
             string bytesInResponseBody = await bytesInResponse.Content.ReadAsStringAsync();
-            bytesInData = JsonConvert.DeserializeObject<Data>(bytesInResponseBody);
-
-            Data systemLoadData = new Data();
-            HttpResponseMessage systemLoadResponse = await httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestSystemLoadData");
-
+            Data bytesInData = JsonConvert.DeserializeObject<Data>(bytesInResponseBody);
+            
+            HttpResponseMessage systemLoadResponse = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestSystemLoadData");
             systemLoadResponse.EnsureSuccessStatusCode();
             string systemLoadResponseBody = await systemLoadResponse.Content.ReadAsStringAsync();
-            systemLoadData = JsonConvert.DeserializeObject<Data>(systemLoadResponseBody);
-
-            Data bytesOutData = new Data();
-            HttpResponseMessage bytesOutResponse = await httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesOut");
-
+            Data systemLoadData = JsonConvert.DeserializeObject<Data>(systemLoadResponseBody);
+            
+            HttpResponseMessage bytesOutResponse = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesOut");
             bytesOutResponse.EnsureSuccessStatusCode();
             string bytesOutResponseBody = await bytesOutResponse.Content.ReadAsStringAsync();
-            bytesOutData = JsonConvert.DeserializeObject<Data>(bytesOutResponseBody);
+            Data bytesOutData = JsonConvert.DeserializeObject<Data>(bytesOutResponseBody);
 
             //Create single instance of sample data from first line of dataset for model input
 
@@ -112,8 +102,6 @@ namespace WorkerService.Services
             Console.WriteLine($"\n\nPredicted OutBytes: {predictionResult.Score}\n\n");
             Console.WriteLine("=============== End of process, hit any key to finish ===============");
 
-            var someResult = bytesOutData.Value - predictionResult.Score;
-
             Data predictionLog = new Data()
             {
                 FieldType = "BytesOutPrediction",
@@ -128,21 +116,20 @@ namespace WorkerService.Services
                 Timestamp = bytesOutData.Timestamp
             };
 
-            using (HttpClientHandler handler = new HttpClientHandler())
+            using HttpClientHandler handler = new HttpClientHandler
             {
-                handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
 
-                using (var httpClient = new HttpClient(handler))
-                {
-                    var PredictionContent = new StringContent(JsonConvert.SerializeObject(predictionLog), Encoding.UTF8, "application/json");
-                    HttpResponseMessage response = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostPredictionData", PredictionContent);
-                    response.EnsureSuccessStatusCode();
+            using var httpClient = new HttpClient(handler);
+            var predictionContent = new StringContent(JsonConvert.SerializeObject(predictionLog), Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostPredictionData", predictionContent);
+            response.EnsureSuccessStatusCode();
 
-                    var ActualContent = new StringContent(JsonConvert.SerializeObject(bytesOutLog), Encoding.UTF8, "application/json");
-                    HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostPredictionData", ActualContent);
-                    response2.EnsureSuccessStatusCode();
-                }
-            }
+            var actualContent = new StringContent(JsonConvert.SerializeObject(bytesOutLog), Encoding.UTF8, "application/json");
+            HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostPredictionData", actualContent);
+            response2.EnsureSuccessStatusCode();
+
             return predictionResult.Score;
         }
 

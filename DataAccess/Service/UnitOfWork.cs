@@ -6,29 +6,26 @@ namespace DataAccess.Service
     {
         public IUserRepository Users { get; }
         public INetworkRepository NetworkData { get; }
-        public ICpuRepository CpuData { get; set; }
-        public IHttpStatusRepository HttpStatus { get; set; }
-        public IMemoryRepository MemoryData { get; set; }
-        public ISystemLoadRepository SystemLoadData { get; set; }
+        public ICpuRepository CpuData { get; }
+        public IMemoryRepository MemoryData { get; }
+        public ISystemLoadRepository SystemLoadData { get; }
         public ILogDetectionRepository DetectionLogging { get; set; }
 
         public ITestClass TestClass { get; set; }
 
         public UnitOfWork(IUserRepository userRepository,
                           INetworkRepository networkRepository,
-                          IHttpStatusRepository httpstatusRepository,
                           IMemoryRepository memoryRepository,
-                          ISystemLoadRepository systemloadRepository,
+                          ISystemLoadRepository systemLoadRepository,
                           ICpuRepository cpuRepository,
                           ILogDetectionRepository logDetectionRepository,
                           ITestClass testClass)
         {
             Users = userRepository;
             NetworkData = networkRepository;
-            HttpStatus = httpstatusRepository;
             CpuData = cpuRepository;
             MemoryData = memoryRepository;
-            SystemLoadData = systemloadRepository;
+            SystemLoadData = systemLoadRepository;
             DetectionLogging = logDetectionRepository;
             TestClass = testClass;
         }

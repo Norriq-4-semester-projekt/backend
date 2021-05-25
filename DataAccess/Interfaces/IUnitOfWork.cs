@@ -9,11 +9,10 @@ namespace DataAccess.Interfaces
     {
         public IUserRepository Users { get; }
         public INetworkRepository NetworkData { get; }
-        public IHttpStatusRepository HttpStatus { get; set; }
         public ICpuRepository CpuData { get; }
         public IMemoryRepository MemoryData { get; }
         public ISystemLoadRepository SystemLoadData { get; }
-        public ILogDetectionRepository DetectionLogging { get; set; }
-        public ITestClass TestClass { get; set; }
+        public ILogDetectionRepository DetectionLogging { get; }
+        public ITestClass TestClass { get; }
     }
 }

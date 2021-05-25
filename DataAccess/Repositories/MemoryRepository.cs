@@ -24,7 +24,7 @@ namespace DataAccess.Repositories
 
         public async Task<IEnumerable<MemoryData>> GetAll()
         {
-            var response = ElasticConnection.Instance.client.Search<MemoryData>(s => s
+            var response = await ElasticConnection.Instance.Client.SearchAsync<MemoryData>(s => s
                 .Index("metricbeat-*")
                 .Size(10000)
                 .Sort(ss => ss
@@ -48,7 +48,7 @@ namespace DataAccess.Repositories
 
         public async Task<Data> GetLatest()
         {
-            var response = await ElasticConnection.Instance.client.SearchAsync<Data>(s => s
+            var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
                 .Index("metricbeat-*")
                     .Size(0)
                     .Query(q => q
@@ -76,12 +76,14 @@ namespace DataAccess.Repositories
                         )
                     )
                 ));
-            Data memoryData = new Data();
-            memoryData.Timestamp = response.Aggregations.DateHistogram("MemoryDateHistogram").Buckets.FirstOrDefault().KeyAsString;
-            memoryData.Value = (float)response.Aggregations.DateHistogram("MemoryDateHistogram").Buckets.FirstOrDefault().AverageBucket("AvgMemory").Value.Value;
+            Data memoryData = new Data
+            {
+                Timestamp = response.Aggregations.DateHistogram("MemoryDateHistogram").Buckets.FirstOrDefault()
+                    .KeyAsString,
+                Value = (float) response.Aggregations.DateHistogram("MemoryDateHistogram").Buckets.FirstOrDefault()
+                    .AverageBucket("AvgMemory").Value.Value
+            };
             return memoryData;
-
-            return null;
         }
 
         public Task<ActionResult> UpdateByQueryAsync(MemoryData entity, MemoryData u1)

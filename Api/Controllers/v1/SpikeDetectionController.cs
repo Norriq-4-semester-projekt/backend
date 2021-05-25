@@ -22,11 +22,11 @@ namespace Api.Controllers.v1
         {
             try
             {
-                return this.ReturnResponse(await UnitOfWork.NetworkData.GetLatestBytesIn(), 200);
+                return ReturnResponse(await UnitOfWork.NetworkData.GetLatestBytesIn(), 200);
             }
-            catch (Exception Ex)
+            catch (Exception ex)
             {
-                return this.CatchResponse(Ex, Ex.Message, 501);
+                return CatchResponse(ex, ex.Message, 501);
             }
         }
 
@@ -35,11 +35,11 @@ namespace Api.Controllers.v1
         {
             try
             {
-                return this.ReturnResponse(await UnitOfWork.NetworkData.GetLatestBytesOut(), 200);
+                return ReturnResponse(await UnitOfWork.NetworkData.GetLatestBytesOut(), 200);
             }
-            catch (Exception Ex)
+            catch (Exception ex)
             {
-                return this.CatchResponse(Ex, Ex.Message, 501);
+                return CatchResponse(ex, ex.Message, 501);
             }
         }
 
@@ -48,11 +48,11 @@ namespace Api.Controllers.v1
         {
             try
             {
-                return this.ReturnResponse(await UnitOfWork.CpuData.GetLatest(), 200);
+                return ReturnResponse(await UnitOfWork.CpuData.GetLatest(), 200);
             }
-            catch (Exception Ex)
+            catch (Exception ex)
             {
-                return this.CatchResponse(Ex, Ex.Message, 501);
+                return CatchResponse(ex, ex.Message, 501);
             }
         }
 
@@ -61,11 +61,11 @@ namespace Api.Controllers.v1
         {
             try
             {
-                return this.ReturnResponse(await UnitOfWork.MemoryData.GetLatest(), 200);
+                return ReturnResponse(await UnitOfWork.MemoryData.GetLatest(), 200);
             }
-            catch (Exception Ex)
+            catch (Exception ex)
             {
-                return this.CatchResponse(Ex, Ex.Message, 501);
+                return CatchResponse(ex, ex.Message, 501);
             }
         }
 
@@ -74,11 +74,11 @@ namespace Api.Controllers.v1
         {
             try
             {
-                return this.ReturnResponse(await UnitOfWork.SystemLoadData.GetLatest(), 200);
+                return ReturnResponse(await UnitOfWork.SystemLoadData.GetLatest(), 200);
             }
-            catch (Exception Ex)
+            catch (Exception ex)
             {
-                return this.CatchResponse(Ex, Ex.Message, 501);
+                return CatchResponse(ex, ex.Message, 501);
             }
         }
 
@@ -92,14 +92,12 @@ namespace Api.Controllers.v1
                 {
                     return Ok();
                 }
-                else
-                {
-                    return BadRequest();
-                }
+
+                return BadRequest();
             }
-            catch (Exception Ex)
+            catch (Exception ex)
             {
-                return this.CatchResponse(Ex, Ex.Message, 501);
+                return CatchResponse(ex, ex.Message, 501);
             }
         }
 
@@ -113,14 +111,12 @@ namespace Api.Controllers.v1
                 {
                     return Ok();
                 }
-                else
-                {
-                    return BadRequest();
-                }
+
+                return BadRequest();
             }
-            catch (Exception Ex)
+            catch (Exception ex)
             {
-                return this.CatchResponse(Ex, Ex.Message, 501);
+                return CatchResponse(ex, ex.Message, 501);
             }
         }
 
@@ -129,11 +125,11 @@ namespace Api.Controllers.v1
         {
             try
             {
-                return this.ReturnResponse(await UnitOfWork.DetectionLogging.GetAll(), 200);
+                return ReturnResponse(await UnitOfWork.DetectionLogging.GetAll(), 200);
             }
-            catch (Exception Ex)
+            catch (Exception ex)
             {
-                return this.CatchResponse(Ex, Ex.Message, 501);
+                return CatchResponse(ex, ex.Message, 501);
             }
         }
 
@@ -142,11 +138,11 @@ namespace Api.Controllers.v1
         {
             try
             {
-                return this.ReturnResponse(await UnitOfWork.DetectionLogging.GetAllPredictions(), 200);
+                return ReturnResponse(await UnitOfWork.DetectionLogging.GetAllPredictions(), 200);
             }
-            catch (Exception Ex)
+            catch (Exception ex)
             {
-                return this.CatchResponse(Ex, Ex.Message, 501);
+                return CatchResponse(ex, ex.Message, 501);
             }
         }
     }

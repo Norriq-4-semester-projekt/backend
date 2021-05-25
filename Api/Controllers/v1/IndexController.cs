@@ -1,13 +1,8 @@
 ﻿using DataAccess.Interfaces;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace Api.Controllers.v1
 {
@@ -22,45 +17,40 @@ namespace Api.Controllers.v1
         }
 
         [HttpGet]
-        public ContentResult spike()
+        [Authorize]
+        public ContentResult Spike()
         {
-            string filepath = @"../../../../TestData/spike.html";
-            string filename = "spike.html";
-
-            FileInfo _dataRoot = new FileInfo(typeof(Program).Assembly.Location);
-            string assemblyFolderPath = _dataRoot.Directory.FullName;
-
-            string fullPath = Path.Combine(assemblyFolderPath, filepath);
-
-            var fileContent = System.IO.File.ReadAllText(fullPath);
-
             return new ContentResult
             {
                 ContentType = "text/html",
                 StatusCode = 200,
-                Content = fileContent
+                Content = GetAbsolutePath(@"../../../../TestData/spike.html")
             };
         }
 
         [HttpGet]
-        public ContentResult prediction()
+        public ContentResult Prediction()
         {
-            string filepath = @"../../../../TestData/prediction.html";
-            string filename = "prediction.html";
+            return new ContentResult
+            {
+                ContentType = "text/html",
+                StatusCode = 200,
+                Content = GetAbsolutePath(@"../../../../TestData/prediction.html")
+            };
+        }
 
-            FileInfo _dataRoot = new FileInfo(typeof(Program).Assembly.Location);
-            string assemblyFolderPath = _dataRoot.Directory.FullName;
+        private string GetAbsolutePath(string relativePath)
+        {
+            string filepath = relativePath;
+
+            FileInfo dataRoot = new FileInfo(typeof(Program).Assembly.Location);
+            string assemblyFolderPath = dataRoot.Directory.FullName;
 
             string fullPath = Path.Combine(assemblyFolderPath, filepath);
 
             var fileContent = System.IO.File.ReadAllText(fullPath);
 
-            return new ContentResult
-            {
-                ContentType = "text/html",
-                StatusCode = 200,
-                Content = fileContent
-            };
+            return fileContent;
         }
     }
 }

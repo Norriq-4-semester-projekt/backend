@@ -18,28 +18,28 @@ namespace WorkerService.Services
 {
     internal class CpuSpikeDetection : IHostedService, IDisposable
     {
-        private int executionCount = 0;
+        private int _executionCount;
         private readonly ILogger<CpuSpikeDetection> _logger;
         private Timer _timer;
 
-        private static string BaseDatasetsRelativePath = @"../../../../Input";
-        private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/cpu_trainingdata.json";
-        private static string DatasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
+        private const string BaseDatasetsRelativePath = @"../../../../Input";
+        private static readonly string DatasetRelativePath = $"{BaseDatasetsRelativePath}/cpu_trainingdata.json";
+        private static readonly string DatasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
 
-        private static MLContext mlContext;
-        private static List<Data> trainingData = new List<Data>();
-        private int startSpikes = 0;
+        private static MLContext _mlContext;
+        private static readonly List<Data> TrainingData = new List<Data>();
+        private int _startSpikes;
 
-        private HttpClientHandler handler = new HttpClientHandler()
+        private readonly HttpClientHandler _handler = new HttpClientHandler()
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };
 
-        private HttpClient httpClient;
+        private readonly HttpClient httpClient;
 
         public CpuSpikeDetection(ILogger<CpuSpikeDetection> logger)
         {
-            httpClient = new HttpClient(handler);
+            httpClient = new HttpClient(_handler);
             _logger = logger;
         }
 
@@ -48,19 +48,21 @@ namespace WorkerService.Services
             string json = System.IO.File.ReadAllText(DatasetPath);
             List<CpuData> data = JsonConvert.DeserializeObject<List<CpuData>>(json);
 
-            foreach (var item in data)
-            {
-                Data cpuData = new Data();
-                cpuData.Value = item.Host.Cpu.Pct;
-                cpuData.Timestamp = item.Timestamp;
-                trainingData.Add(cpuData);
-            }
+            if (data != null)
+                foreach (var item in data)
+                {
+                    Data cpuData = new Data();
+                    cpuData.Value = item.Host.Cpu.Pct;
+                    cpuData.Timestamp = item.Timestamp;
+                    TrainingData.Add(cpuData);
+                }
+
             Data emptyList = new Data();
-            var spikeResult = SpikeDetection.DetectSpikeAsync(emptyList, trainingData, startSpikes);
-            startSpikes = spikeResult.Item2.Count;
+            var spikeResult = SpikeDetection.DetectSpikeAsync(emptyList, TrainingData, _startSpikes);
+            _startSpikes = spikeResult.Item2.Count;
 
             // Create MLContext to be shared across the model creation workflow objects
-            mlContext = new MLContext();
+            _mlContext = new MLContext();
 
             _logger.LogInformation("Timed Hosted Service running.");
 
@@ -72,7 +74,7 @@ namespace WorkerService.Services
 
         private async void DoWork(object state)
         {
-            var count = Interlocked.Increment(ref executionCount);
+            var count = Interlocked.Increment(ref _executionCount);
 
             _logger.LogInformation(
                 "Timed Hosted Service is working. Count: {Count}", count);
@@ -82,27 +84,17 @@ namespace WorkerService.Services
 
         public async Task<bool> DetectSpikeAsync()
         {
-            bool spikeDetected = false;
-            Data spike;
-            try
-            {
-                Data latestData = new Data();
-                HttpResponseMessage response = await httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestCpuData");
+            Data latestData;
+            HttpResponseMessage response = await httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestCpuData");
 
-                response.EnsureSuccessStatusCode();
-                string responseBody = await response.Content.ReadAsStringAsync();
-                latestData = JsonConvert.DeserializeObject<Data>(responseBody);
-                latestData.FieldType = "CpuPct";
+            response.EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
+            latestData = JsonConvert.DeserializeObject<Data>(responseBody);
+            latestData.FieldType = "CpuPct";
 
-                var spikeResult = SpikeDetection.DetectSpikeAsync(latestData, trainingData, startSpikes);
-                spike = spikeResult.Item2.Last();
-                spikeDetected = spikeResult.Item1;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            if (spikeDetected)
+            var spikeResult = SpikeDetection.DetectSpikeAsync(latestData, TrainingData, _startSpikes);
+            Data spike = spikeResult.Item2.Last();
+            if (spikeResult.Item1)
             {
                 var telegramBot = new TelegramBotClient("1618808038:AAHs2nHXf_sYeOIgwiIr1nxqMz6Uul-w4nA");
                 await telegramBot.SendTextMessageAsync("-1001399759228", "CPU Spike Detected!\n\n" +
@@ -110,7 +102,7 @@ namespace WorkerService.Services
                     "Date: " + spike.Timestamp);
             }
 
-            return spikeDetected;
+            return spikeResult.Item1;
         }
 
         public Task StopAsync(CancellationToken stoppingToken)

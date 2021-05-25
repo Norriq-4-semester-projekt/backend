@@ -10,9 +10,9 @@ using WorkerService.Entities;
 
 namespace WorkerService
 {
-    public class ConsumeModel
+    public static class ConsumeModel
     {
-        private static string BaseDatasetsRelativePath = @"../../../../Input/Prediction";
+        private const string BaseDatasetsRelativePath = @"../../../../Input/Prediction";
         private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/MLModel.zip";
         private static string DatasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
 

@@ -16,28 +16,28 @@ namespace WorkerService.Services
 {
     internal class MemorySpikeDetection : IHostedService, IDisposable
     {
-        private int executionCount = 0;
+        private int _executionCount;
         private readonly ILogger<MemorySpikeDetection> _logger;
         private Timer _timer;
 
-        private static string BaseDatasetsRelativePath = @"../../../../Input";
-        private static string DatasetRelativePath = $"{BaseDatasetsRelativePath}/memory_trainingdata.json";
-        private static string DatasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
+        private const string BaseDatasetsRelativePath = @"../../../../Input";
+        private static readonly string DatasetRelativePath = $"{BaseDatasetsRelativePath}/memory_trainingdata.json";
+        private static readonly string DatasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
 
-        private static MLContext mlContext;
-        private static List<Data> trainingData = new List<Data>();
-        private int startSpikes = 0;
+        private static MLContext _mlContext;
+        private static readonly List<Data> TrainingData = new List<Data>();
+        private int _startSpikes;
 
-        private HttpClientHandler handler = new HttpClientHandler()
+        private readonly HttpClientHandler _handler = new HttpClientHandler()
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };
 
-        private HttpClient httpClient;
+        private readonly HttpClient _httpClient;
 
         public MemorySpikeDetection(ILogger<MemorySpikeDetection> logger)
         {
-            httpClient = new HttpClient(handler);
+            _httpClient = new HttpClient(_handler);
             _logger = logger;
         }
 
@@ -46,19 +46,21 @@ namespace WorkerService.Services
             string json = System.IO.File.ReadAllText(DatasetPath);
             List<MemoryData> data = JsonConvert.DeserializeObject<List<MemoryData>>(json);
 
-            foreach (var item in data)
-            {
-                Data memoryData = new Data();
-                memoryData.Value = item.System.Memory.Actual.Used.Bytes;
-                memoryData.Timestamp = item.Timestamp;
-                trainingData.Add(memoryData);
-            }
+            if (data != null)
+                foreach (var item in data)
+                {
+                    Data memoryData = new Data();
+                    memoryData.Value = item.System.Memory.Actual.Used.Bytes;
+                    memoryData.Timestamp = item.Timestamp;
+                    TrainingData.Add(memoryData);
+                }
+
             Data emptyList = new Data();
-            var spikeResult = SpikeDetection.DetectSpikeAsync(emptyList, trainingData, startSpikes);
-            startSpikes = spikeResult.Item2.Count;
+            var spikeResult = SpikeDetection.DetectSpikeAsync(emptyList, TrainingData, _startSpikes);
+            _startSpikes = spikeResult.Item2.Count;
 
             // Create MLContext to be shared across the model creation workflow objects
-            mlContext = new MLContext();
+            _mlContext = new MLContext();
 
             _logger.LogInformation("Timed Hosted Service running.");
 
@@ -70,7 +72,7 @@ namespace WorkerService.Services
 
         private async void DoWork(object state)
         {
-            var count = Interlocked.Increment(ref executionCount);
+            var count = Interlocked.Increment(ref _executionCount);
 
             _logger.LogInformation(
                 "Timed Hosted Service is working. Count: {Count}", count);
@@ -80,27 +82,16 @@ namespace WorkerService.Services
 
         public async Task<bool> DetectSpikeAsync()
         {
-            bool spikeDetected = false;
-            List<Data> spikes;
-            try
-            {
-                Data latestData = new Data();
-                HttpResponseMessage response = await httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestMemoryData");
+            HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestMemoryData");
 
-                response.EnsureSuccessStatusCode();
-                string responseBody = await response.Content.ReadAsStringAsync();
-                latestData = JsonConvert.DeserializeObject<Data>(responseBody);
-                latestData.FieldType = "MemUsedInBytes";
+            response.EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
+            Data latestData = JsonConvert.DeserializeObject<Data>(responseBody);
+            latestData.FieldType = "MemUsedInBytes";
 
-                var spikeResult = SpikeDetection.DetectSpikeAsync(latestData, trainingData, startSpikes);
-                spikes = spikeResult.Item2;
-                spikeDetected = spikeResult.Item1;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            if (spikeDetected)
+            var spikeResult = SpikeDetection.DetectSpikeAsync(latestData, TrainingData, _startSpikes);
+            List<Data> spikes = spikeResult.Item2;
+            if (spikeResult.Item1)
             {
                 var telegramBot = new TelegramBotClient("1618808038:AAHs2nHXf_sYeOIgwiIr1nxqMz6Uul-w4nA");
                 await telegramBot.SendTextMessageAsync("-1001399759228", "Memory Spike Detected!\n\n" +
@@ -108,7 +99,7 @@ namespace WorkerService.Services
                     "Date: " + spikes.Last().Timestamp);
             }
 
-            return spikeDetected;
+            return spikeResult.Item1;
         }
 
         public Task StopAsync(CancellationToken stoppingToken)

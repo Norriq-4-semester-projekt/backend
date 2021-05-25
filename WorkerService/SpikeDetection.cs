@@ -10,29 +10,24 @@ namespace WorkerService
 {
     public static class SpikeDetection
     {
-        private static MLContext mlContext = new MLContext();
-        private static bool firstRun = true;
-
-        //private static HttpClientHandler handler = new HttpClientHandler()
-        //{
-        //    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        //};
-
+        private static readonly MLContext MlContext = new MLContext();
+        private static bool _firstRun = true;
+        
         public static (bool, List<Data>) DetectSpikeAsync(Data latestData, List<Data> trainingData, int startSpikes)
         {
             List<Data> testData = new List<Data>(trainingData);
             if (startSpikes > 0)
             {
-                firstRun = false;
+                _firstRun = false;
                 testData.Add(latestData);
             }
 
             // Load Data
-            var dataView = mlContext.Data.LoadFromEnumerable<Data>(testData);
+            var dataView = MlContext.Data.LoadFromEnumerable<Data>(testData);
             //assign the Number of records in dataset file to cosntant variable
             int size = testData.Count;
             //STEP 1: Create Esimtator
-            var estimator = mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(Predictions.Prediction),
+            var estimator = MlContext.Transforms.DetectIidSpike(outputColumnName: nameof(Predictions.Prediction),
                                                                 inputColumnName: "Value",
                                                                 confidence: 99,
                                                                 pvalueHistoryLength: size / 4);
@@ -43,7 +38,7 @@ namespace WorkerService
             //STEP 3: Use/test model
             //Apply data transformation to create predictions.
             IDataView transformedData = transformedModel.Transform(dataView);
-            IEnumerable<Predictions> predictions = mlContext.Data.CreateEnumerable<Predictions>(transformedData, reuseRowObject: false);
+            IEnumerable<Predictions> predictions = MlContext.Data.CreateEnumerable<Predictions>(transformedData, reuseRowObject: false);
 
             List<string> spikeList = new List<string>();
             List<Data> spikes = new List<Data>();
@@ -64,28 +59,25 @@ namespace WorkerService
                 LogDataAsync(spikes.Last());
                 return (true, spikes);
             }
-            else
-            {
-                LogDataAsync(latestData);
-                return (false, spikes);
-            }
+
+            LogDataAsync(latestData);
+            return (false, spikes);
         }
 
         private static async void LogDataAsync(Data data)
         {
-            if (!firstRun)
+            if (!_firstRun)
             {
-                using (HttpClientHandler handler = new HttpClientHandler())
+                using HttpClientHandler handler = new HttpClientHandler
                 {
-                    handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                    ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
 
-                    using (var httpClient = new HttpClient(handler))
-                    {
-                        var StringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-                        HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostDetectionData", StringContent);
-                        response2.EnsureSuccessStatusCode();
-                    }
-                }
+                using var httpClient = new HttpClient(handler);
+                var stringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostDetectionData", stringContent);
+                response.EnsureSuccessStatusCode();
             }
         }
 
@@ -93,7 +85,7 @@ namespace WorkerService
         {
             //Create empty DataView. We just need the schema to call fit()
             IEnumerable<Data> enumerableData = new List<Data>();
-            var dv = mlContext.Data.LoadFromEnumerable(enumerableData);
+            var dv = MlContext.Data.LoadFromEnumerable(enumerableData);
             return dv;
         }
     }

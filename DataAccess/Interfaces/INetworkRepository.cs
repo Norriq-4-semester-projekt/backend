@@ -14,7 +14,5 @@ namespace DataAccess.Interfaces
         Task<IEnumerable<NetworkData>> GetAllBytesIn();
 
         Task<IEnumerable<NetworkData>> GetAllBytesOut();
-
-        Task<List<Data>> GetLatestMonth();
     }
 }
