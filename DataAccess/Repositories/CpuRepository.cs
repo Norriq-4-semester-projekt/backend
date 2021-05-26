@@ -162,7 +162,7 @@ namespace DataAccess.Repositories
             {
                 Timestamp =
                     response.Aggregations.DateHistogram("CpuDateHistogram").Buckets.FirstOrDefault().KeyAsString,
-                Value = (float) response.Aggregations.DateHistogram("CpuDateHistogram").Buckets.FirstOrDefault()
+                Value = (float)response.Aggregations.DateHistogram("CpuDateHistogram").Buckets.FirstOrDefault()
                     .AverageBucket("AvgCpu").Value.Value
             };
             return cpuData;

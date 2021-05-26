@@ -1,17 +1,16 @@
 ﻿using Microsoft.ML;
-using System;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
-using WorkerService.entities;
 using WorkerService.Entities;
 
 namespace WorkerService
 {
     public static class ChangePointDetection
     {
-        private static MLContext mlContext = new MLContext();
+        private static readonly MLContext mlContext = new MLContext();
         private static bool _firstRun = true;
 
         public static (bool, List<Data>) DetectChangepoint(Data latestData, List<Data> trainingData, int startSpikes)
@@ -56,9 +55,35 @@ namespace WorkerService
             if (spikes.Count > startSpikes)
             {
                 spikes.Last().IsSpike = true;
+                LogDataAsync(spikes.Last());
+
                 return (true, spikes);
             }
+            else
+            {
+            LogDataAsync(latestData);
+
             return (false, spikes);
+
+            }
+        }
+
+        private static async void LogDataAsync(Data data)
+        {
+            if (_firstRun == true)
+            {
+                using (HttpClientHandler handler = new HttpClientHandler())
+                {
+                    handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+
+                    using (var httpClient = new HttpClient(handler))
+                    {
+                        var StringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                        HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostChangepointData", StringContent);
+                        response2.EnsureSuccessStatusCode();
+                    }
+                }
+            }
         }
 
         private static IDataView CreateEmptyDataView()

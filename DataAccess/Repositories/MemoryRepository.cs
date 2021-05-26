@@ -80,7 +80,7 @@ namespace DataAccess.Repositories
             {
                 Timestamp = response.Aggregations.DateHistogram("MemoryDateHistogram").Buckets.FirstOrDefault()
                     .KeyAsString,
-                Value = (float) response.Aggregations.DateHistogram("MemoryDateHistogram").Buckets.FirstOrDefault()
+                Value = (float)response.Aggregations.DateHistogram("MemoryDateHistogram").Buckets.FirstOrDefault()
                     .AverageBucket("AvgMemory").Value.Value
             };
             return memoryData;

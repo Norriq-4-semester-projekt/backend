@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Threading;
 using Microsoft.ML;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Telegram.Bot;
 using WorkerService.Entities;
 
-namespace WorkerService.services
+namespace WorkerService.Services
 {
     internal class NetworkChangePointDetection : IHostedService, IDisposable
     {
@@ -25,7 +25,7 @@ namespace WorkerService.services
 
         private static MLContext _mlContext;
         private static List<Data> _trainingData = new List<Data>();
-        private int _startSpikes = 0;
+        private int _startSpikes;
 
         private readonly HttpClientHandler _handler = new HttpClientHandler()
         {
@@ -90,6 +90,7 @@ namespace WorkerService.services
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
                 latestData = JsonConvert.DeserializeObject<Data>(responseBody);
+                latestData.FieldType = "NetworkBytesOut";
 
                 var spikeResult = ChangePointDetection.DetectChangepoint(latestData, _trainingData, _startSpikes);
                 spikes = spikeResult.Item2;

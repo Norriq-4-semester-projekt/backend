@@ -12,6 +12,7 @@ namespace DataAccess.Repositories
     public class TestClassRepository : ITestClass
     {
         private static readonly HttpClient Client = new HttpClient();
+
         public Task<ActionResult> AddAsync(TestClass entity)
         {
             throw new NotImplementedException();
@@ -34,7 +35,6 @@ namespace DataAccess.Repositories
 
         public async Task<ActionResult> TestBytesIn()
         {
-
             const string filepath = @"../../../../TestData/50MB.zip";
             const string filename = "50MB.zip";
 
@@ -55,7 +55,8 @@ namespace DataAccess.Repositories
                     await Client.PostAsync("https://freshcase.dk/", content);
                     return new ObjectResult("File has been uploaded!") { StatusCode = 200 };
                 }
-                catch (Exception ex) { 
+                catch (Exception ex)
+                {
                     return new ObjectResult("Something went wrong: " + ex.Message) { StatusCode = 500 };
                 }
             }

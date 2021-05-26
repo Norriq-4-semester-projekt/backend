@@ -2,6 +2,7 @@
 using DataAccess.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -13,8 +14,13 @@ namespace Api.Controllers.v1
     [Route("v{version:apiVersion}/[controller]/[action]")]
     public class SpikeDetectionController : BaseController
     {
-        public SpikeDetectionController(IConfiguration configuration, IUnitOfWork unitOfWork) : base(configuration, unitOfWork)
+        private readonly ILogger<SpikeDetectionController> _logger;
+
+
+        public SpikeDetectionController(IConfiguration configuration, IUnitOfWork unitOfWork, ILogger<SpikeDetectionController> logger) : base(configuration, unitOfWork)
         {
+            _logger = logger;
+
         }
 
         [HttpGet]
@@ -90,6 +96,27 @@ namespace Api.Controllers.v1
                 bool isValid = UnitOfWork.DetectionLogging.LogDetectionData(data);
                 if (isValid)
                 {
+                    throw new Exception(message: "Noget skete");
+                    return Ok();
+                }
+
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "noget skidt skete");
+                return CatchResponse(ex, ex.Message, 501);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> PostChangepointData(Data data)
+        {
+            try
+            {
+                bool isValid = UnitOfWork.DetectionLogging.LogChangepointData(data);
+                if (isValid)
+                {
                     return Ok();
                 }
 
@@ -113,6 +140,19 @@ namespace Api.Controllers.v1
                 }
 
                 return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                return CatchResponse(ex, ex.Message, 501);
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetChangepointGraphData()
+        {
+            try
+            {
+                return ReturnResponse(await UnitOfWork.DetectionLogging.GetAllChangepoints(), 200);
             }
             catch (Exception ex)
             {

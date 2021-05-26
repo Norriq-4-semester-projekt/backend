@@ -80,7 +80,7 @@ namespace DataAccess.Repositories
             {
                 Timestamp = response.Aggregations.DateHistogram("SystemLoadDateHistogram").Buckets.FirstOrDefault()
                     .KeyAsString,
-                Value = (float) response.Aggregations.DateHistogram("SystemLoadDateHistogram").Buckets.FirstOrDefault()
+                Value = (float)response.Aggregations.DateHistogram("SystemLoadDateHistogram").Buckets.FirstOrDefault()
                     .AverageBucket("AvgSystemLoad").Value.Value
             };
             return systemloadData;

@@ -57,7 +57,7 @@ namespace Api.Controllers
                 new Claim("username", user.Username),
                 new Claim("LoggedOn", DateTime.Now.ToString())
             };
-            
+
             var token = new JwtSecurityToken(
             issuer,
             audience,

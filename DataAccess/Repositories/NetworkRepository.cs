@@ -109,7 +109,7 @@ namespace DataAccess.Repositories
             {
                 Timestamp = response.Aggregations.DateHistogram("NetworkBytesInDateHistogram").Buckets.FirstOrDefault()
                     .KeyAsString,
-                Value = (float) response.Aggregations.DateHistogram("NetworkBytesInDateHistogram").Buckets
+                Value = (float)response.Aggregations.DateHistogram("NetworkBytesInDateHistogram").Buckets
                     .FirstOrDefault().AverageBucket("AvgBytesIn").Value.Value
             };
             return networksData;
@@ -149,7 +149,7 @@ namespace DataAccess.Repositories
             {
                 Timestamp = response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets.FirstOrDefault()
                     .KeyAsString,
-                Value = (float) response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets
+                Value = (float)response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets
                     .FirstOrDefault().AverageBucket("AvgBytesOut").Value.Value
             };
             return networksData;
