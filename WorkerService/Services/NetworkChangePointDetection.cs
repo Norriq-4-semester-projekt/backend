@@ -11,7 +11,7 @@ using System.Net.Http;
 using Telegram.Bot;
 using WorkerService.Entities;
 
-namespace WorkerService.services
+namespace WorkerService.Services
 {
     internal class NetworkChangePointDetection : IHostedService, IDisposable
     {
