@@ -47,7 +47,6 @@ namespace WorkerService
                 if (p.Prediction[0] == 1)
                 {
                     spikes.Add(testData.ElementAt(i));
-                    spikeList.Add(p.Prediction[2].ToString());
                 }
                 i++;
             }
@@ -61,9 +60,9 @@ namespace WorkerService
             }
             else
             {
-            LogDataAsync(latestData);
+                LogDataAsync(latestData);
 
-            return (false, spikes);
+                return (false, spikes);
             }
         }
 
