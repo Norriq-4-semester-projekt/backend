@@ -1,12 +1,9 @@
-﻿using System;
-using System.Text.Json.Serialization;
-
-namespace DataAccess.Entities
+﻿namespace DataAccess.Entities
 {
     public class User
     {
         public string Username { get; }
-        
+
         public string Password { get; set; }
 
         public string Salt { get; set; }

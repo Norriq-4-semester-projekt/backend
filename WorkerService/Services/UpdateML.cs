@@ -1,17 +1,10 @@
-﻿using DataAccess.Entities.Memory;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.ML;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Telegram.Bot;
-using WorkerService.Entities;
 
 namespace WorkerService.Services
 {
@@ -22,7 +15,7 @@ namespace WorkerService.Services
         private Timer _timer;
 
         private const string BaseDatasetsRelativePath = @"../../../../Input";
-        
+
         public UpdateMl(ILogger<UpdateMl> logger)
         {
             _logger = logger;

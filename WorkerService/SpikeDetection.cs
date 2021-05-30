@@ -12,7 +12,7 @@ namespace WorkerService
     {
         private static readonly MLContext MlContext = new MLContext();
         private static bool _firstRun = true;
-        
+
         public static (bool, List<Data>) DetectSpikeAsync(Data latestData, List<Data> trainingData, int startSpikes)
         {
             List<Data> testData = new List<Data>(trainingData);
@@ -77,7 +77,7 @@ namespace WorkerService
                 using var httpClient = new HttpClient(handler);
                 var stringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostDetectionData", stringContent);
-                response.EnsureSuccessStatusCode();
+                //response.EnsureSuccessStatusCode();
             }
         }
 

@@ -16,5 +16,6 @@ namespace DataAccess
                 {
                     webBuilder.UseStartup<Startup>();
                 });
+
     }
 }

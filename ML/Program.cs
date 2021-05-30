@@ -13,7 +13,7 @@ namespace ML
         private const string BaseDatasetsRelativePath = @"../../../../Data";
 
         private static readonly string DatasetRelativePath = $"{BaseDatasetsRelativePath}/trainingdata.json";
-        
+
         private static readonly string DatasetPath = GetAbsolutePath(DatasetRelativePath);
 
         private const string BaseModelsRelativePath = @"../../../../MLModels";
@@ -33,12 +33,12 @@ namespace ML
             {
                 Data networksData = new Data
                 {
-                    Bytes = item.Host.Network.In.Bytes, 
+                    Bytes = item.Host.Network.In.Bytes,
                     Timestamp = item.Timestamp
                 };
                 TrainingData.Add(networksData);
             }
-            
+
             _mlContext = new MLContext();
 
             var dataView = _mlContext.Data.LoadFromEnumerable<Data>(TrainingData);
@@ -78,7 +78,7 @@ namespace ML
             Console.WriteLine("Alert\tScore\tP-Value");
             List<string> spikeList = new List<string>();
             List<int> spikeDates = new List<int>();
-            
+
             int i = 0;
             foreach (var p in predictions)
             {

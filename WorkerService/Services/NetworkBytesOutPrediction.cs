@@ -1,17 +1,11 @@
-﻿using DataAccess.Entities.Cpu;
-using DataAccess.Entities.Memory;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.ML;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Telegram.Bot;
 using WorkerService.Entities;
 
 namespace WorkerService.Services
@@ -61,22 +55,22 @@ namespace WorkerService.Services
             cpuResponse.EnsureSuccessStatusCode();
             string cpuResponseBody = await cpuResponse.Content.ReadAsStringAsync();
             Data cpuData = JsonConvert.DeserializeObject<Data>(cpuResponseBody);
-            
+
             HttpResponseMessage memResponse = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestMemoryData");
             memResponse.EnsureSuccessStatusCode();
             string memResponseBody = await memResponse.Content.ReadAsStringAsync();
             Data memoryData = JsonConvert.DeserializeObject<Data>(memResponseBody);
-            
+
             HttpResponseMessage bytesInResponse = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesIn");
             bytesInResponse.EnsureSuccessStatusCode();
             string bytesInResponseBody = await bytesInResponse.Content.ReadAsStringAsync();
             Data bytesInData = JsonConvert.DeserializeObject<Data>(bytesInResponseBody);
-            
+
             HttpResponseMessage systemLoadResponse = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestSystemLoadData");
             systemLoadResponse.EnsureSuccessStatusCode();
             string systemLoadResponseBody = await systemLoadResponse.Content.ReadAsStringAsync();
             Data systemLoadData = JsonConvert.DeserializeObject<Data>(systemLoadResponseBody);
-            
+
             HttpResponseMessage bytesOutResponse = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesOut");
             bytesOutResponse.EnsureSuccessStatusCode();
             string bytesOutResponseBody = await bytesOutResponse.Content.ReadAsStringAsync();

@@ -1,9 +1,4 @@
-﻿using DataAccess.Entities;
-using DataAccess.Service;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-
-namespace DataAccess.Interfaces
+﻿namespace DataAccess.Interfaces
 {
     public interface IUnitOfWork
     {

@@ -1,5 +1,4 @@
 ﻿using DataAccess.Entities;
-using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,6 +10,10 @@ namespace DataAccess.Interfaces
 
         bool LogPredictionData(Data data);
 
+        bool LogChangepointData(Data data);
+
         Task<IEnumerable<Data>> GetAllPredictions();
+
+        Task<IEnumerable<Data>> GetAllChangepoints();
     }
 }
