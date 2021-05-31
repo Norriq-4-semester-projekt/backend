@@ -43,9 +43,7 @@ namespace WorkerService.Services
 
         public Task StartAsync(CancellationToken stoppingToken)
         {
-            string json = System.IO.File.ReadAllText(DatasetPath);
-            List<NetworkData> data = JsonConvert.DeserializeObject<List<NetworkData>>(json);
-
+            List<NetworkData> data = JsonConvert.DeserializeObject<List<NetworkData>>(System.IO.File.ReadAllText(DatasetPath));
             if (data != null)
                 foreach (var item in data)
                 {
@@ -54,18 +52,11 @@ namespace WorkerService.Services
                     networksData.Timestamp = item.Timestamp;
                     TrainingData.Add(networksData);
                 }
+            var spikeResult = SpikeDetection.DetectSpikeAsync(null, TrainingData, _startSpikes);
 
-            Data emptyList = new Data();
-            var spikeResult = SpikeDetection.DetectSpikeAsync(emptyList, TrainingData, _startSpikes);
             _startSpikes = spikeResult.Item2.Count;
-
-            // Create MLContext to be shared across the model creation workflow objects
-            _mlContext = new MLContext();
-
             _logger.LogInformation("Timed Hosted Service running.");
-
-            _timer = new Timer(DoWork, null, TimeSpan.Zero,
-                TimeSpan.FromSeconds(60));
+            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(60));
 
             return Task.CompletedTask;
         }
@@ -77,11 +68,6 @@ namespace WorkerService.Services
             _logger.LogInformation(
                 "Timed Hosted Service is working. Count: {Count}", count);
 
-            await DetectSpikeAsync();
-        }
-
-        public async Task<bool> DetectSpikeAsync()
-        {
             HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesOut");
 
             response.EnsureSuccessStatusCode();
@@ -98,9 +84,9 @@ namespace WorkerService.Services
                     "Average Bytes Out: " + spikes.Last().Value + "\n" +
                     "Date: " + spikes.Last().Timestamp);
             }
-
-            return spikeResult.Item1;
         }
+
+
 
         public Task StopAsync(CancellationToken stoppingToken)
         {

@@ -30,11 +30,11 @@ namespace Api.Controllers.v1
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetNetworkBytesOut()
+        public async Task<ActionResult> GetNetworkBytesOut(string interval)
         {
             try
             {
-                return ReturnResponse(await UnitOfWork.NetworkData.GetAllBytesOut(), 200);
+                return ReturnResponse(await UnitOfWork.NetworkData.GetAllBytesOut(interval), 200);
             }
             catch (Exception ex)
             {

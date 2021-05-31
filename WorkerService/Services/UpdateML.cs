@@ -52,24 +52,19 @@ namespace WorkerService.Services
                 {"systemload_trainingdata", "https://localhost:5001/v1/TrainingData/GetSystemLoadData"}
             };
             Dictionary<string, string> responses = new Dictionary<string, string>();
-
             foreach (var (key, value) in endPoints)
             {
                 responses.Add(key, PathHelper.GetJsonResponse(value).Result);
             }
-
             foreach (var item in responses)
             {
                 string datasetRelativePath = $"{BaseDatasetsRelativePath}/{item.Key}.json";
                 string oldLocation = PathHelper.GetAbsolutePath(datasetRelativePath);
-
                 string backupName = item.Key + "_BACKUP";
                 datasetRelativePath = $"{BaseDatasetsRelativePath}/{backupName}.json";
                 string newLocation = PathHelper.GetAbsolutePath(datasetRelativePath);
-
                 File.Delete(newLocation);
                 File.Move(oldLocation, newLocation);
-
                 await File.WriteAllTextAsync(oldLocation, item.Value);
             }
         }

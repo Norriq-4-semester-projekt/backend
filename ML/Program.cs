@@ -10,9 +10,9 @@ namespace ML
 {
     internal static class Program
     {
-        private const string BaseDatasetsRelativePath = @"../../../../Data";
+        private const string BaseDatasetsRelativePath = @"../../../../Input";
 
-        private static readonly string DatasetRelativePath = $"{BaseDatasetsRelativePath}/trainingdata.json";
+        private static readonly string DatasetRelativePath = $"{BaseDatasetsRelativePath}/network_bytes_out_trainingdata.json";
 
         private static readonly string DatasetPath = GetAbsolutePath(DatasetRelativePath);
 
@@ -44,13 +44,14 @@ namespace ML
             var dataView = _mlContext.Data.LoadFromEnumerable<Data>(TrainingData);
 
             //assign the Number of records in dataset file to constant variable
-            const int size = 5000;
+            const int size = 10000;
 
             //Load the data into IDataView.
             //This dataset is used while prediction / detecting spikes or changes.
 
             //To detect temporary changes in the pattern
             DetectSpike(size, dataView);
+            DetectChangePoint(size, dataView);
 
             Console.WriteLine("=============== End of process, hit any key to finish ===============");
 
@@ -62,7 +63,7 @@ namespace ML
             Console.WriteLine("===============Detect temporary changes in pattern===============");
 
             ////STEP 1: Create Estimator
-            var estimator = _mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(Data.Bytes), confidence: 95, pvalueHistoryLength: size / 4);
+            var estimator = _mlContext.Transforms.DetectIidSpike(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(Data.Bytes), confidence: 95, pvalueHistoryLength: size / 10);
 
             //STEP 2:The Transformed Model.
             //In IID Spike detection, we don't need to do training, we just need to do transformation.
@@ -82,12 +83,16 @@ namespace ML
             int i = 0;
             foreach (var p in predictions)
             {
+                if (p.Prediction[2] < (1 - 0.95))
+                {
+
                 if (p.Prediction[0] == 1)
                 {
                     Console.BackgroundColor = ConsoleColor.DarkYellow;
                     Console.ForegroundColor = ConsoleColor.Black;
                     spikeList.Add(p.Prediction[2].ToString());
                     Console.WriteLine(TrainingData.ElementAt(i).Timestamp);
+                }
                 }
                 Console.WriteLine("{0}\t{1:0.00}\t{2:0.00}", p.Prediction[0], p.Prediction[1], p.Prediction[2]);
                 Console.ResetColor();
@@ -109,7 +114,7 @@ namespace ML
             Console.WriteLine("===============Detect Persistent changes in pattern===============");
 
             //STEP 1: Setup transformations using DetectIidChangePoint
-            var estimator = _mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(Data.Bytes), confidence: 95, changeHistoryLength: size / 4);
+            var estimator = _mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(NetworksDataPrediction.Prediction), inputColumnName: nameof(Data.Bytes), confidence: 85, changeHistoryLength: size / 4);
 
             //STEP 2:The Transformed Model.
             //In IID Change point detection, we don't need need to do training, we just need to do transformation.
@@ -127,6 +132,7 @@ namespace ML
 
             foreach (var p in predictions)
             {
+                
                 if (p.Prediction[0] == 1)
                 {
                     Console.WriteLine("{0}\t{1:0.00}\t{2:0.00}\t{3:0.00}  <-- alert is on, predicted changepoint", p.Prediction[0], p.Prediction[1], p.Prediction[2], p.Prediction[3]);

@@ -26,7 +26,7 @@ namespace WorkerService
             //assign the Number of records in dataset file to cosntant variable
             int size = testData.Count;
             //STEP 1: Setup transformations using DetectIidChangePoint
-            var estimator = mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(Predictions.Prediction), inputColumnName: "Value", confidence: 90, changeHistoryLength: size / 4);
+            var estimator = mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(Predictions.Prediction), inputColumnName: "Value", confidence: 75, changeHistoryLength: size / 4);
 
             //STEP 2:The Transformed Model.
             //In IID Change point detection, we don't need need to do training, we just need to do transformation.
@@ -55,36 +55,37 @@ namespace WorkerService
             if (spikes.Count > startSpikes)
             {
                 spikes.Last().IsSpike = true;
-                LogDataAsync(spikes.Last());
+                System.Console.WriteLine(spikes.Last().IsSpike);
+                //LogDataAsync(spikes.Last());
 
                 return (true, spikes);
             }
             else
             {
-            LogDataAsync(latestData);
+            //LogDataAsync(latestData);
 
             return (false, spikes);
 
             }
         }
 
-        private static async void LogDataAsync(Data data)
-        {
-            if (_firstRun == true)
-            {
-                using (HttpClientHandler handler = new HttpClientHandler())
-                {
-                    handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+        //private static async void LogDataAsync(Data data)
+        //{
+        //    if (_firstRun == true)
+        //    {
+        //        using (HttpClientHandler handler = new HttpClientHandler())
+        //        {
+        //            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
-                    using (var httpClient = new HttpClient(handler))
-                    {
-                        var StringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-                        HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostChangepointData", StringContent);
-                        response2.EnsureSuccessStatusCode();
-                    }
-                }
-            }
-        }
+        //            using (var httpClient = new HttpClient(handler))
+        //            {
+        //                var StringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+        //                HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostChangepointData", StringContent);
+        //                response2.EnsureSuccessStatusCode();
+        //            }
+        //        }
+        //    }
+        //}
 
         private static IDataView CreateEmptyDataView()
         {

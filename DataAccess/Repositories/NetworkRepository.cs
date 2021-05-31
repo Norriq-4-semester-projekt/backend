@@ -51,28 +51,33 @@ namespace DataAccess.Repositories
             return response.Documents.AsEnumerable<NetworkData>();
         }
 
-        public async Task<IEnumerable<NetworkData>> GetAllBytesOut()
+        public async Task<IEnumerable<NetworkData>> GetAllBytesOut(string interval)
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<NetworkData>(s => s
                 .Index("metricbeat-*")
-                .Size(10000)
+                .Size(15000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
-
                     .Query(q => q
                         .Bool(b => b
-                            .Must(sh => sh
+                            .Must(m => m
                                 .Exists(ex => ex
-                                    .Field("host.network.out.bytes")
+                                    .Field(f => f.Host.Network.Out.Bytes)
                                     )
                                 )
-                            )
-                        )
+                            .Filter(f => f
+                                        .DateRange(dr => dr
+                                            .Field(f => f.Timestamp)
+                                            .GreaterThanOrEquals(interval)
+                                            )
+                                        )
+                                    )
+                                )
                 .DocValueFields(dvf => dvf
-                    .Fields("host.network.out.bytes", "@timestamp"))
+                    .Field(f => f.Host.Network.Out.Bytes)
+                    .Field(f => f.Timestamp))
                  );
-
-            return response.Documents.AsEnumerable<NetworkData>();
+            return response.Documents.AsEnumerable();
         }
 
         public async Task<Data> GetLatestBytesIn()
@@ -121,36 +126,24 @@ namespace DataAccess.Repositories
                 .Index("metricbeat-*")
                     .Size(0)
                     .Query(q => q
-                        .Bool(b => b
-                            .Must(sh => sh
-                                .Exists(ex => ex
-                                    .Field("host.network.out.bytes")
-                                    )
-                                )
-                            .Filter(f => f
-                                .DateRange(dr => dr
-                                    .Field("@timestamp")
-                                    .GreaterThanOrEquals("now-1m")
-                                    )
-                                )
-                            )
-                            )
+                        .Exists(ex => ex
+                            .Field("host.network.out.bytes")))
                     .Aggregations(aggs => aggs
                         .DateHistogram("NetworkBytesOutDateHistogram", date => date
                         .Field("@timestamp")
                         .CalendarInterval(DateInterval.Minute)
                         .Aggregations(aggs => aggs
                             .Average("AvgBytesOut", avg => avg
-                            .Field("host.network.out.bytes"))
-                        )
-                    )
-                ));
+                            .Field("host.network.out.bytes"))))));
+
             Data networksData = new Data
             {
-                Timestamp = response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets.FirstOrDefault()
-                    .KeyAsString,
+                Timestamp = response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets
+                .FirstOrDefault().KeyAsString,
                 Value = (float)response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets
-                    .FirstOrDefault().AverageBucket("AvgBytesOut").Value.Value
+                .FirstOrDefault()
+                .AverageBucket("AvgBytesOut").Value.Value
+
             };
             return networksData;
         }

@@ -6,8 +6,10 @@ namespace DataAccess.Entities.Network
     {
         [Text(Name = "@timestamp")]
         public string Timestamp { get; set; }
+        public string test { get; set; }
 
         public Host Host { get; set; }
+
     }
 
     public class Host
@@ -21,13 +23,22 @@ namespace DataAccess.Entities.Network
         public Out Out { get; set; }
     }
 
+    //public class Out
+    //{
+    //    [Text(Name = "15")]
+    //    public float Number { get; set; }
+    //}
+
     public class Out
     {
-        public long Bytes { get; set; }
+
+        public float Bytes { get; set; }
     }
 
     public class In
     {
-        public long Bytes { get; set; }
+
+        public float Bytes { get; set; }
     }
+    
 }

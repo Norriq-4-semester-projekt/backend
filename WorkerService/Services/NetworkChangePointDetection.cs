@@ -64,7 +64,7 @@ namespace WorkerService.Services
                 _logger.LogInformation("Timed Hosted Service running.");
 
                 _timer = new Timer(DoWork, null, TimeSpan.Zero,
-                    TimeSpan.FromSeconds(60));
+                    TimeSpan.FromSeconds(30));
             }
             return Task.CompletedTask;
         }
@@ -86,7 +86,10 @@ namespace WorkerService.Services
             try
             {
                 Data latestData = new Data();
-                HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesOut");
+                //HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesOut");
+                HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5001/v2/TrainingData/GetNetworkBytesOut?interval=now-1d");
+
+            
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
                 latestData = JsonConvert.DeserializeObject<Data>(responseBody);
@@ -102,6 +105,7 @@ namespace WorkerService.Services
             }
             if (spikeDetected)
             {
+                Console.WriteLine(spikeDetected);
                 var telegramBot = new TelegramBotClient("1618808038:AAHs2nHXf_sYeOIgwiIr1nxqMz6Uul-w4nA");
                 await telegramBot.SendTextMessageAsync("-1001399759228", "Network Changepoint Detected!\n\n" +
                     "Average Bytes: " + spikes.Last().Value + "\n" +
