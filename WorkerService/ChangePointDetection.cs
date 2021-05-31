@@ -10,15 +10,13 @@ namespace WorkerService
 {
     public static class ChangePointDetection
     {
-        private static readonly MLContext mlContext = new MLContext();
-        private static bool _firstRun = true;
+        private static readonly MLContext mlContext = new();
 
         public static (bool, List<Data>) DetectChangepoint(Data latestData, List<Data> trainingData, int startSpikes)
         {
-            List<Data> testData = new List<Data>(trainingData);
+            List<Data> testData = new(trainingData);
             if (startSpikes > 0)
             {
-                _firstRun = false;
                 testData.Add(latestData);
             }
             // Load Data
@@ -39,8 +37,8 @@ namespace WorkerService
             IDataView transformedData = tansformedModel.Transform(dataView);
             var predictions = mlContext.Data.CreateEnumerable<Predictions>(transformedData, reuseRowObject: false);
 
-            List<string> spikeList = new List<string>();
-            List<Data> spikes = new List<Data>();
+            List<string> spikeList = new();
+            List<Data> spikes = new();
             int i = 0;
             foreach (var p in predictions)
             {
@@ -62,10 +60,9 @@ namespace WorkerService
             }
             else
             {
-            //LogDataAsync(latestData);
+                //LogDataAsync(latestData);
 
-            return (false, spikes);
-
+                return (false, spikes);
             }
         }
 

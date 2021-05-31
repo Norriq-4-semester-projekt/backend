@@ -21,13 +21,12 @@ namespace WorkerService.Services
 
         private const string BaseDatasetsRelativePath = @"../../../../Input";
         private static readonly string DatasetRelativePath = $"{BaseDatasetsRelativePath}/network_bytes_out_trainingdata.json";
-        private static string _datasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
+        private static readonly string _datasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
 
-        private static MLContext _mlContext;
-        private static List<Data> _trainingData = new List<Data>();
+        private static readonly List<Data> _trainingData = new();
         private int _startSpikes;
 
-        private readonly HttpClientHandler _handler = new HttpClientHandler()
+        private readonly HttpClientHandler _handler = new()
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };
@@ -49,17 +48,16 @@ namespace WorkerService.Services
             {
                 foreach (var item in data)
                 {
-                    Data networksData = new Data();
-                    networksData.Value = item.Value;
-                    networksData.Timestamp = item.Timestamp;
+                    Data networksData = new()
+                    {
+                        Value = item.Value,
+                        Timestamp = item.Timestamp
+                    };
                     _trainingData.Add(networksData);
                 }
-                Data emptyList = new Data();
+                Data emptyList = new();
                 var spikeResult = ChangePointDetection.DetectChangepoint(emptyList, _trainingData, _startSpikes);
                 _startSpikes = spikeResult.Item2.Count;
-
-                // Create MLContext to be shared across the model creation workflow objects
-                _mlContext = new MLContext();
 
                 _logger.LogInformation("Timed Hosted Service running.");
 
@@ -81,15 +79,14 @@ namespace WorkerService.Services
 
         public async Task<bool> DetectChangePoint()
         {
-            bool spikeDetected = false;
             List<Data> spikes;
+            bool spikeDetected;
             try
             {
-                Data latestData = new Data();
+                Data latestData = new();
                 //HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesOut");
                 HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5001/v2/TrainingData/GetNetworkBytesOut?interval=now-1d");
 
-            
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
                 latestData = JsonConvert.DeserializeObject<Data>(responseBody);

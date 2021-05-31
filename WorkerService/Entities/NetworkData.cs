@@ -1,6 +1,6 @@
 ﻿using Nest;
 
-namespace DataAccess.Entities.Network
+namespace WorkerService.Entities.Network
 {
     public class NetworkData
     {
