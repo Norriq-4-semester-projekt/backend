@@ -27,7 +27,7 @@ namespace WorkerService
             var dataView = MlContext.Data.LoadFromEnumerable<Data>(testData);
             //assign the Number of records in dataset file to cosntant variable
             int size = testData.Count;
-            //STEP 1: Create Esimtator
+            //STEP 1: Create Estimator
             var estimator = MlContext.Transforms.DetectIidSpike(outputColumnName: nameof(Predictions.Prediction),
                                                                 inputColumnName: "Value",
                                                                 confidence: 99,
