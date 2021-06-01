@@ -11,6 +11,7 @@ namespace WorkerService
     public static class SpikeDetection
     {
         private static readonly MLContext MlContext = new();
+        private static bool firstRun = true;
 
         public static (bool, List<Data>) DetectSpikeAsync(Data latestData, List<Data> trainingData, int startSpikes)
         {
@@ -18,6 +19,7 @@ namespace WorkerService
             if (latestData != null)
             {
                 testData.Add(latestData);
+                firstRun = false;
             }
 
             // Load Data
@@ -64,7 +66,7 @@ namespace WorkerService
 
         private static async void LogDataAsync(Data data)
         {
-            if (!_firstRun)
+            if (!firstRun)
             {
                 using HttpClientHandler handler = new HttpClientHandler
                 {

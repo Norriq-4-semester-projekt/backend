@@ -11,13 +11,15 @@ namespace WorkerService
     public static class ChangePointDetection
     {
         private static readonly MLContext mlContext = new();
+        private static bool firstRun = true;
 
         public static (bool, List<Data>) DetectChangepoint(Data latestData, List<Data> trainingData, int startSpikes)
         {
             List<Data> testData = new(trainingData);
-            if (startSpikes > 0)
+            if (latestData != null)
             {
                 testData.Add(latestData);
+                firstRun = false;
             }
             // Load Data
             var dataView = mlContext.Data.LoadFromEnumerable<Data>(testData);
@@ -68,7 +70,7 @@ namespace WorkerService
 
         //private static async void LogDataAsync(Data data)
         //{
-        //    if (_firstRun == true)
+        //    if (!firstRun)
         //    {
         //        using (HttpClientHandler handler = new HttpClientHandler())
         //        {
