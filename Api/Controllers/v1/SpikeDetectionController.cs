@@ -16,11 +16,9 @@ namespace Api.Controllers.v1
     {
         private readonly ILogger<SpikeDetectionController> _logger;
 
-
         public SpikeDetectionController(IConfiguration configuration, IUnitOfWork unitOfWork, ILogger<SpikeDetectionController> logger) : base(configuration, unitOfWork)
         {
             _logger = logger;
-
         }
 
         [HttpGet]
@@ -96,7 +94,6 @@ namespace Api.Controllers.v1
                 bool isValid = UnitOfWork.DetectionLogging.LogDetectionData(data);
                 if (isValid)
                 {
-                    throw new Exception(message: "Noget skete");
                     return Ok();
                 }
 
@@ -129,7 +126,7 @@ namespace Api.Controllers.v1
         }
 
         [HttpPost]
-        public async Task<ActionResult> PostPredictionData(Data data)
+        public ActionResult PostPredictionData(Data data)
         {
             try
             {

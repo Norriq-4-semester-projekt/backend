@@ -1,5 +1,4 @@
-﻿using DataAccess.Entities.Cpu;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.ML;
 using Newtonsoft.Json;
@@ -11,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using WorkerService.Entities;
+using WorkerService.Entities.Cpu;
 
 namespace WorkerService.Services
 {
@@ -24,11 +24,10 @@ namespace WorkerService.Services
         private static readonly string DatasetRelativePath = $"{BaseDatasetsRelativePath}/cpu_trainingdata.json";
         private static readonly string DatasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
 
-        private static MLContext _mlContext;
-        private static readonly List<Data> TrainingData = new List<Data>();
+        private static readonly List<Data> TrainingData = new();
         private int _startSpikes;
 
-        private readonly HttpClientHandler _handler = new HttpClientHandler()
+        private readonly HttpClientHandler _handler = new()
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };
@@ -49,18 +48,17 @@ namespace WorkerService.Services
             if (data != null)
                 foreach (var item in data)
                 {
-                    Data cpuData = new Data();
-                    cpuData.Value = item.Host.Cpu.Pct;
-                    cpuData.Timestamp = item.Timestamp;
+                    Data cpuData = new()
+                    {
+                        Value = item.Host.Cpu.Pct,
+                        Timestamp = item.Timestamp
+                    };
                     TrainingData.Add(cpuData);
                 }
 
-            Data emptyList = new Data();
+            Data emptyList = new();
             var spikeResult = SpikeDetection.DetectSpikeAsync(emptyList, TrainingData, _startSpikes);
             _startSpikes = spikeResult.Item2.Count;
-
-            // Create MLContext to be shared across the model creation workflow objects
-            _mlContext = new MLContext();
 
             _logger.LogInformation("Timed Hosted Service running.");
 

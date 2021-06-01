@@ -158,7 +158,7 @@ namespace DataAccess.Repositories
                         )
                     )
                 ));
-            Data cpuData = new Data
+            Data cpuData = new()
             {
                 Timestamp =
                     response.Aggregations.DateHistogram("CpuDateHistogram").Buckets.FirstOrDefault().KeyAsString,

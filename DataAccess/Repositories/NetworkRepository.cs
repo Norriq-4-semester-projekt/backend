@@ -110,7 +110,7 @@ namespace DataAccess.Repositories
                         )
                     )
                 ));
-            Data networksData = new Data
+            Data networksData = new()
             {
                 Timestamp = response.Aggregations.DateHistogram("NetworkBytesInDateHistogram").Buckets.FirstOrDefault()
                     .KeyAsString,
@@ -136,14 +136,13 @@ namespace DataAccess.Repositories
                             .Average("AvgBytesOut", avg => avg
                             .Field("host.network.out.bytes"))))));
 
-            Data networksData = new Data
+            Data networksData = new()
             {
                 Timestamp = response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets
                 .FirstOrDefault().KeyAsString,
                 Value = (float)response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets
                 .FirstOrDefault()
                 .AverageBucket("AvgBytesOut").Value.Value
-
             };
             return networksData;
         }

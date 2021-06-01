@@ -10,15 +10,13 @@ namespace WorkerService
 {
     public static class ChangePointDetection
     {
-        private static readonly MLContext mlContext = new MLContext();
-        private static bool _firstRun = true;
+        private static readonly MLContext mlContext = new();
 
         public static (bool, List<Data>) DetectChangepoint(Data latestData, List<Data> trainingData, int startSpikes)
         {
-            List<Data> testData = new List<Data>(trainingData);
+            List<Data> testData = new(trainingData);
             if (startSpikes > 0)
             {
-                _firstRun = false;
                 testData.Add(latestData);
             }
             // Load Data
@@ -39,8 +37,8 @@ namespace WorkerService
             IDataView transformedData = tansformedModel.Transform(dataView);
             var predictions = mlContext.Data.CreateEnumerable<Predictions>(transformedData, reuseRowObject: false);
 
-            List<string> spikeList = new List<string>();
-            List<Data> spikes = new List<Data>();
+            List<string> spikeList = new();
+            List<Data> spikes = new();
             int i = 0;
             foreach (var p in predictions)
             {
@@ -56,36 +54,35 @@ namespace WorkerService
             {
                 spikes.Last().IsSpike = true;
                 System.Console.WriteLine(spikes.Last().IsSpike);
-                LogDataAsync(spikes.Last());
+                //LogDataAsync(spikes.Last());
 
                 return (true, spikes);
             }
             else
             {
-                LogDataAsync(latestData);
+                //LogDataAsync(latestData);
 
                 return (false, spikes);
-
             }
         }
 
-        private static async void LogDataAsync(Data data)
-        {
-            if (_firstRun == true)
-            {
-                using (HttpClientHandler handler = new HttpClientHandler())
-                {
-                    handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+        //private static async void LogDataAsync(Data data)
+        //{
+        //    if (_firstRun == true)
+        //    {
+        //        using (HttpClientHandler handler = new HttpClientHandler())
+        //        {
+        //            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
-                    using (var httpClient = new HttpClient(handler))
-                    {
-                        var StringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-                        HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5010/v1/SpikeDetection/PostChangepointData", StringContent);
-                        response2.EnsureSuccessStatusCode();
-                    }
-                }
-            }
-        }
+        //            using (var httpClient = new HttpClient(handler))
+        //            {
+        //                var StringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+        //                HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostChangepointData", StringContent);
+        //                response2.EnsureSuccessStatusCode();
+        //            }
+        //        }
+        //    }
+        //}
 
         private static IDataView CreateEmptyDataView()
         {

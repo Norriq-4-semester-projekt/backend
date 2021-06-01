@@ -10,16 +10,13 @@ namespace WorkerService
 {
     public static class SpikeDetection
     {
-        private static readonly MLContext MlContext = new MLContext();
-        private static bool _firstRun = true;
+        private static readonly MLContext MlContext = new();
 
-        [System.Obsolete]
         public static (bool, List<Data>) DetectSpikeAsync(Data latestData, List<Data> trainingData, int startSpikes)
         {
-            List<Data> testData = new List<Data>(trainingData);
+            List<Data> testData = new(trainingData);
             if (latestData != null)
             {
-                _firstRun = false;
                 testData.Add(latestData);
             }
 
@@ -41,8 +38,8 @@ namespace WorkerService
             IDataView transformedData = transformedModel.Transform(dataView);
             IEnumerable<Predictions> predictions = MlContext.Data.CreateEnumerable<Predictions>(transformedData, reuseRowObject: false);
 
-            List<string> spikeList = new List<string>();
-            List<Data> spikes = new List<Data>();
+            List<string> spikeList = new();
+            List<Data> spikes = new();
             int i = 0;
             foreach (var p in predictions)
             {

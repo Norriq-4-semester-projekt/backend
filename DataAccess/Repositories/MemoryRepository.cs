@@ -76,7 +76,7 @@ namespace DataAccess.Repositories
                         )
                     )
                 ));
-            Data memoryData = new Data
+            Data memoryData = new()
             {
                 Timestamp = response.Aggregations.DateHistogram("MemoryDateHistogram").Buckets.FirstOrDefault()
                     .KeyAsString,

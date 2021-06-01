@@ -76,7 +76,7 @@ namespace DataAccess.Repositories
                         )
                     )
                 ));
-            Data systemloadData = new Data
+            Data systemloadData = new()
             {
                 Timestamp = response.Aggregations.DateHistogram("SystemLoadDateHistogram").Buckets.FirstOrDefault()
                     .KeyAsString,
