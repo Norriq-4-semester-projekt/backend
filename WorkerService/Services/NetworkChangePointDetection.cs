@@ -83,7 +83,7 @@ namespace WorkerService.Services
             bool spikeDetected;
             try
             {
-                Data latestData = new();
+                Data latestData = new Data();
                 //HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesOut");
                 HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5001/v2/TrainingData/GetNetworkBytesOut?interval=now-1d");
 
