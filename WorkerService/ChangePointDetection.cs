@@ -56,35 +56,35 @@ namespace WorkerService
             {
                 spikes.Last().IsSpike = true;
                 System.Console.WriteLine(spikes.Last().IsSpike);
-                //LogDataAsync(spikes.Last());
+                LogDataAsync(spikes.Last());
 
                 return (true, spikes);
             }
             else
             {
-                //LogDataAsync(latestData);
+                LogDataAsync(latestData);
 
                 return (false, spikes);
             }
         }
 
-        //private static async void LogDataAsync(Data data)
-        //{
-        //    if (!firstRun)
-        //    {
-        //        using (HttpClientHandler handler = new HttpClientHandler())
-        //        {
-        //            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+        private static async void LogDataAsync(Data data)
+        {
+            if (!firstRun)
+            {
+                using (HttpClientHandler handler = new HttpClientHandler())
+                {
+                    handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
-        //            using (var httpClient = new HttpClient(handler))
-        //            {
-        //                var StringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-        //                HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostChangepointData", StringContent);
-        //                response2.EnsureSuccessStatusCode();
-        //            }
-        //        }
-        //    }
-        //}
+                    using (var httpClient = new HttpClient(handler))
+                    {
+                        var StringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                        HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5010/v1/SpikeDetection/PostChangepointData", StringContent);
+                        response2.EnsureSuccessStatusCode();
+                    }
+                }
+            }
+        }
 
         private static IDataView CreateEmptyDataView()
         {
