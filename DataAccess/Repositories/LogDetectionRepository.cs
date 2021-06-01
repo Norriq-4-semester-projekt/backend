@@ -23,7 +23,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<Data>> GetAll()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-               .Index("detectml")
+               .Index("detectml5")
                .Size(10000)
                .Sort(ss => ss
                .Descending(de => de.Timestamp))
@@ -51,7 +51,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<Data>> GetAllPredictions()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-               .Index("predictml")
+               .Index("predictml5")
                .Size(10000)
                .Sort(ss => ss
                .Descending(de => de.Timestamp))
@@ -79,7 +79,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<Data>> GetAllChangepoints()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-               .Index("changepointml")
+               .Index("changepointml5")
                .Size(10000)
                .Sort(ss => ss
                .Descending(de => de.Timestamp))
@@ -106,19 +106,19 @@ namespace DataAccess.Repositories
 
         public bool LogDetectionData(Data data)
         {
-            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("detectml"));
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("detectml5"));
             return indexResponse.IsValid;
         }
 
         public bool LogPredictionData(Data data)
         {
-            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("predictml"));
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("predictml5"));
             return indexResponse.IsValid;
         }
 
         public bool LogChangepointData(Data data)
         {
-            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("changepointml"));
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("changepointml5"));
             return indexResponse.IsValid;
         }
 

@@ -86,8 +86,8 @@ namespace WorkerService.Services
             try
             {
                 Data latestData = new Data();
-                //HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesOut");
-                HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5001/v2/TrainingData/GetNetworkBytesOut?interval=now-1d");
+                //HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5009/v1/SpikeDetection/GetLatestNetworkBytesOut");
+                HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5009/v2/TrainingData/GetNetworkBytesOut?interval=now-1d");
 
             
                 response.EnsureSuccessStatusCode();

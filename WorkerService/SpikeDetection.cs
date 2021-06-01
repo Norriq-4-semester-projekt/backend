@@ -57,30 +57,30 @@ namespace WorkerService
             if (spikeList.Count > startSpikes)
             {
                 spikes.Last().IsSpike = true;
-                //LogDataAsync(spikes.Last());
+                LogDataAsync(spikes.Last());
                 return (true, spikes);
             }
 
-            //LogDataAsync(latestData);
+            LogDataAsync(latestData);
             return (false, spikes);
         }
 
-        //private static async void LogDataAsync(Data data)
-        //{
-        //    if (!_firstRun)
-        //    {
-        //        using HttpClientHandler handler = new HttpClientHandler
-        //        {
-        //            ServerCertificateCustomValidationCallback =
-        //                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        //        };
+        private static async void LogDataAsync(Data data)
+        {
+            if (!_firstRun)
+            {
+                using HttpClientHandler handler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
 
-        //        using var httpClient = new HttpClient(handler);
-        //        var stringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-        //        HttpResponseMessage response = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostDetectionData", stringContent);
-        //        //response.EnsureSuccessStatusCode();
-        //    }
-        //}
+                using var httpClient = new HttpClient(handler);
+                var stringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await httpClient.PostAsync("http://localhost:5010/v1/SpikeDetection/PostDetectionData", stringContent);
+                //response.EnsureSuccessStatusCode();
+            }
+        }
 
         private static IDataView CreateEmptyDataView()
         {

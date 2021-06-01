@@ -83,7 +83,7 @@ namespace WorkerService.Services
         public async Task<bool> DetectSpikeAsync()
         {
             Data latestData = new Data();
-            HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesIn");
+            HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5009/v1/SpikeDetection/GetLatestNetworkBytesIn");
 
             response.EnsureSuccessStatusCode();
             string responseBody = await response.Content.ReadAsStringAsync();

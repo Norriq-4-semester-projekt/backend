@@ -51,27 +51,27 @@ namespace WorkerService.Services
 
         private async Task<float> PredictDataAsync()
         {
-            HttpResponseMessage cpuResponse = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestCpuData");
+            HttpResponseMessage cpuResponse = await _httpClient.GetAsync("https://localhost:5009/v1/SpikeDetection/GetLatestCpuData");
             cpuResponse.EnsureSuccessStatusCode();
             string cpuResponseBody = await cpuResponse.Content.ReadAsStringAsync();
             Data cpuData = JsonConvert.DeserializeObject<Data>(cpuResponseBody);
 
-            HttpResponseMessage memResponse = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestMemoryData");
+            HttpResponseMessage memResponse = await _httpClient.GetAsync("https://localhost:5009/v1/SpikeDetection/GetLatestMemoryData");
             memResponse.EnsureSuccessStatusCode();
             string memResponseBody = await memResponse.Content.ReadAsStringAsync();
             Data memoryData = JsonConvert.DeserializeObject<Data>(memResponseBody);
 
-            HttpResponseMessage bytesInResponse = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesIn");
+            HttpResponseMessage bytesInResponse = await _httpClient.GetAsync("https://localhost:5009/v1/SpikeDetection/GetLatestNetworkBytesIn");
             bytesInResponse.EnsureSuccessStatusCode();
             string bytesInResponseBody = await bytesInResponse.Content.ReadAsStringAsync();
             Data bytesInData = JsonConvert.DeserializeObject<Data>(bytesInResponseBody);
 
-            HttpResponseMessage systemLoadResponse = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestSystemLoadData");
+            HttpResponseMessage systemLoadResponse = await _httpClient.GetAsync("https://localhost:5009/v1/SpikeDetection/GetLatestSystemLoadData");
             systemLoadResponse.EnsureSuccessStatusCode();
             string systemLoadResponseBody = await systemLoadResponse.Content.ReadAsStringAsync();
             Data systemLoadData = JsonConvert.DeserializeObject<Data>(systemLoadResponseBody);
 
-            HttpResponseMessage bytesOutResponse = await _httpClient.GetAsync("https://localhost:5001/v1/SpikeDetection/GetLatestNetworkBytesOut");
+            HttpResponseMessage bytesOutResponse = await _httpClient.GetAsync("https://localhost:5009/v1/SpikeDetection/GetLatestNetworkBytesOut");
             bytesOutResponse.EnsureSuccessStatusCode();
             string bytesOutResponseBody = await bytesOutResponse.Content.ReadAsStringAsync();
             Data bytesOutData = JsonConvert.DeserializeObject<Data>(bytesOutResponseBody);
@@ -117,11 +117,11 @@ namespace WorkerService.Services
 
             using var httpClient = new HttpClient(handler);
             var predictionContent = new StringContent(JsonConvert.SerializeObject(predictionLog), Encoding.UTF8, "application/json");
-            HttpResponseMessage response = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostPredictionData", predictionContent);
+            HttpResponseMessage response = await httpClient.PostAsync("http://localhost:5010/v1/SpikeDetection/PostPredictionData", predictionContent);
             response.EnsureSuccessStatusCode();
 
             var actualContent = new StringContent(JsonConvert.SerializeObject(bytesOutLog), Encoding.UTF8, "application/json");
-            HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostPredictionData", actualContent);
+            HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5010/v1/SpikeDetection/PostPredictionData", actualContent);
             response2.EnsureSuccessStatusCode();
 
             return predictionResult.Score;
