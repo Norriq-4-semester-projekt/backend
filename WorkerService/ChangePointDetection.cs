@@ -13,7 +13,7 @@ namespace WorkerService
         private static readonly MLContext mlContext = new();
         private static bool firstRun = true;
 
-        public static (bool, List<Data>) DetectChangepoint(Data latestData, List<Data> trainingData, int startSpikes)
+        public static (bool, List<Data>) DetectChangepoint(Data latestData, List<Data> trainingData, int startChangepoints)
         {
             List<Data> testData = new(trainingData);
             if (latestData != null)
@@ -23,48 +23,40 @@ namespace WorkerService
             }
             // Load Data
             var dataView = mlContext.Data.LoadFromEnumerable<Data>(testData);
-            //assign the Number of records in dataset file to cosntant variable
+            //assign the Number of records in dataset file to variable
             int size = testData.Count;
-            //STEP 1: Setup transformations using DetectIidChangePoint
             var estimator = mlContext.Transforms.DetectIidChangePoint(outputColumnName: nameof(Predictions.Prediction), inputColumnName: "Value", confidence: 75, changeHistoryLength: size / 4);
 
-            //STEP 2:The Transformed Model.
-            //In IID Change point detection, we don't need need to do training, we just need to do transformation.
-            //As you are not training the model, there is no need to load IDataView with real data, you just need schema of data.
-            //So create empty data view and pass to Fit() method.
             ITransformer tansformedModel = estimator.Fit(CreateEmptyDataView());
 
-            //STEP 3: Use/test model
-            //Apply data transformation to create predictions.
+            // Use/test model
             IDataView transformedData = tansformedModel.Transform(dataView);
             var predictions = mlContext.Data.CreateEnumerable<Predictions>(transformedData, reuseRowObject: false);
 
-            List<string> spikeList = new();
-            List<Data> spikes = new();
+            List<Data> changepoints = new();
             int i = 0;
             foreach (var p in predictions)
             {
                 if (p.Prediction[0] == 1)
                 {
-                    spikes.Add(testData.ElementAt(i));
-                    spikeList.Add(p.Prediction[2].ToString());
+                    changepoints.Add(testData.ElementAt(i));
                 }
                 i++;
             }
 
-            if (spikes.Count > startSpikes)
+            if (changepoints.Count > startChangepoints)
             {
-                spikes.Last().IsSpike = true;
-                System.Console.WriteLine(spikes.Last().IsSpike);
-                LogDataAsync(spikes.Last());
+                changepoints.Last().IsSpike = true;
+                System.Console.WriteLine(changepoints.Last().IsSpike);
+                LogDataAsync(changepoints.Last());
 
-                return (true, spikes);
+                return (true, changepoints);
             }
             else
             {
                 LogDataAsync(latestData);
 
-                return (false, spikes);
+                return (false, changepoints);
             }
         }
 
