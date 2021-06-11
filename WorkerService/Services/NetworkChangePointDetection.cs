@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.ML;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -84,7 +83,7 @@ namespace WorkerService.Services
             try
             {
                 Data latestData = new Data();
-                HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5009/v1/SpikeDetection/GetLatestNetworkBytesOut");
+                HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5000/v1/SpikeDetection/GetLatestNetworkBytesOut");
                 //HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5009/v1/TrainingData/GetNetworkBytesOut?interval=now-5d");
 
                 response.EnsureSuccessStatusCode();

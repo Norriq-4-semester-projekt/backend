@@ -9,19 +9,32 @@ namespace WorkerService.Entities
         [ColumnName("Timestamp"), LoadColumn(0)]
         public string Timestamp { get; set; }
 
+
         [ColumnName("Number"), LoadColumn(1)]
         public float Number { get; set; }
+
 
         [ColumnName("MemBytes"), LoadColumn(2)]
         public float MemBytes { get; set; }
 
-        [ColumnName("InBytes"), LoadColumn(3)]
+
+        [ColumnName("CpuPct"), LoadColumn(3)]
+        public float CpuPct { get; set; }
+
+
+        [ColumnName("InBytes"), LoadColumn(4)]
         public float InBytes { get; set; }
 
-        [ColumnName("OutBytes"), LoadColumn(4)]
+
+        [ColumnName("InPackets"), LoadColumn(5)]
+        public float InPackets { get; set; }
+
+
+        [ColumnName("OutBytes"), LoadColumn(6)]
         public float OutBytes { get; set; }
 
-        [ColumnName("CpuPct"), LoadColumn(5)]
-        public float CpuPct { get; set; }
+
+        [ColumnName("OutPackets"), LoadColumn(7)]
+        public float OutPackets { get; set; }
     }
 }

@@ -10,10 +10,10 @@ using WorkerService.Entities;
 
 namespace WorkerService.Services
 {
-    internal class NetworkBytesOutPrediction : IHostedService, IDisposable
+    internal class SystemLoadPrediction : IHostedService, IDisposable
     {
         private int _executionCount;
-        private readonly ILogger<NetworkBytesOutPrediction> _logger;
+        private readonly ILogger<SystemLoadPrediction> _logger;
         private Timer _timer;
 
         private readonly HttpClientHandler _handler = new()
@@ -23,7 +23,7 @@ namespace WorkerService.Services
 
         private readonly HttpClient _httpClient;
 
-        public NetworkBytesOutPrediction(ILogger<NetworkBytesOutPrediction> logger)
+        public SystemLoadPrediction(ILogger<SystemLoadPrediction> logger)
         {
             _httpClient = new HttpClient(_handler);
             _logger = logger;
@@ -46,11 +46,8 @@ namespace WorkerService.Services
             _logger.LogInformation(
                 "Timed Hosted Service is working. Count: {Count}", count);
 
-            await PredictDataAsync();
-        }
+            //await PredictDataAsync();
 
-        private async Task<float> PredictDataAsync()
-        {
             HttpResponseMessage cpuResponse = await _httpClient.GetAsync("https://localhost:5000/v1/SpikeDetection/GetLatestCpuData");
             cpuResponse.EnsureSuccessStatusCode();
             string cpuResponseBody = await cpuResponse.Content.ReadAsStringAsync();
@@ -76,38 +73,56 @@ namespace WorkerService.Services
             string bytesOutResponseBody = await bytesOutResponse.Content.ReadAsStringAsync();
             Data bytesOutData = JsonConvert.DeserializeObject<Data>(bytesOutResponseBody);
 
+            HttpResponseMessage packetsOutResponse = await _httpClient.GetAsync("https://localhost:5000/v1/SpikeDetection/GetLatestPacketsOut");
+            packetsOutResponse.EnsureSuccessStatusCode();
+            string packetsOutResponseBody = await packetsOutResponse.Content.ReadAsStringAsync();
+            Data packetsOutData = JsonConvert.DeserializeObject<Data>(packetsOutResponseBody);
+
+            HttpResponseMessage packetsInResponse = await _httpClient.GetAsync("https://localhost:5000/v1/SpikeDetection/GetLatestPacketsIn");
+            packetsInResponse.EnsureSuccessStatusCode();
+            string packetsInResponseBody = await packetsInResponse.Content.ReadAsStringAsync();
+            Data packetsInData = JsonConvert.DeserializeObject<Data>(packetsInResponseBody);
+
             //Create single instance of sample data from first line of dataset for model input
 
             PredictionInput sampleData = new()
             {
-                Number = systemLoadData.Value,
+                //Number = systemLoadData.Value,
                 MemBytes = memoryData.Value,
                 InBytes = bytesInData.Value,
+                OutBytes = bytesOutData.Value,
                 CpuPct = cpuData.Value,
+                InPackets = packetsInData.Value,
+                OutPackets = packetsOutData.Value,
+
             };
             // Make a single prediction on the sample data and print results
-            var predictionResult = ConsumeModel.Predict(sampleData);
+            var predictionResult = ConsumeAnotherModel.Predict(sampleData);
 
-            Console.WriteLine("Using model to make single prediction -- Comparing actual OutBytes with predicted OutBytes from sample data...\n\n");
-            Console.WriteLine($"Number: {sampleData.Number}");
+            Console.WriteLine("Using model to make single prediction -- Comparing actual Systemload15 with predicted Systemload15 from sample data...\n\n");
+            //Console.WriteLine($"Number: {sampleData.Number}");
             Console.WriteLine($"MemBytes: {sampleData.MemBytes}");
             Console.WriteLine($"InBytes: {sampleData.InBytes}");
+            Console.WriteLine($"OutBytes: {sampleData.OutBytes}");
             Console.WriteLine($"CpuPct: {sampleData.CpuPct}");
-            Console.WriteLine($"\n\nPredicted OutBytes: {predictionResult.Score}\n\n");
-            Console.WriteLine("=============== End of process, hit any key to finish ===============");
+            Console.WriteLine($"InPackets: {sampleData.InPackets}");
+            Console.WriteLine($"OutPackets: {sampleData.OutPackets}");
+
+
+            Console.WriteLine($"\n\nPredicted SystemLoad: {predictionResult.Score}\n\n");
 
             Data predictionLog = new()
             {
-                FieldType = "BytesOutPrediction",
+                FieldType = "SystemLoadPrediction",
                 Value = predictionResult.Score,
-                Timestamp = bytesOutData.Timestamp
+                Timestamp = systemLoadData.Timestamp
             };
 
-            Data bytesOutLog = new()
+            Data systemloadLog = new()
             {
-                FieldType = "BytesOutActual",
-                Value = bytesOutData.Value,
-                Timestamp = bytesOutData.Timestamp
+                FieldType = "SystemLoadActual",
+                Value = systemLoadData.Value,
+                Timestamp = systemLoadData.Timestamp
             };
 
             using HttpClientHandler handler = new()
@@ -117,15 +132,15 @@ namespace WorkerService.Services
 
             using var httpClient = new HttpClient(handler);
             var predictionContent = new StringContent(JsonConvert.SerializeObject(predictionLog), Encoding.UTF8, "application/json");
-            HttpResponseMessage response = await httpClient.PostAsync("http://localhost:5001/v1/SpikeDetection/PostPredictionData", predictionContent);
+            HttpResponseMessage response = await httpClient.PostAsync("http://localhost:5001/v1/SpikeDetection/PostPredictionSystemLoad", predictionContent);
             response.EnsureSuccessStatusCode();
 
-            var actualContent = new StringContent(JsonConvert.SerializeObject(bytesOutLog), Encoding.UTF8, "application/json");
-            HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5001/v1/SpikeDetection/PostPredictionData", actualContent);
+            var actualContent = new StringContent(JsonConvert.SerializeObject(systemloadLog), Encoding.UTF8, "application/json");
+            HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5001/v1/SpikeDetection/PostPredictionSystemLoad", actualContent);
             response2.EnsureSuccessStatusCode();
-
-            return predictionResult.Score;
         }
+
+        
 
         public Task StopAsync(CancellationToken stoppingToken)
         {

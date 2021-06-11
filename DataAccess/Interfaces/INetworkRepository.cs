@@ -10,8 +10,22 @@ namespace DataAccess.Interfaces
         Task<Data> GetLatestBytesIn();
 
         Task<Data> GetLatestBytesOut();
+        Task<Data> GetLatestPacketsIn();
+
+        Task<Data> GetLatestPacketsOut();
+
+
+
+        Task<IEnumerable<NetworkData>> GetLikeAllData();
         Task<IEnumerable<NetworkData>> GetAllBytesIn();
 
-        Task<IEnumerable<NetworkData>> GetAllBytesOut(string interval);
+        Task<IEnumerable<NetworkData>> GetAllBytesOut();
+        Task<IEnumerable<NetworkData>> GetAllPacketsIn();
+        Task<IEnumerable<NetworkData>> GetAllPacketsOut();
+
+
+
+
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Nest;
+using System.Text.Json.Serialization;
 
 namespace DataAccess.Entities.Network
 {
@@ -7,9 +8,9 @@ namespace DataAccess.Entities.Network
         [Text(Name = "@timestamp")]
         public string Timestamp { get; set; }
 
-        public string Test { get; set; }
-
         public Host Host { get; set; }
+
+
     }
 
     public class Host
@@ -32,10 +33,14 @@ namespace DataAccess.Entities.Network
     public class Out
     {
         public float Bytes { get; set; }
+        public float Packets { get; set; }
+
     }
 
     public class In
     {
         public float Bytes { get; set; }
+        public float Packets { get; set; }
+
     }
 }

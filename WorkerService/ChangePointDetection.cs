@@ -71,7 +71,7 @@ namespace WorkerService
                     using (var httpClient = new HttpClient(handler))
                     {
                         var StringContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-                        HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5010/v1/SpikeDetection/PostChangepointData", StringContent);
+                        HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5000/v1/SpikeDetection/PostChangepointData", StringContent);
                         response2.EnsureSuccessStatusCode();
                     }
                 }

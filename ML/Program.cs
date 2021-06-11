@@ -85,14 +85,13 @@ namespace ML
             {
                 if (p.Prediction[2] < (1 - 0.95))
                 {
-
-                if (p.Prediction[0] == 1)
-                {
-                    Console.BackgroundColor = ConsoleColor.DarkYellow;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                    spikeList.Add(p.Prediction[2].ToString());
-                    Console.WriteLine(TrainingData.ElementAt(i).Timestamp);
-                }
+                    if (p.Prediction[0] == 1)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkYellow;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        spikeList.Add(p.Prediction[2].ToString());
+                        Console.WriteLine(TrainingData.ElementAt(i).Timestamp);
+                    }
                 }
                 Console.WriteLine("{0}\t{1:0.00}\t{2:0.00}", p.Prediction[0], p.Prediction[1], p.Prediction[2]);
                 Console.ResetColor();
@@ -132,7 +131,6 @@ namespace ML
 
             foreach (var p in predictions)
             {
-                
                 if (p.Prediction[0] == 1)
                 {
                     Console.WriteLine("{0}\t{1:0.00}\t{2:0.00}\t{3:0.00}  <-- alert is on, predicted changepoint", p.Prediction[0], p.Prediction[1], p.Prediction[2], p.Prediction[3]);

@@ -11,6 +11,8 @@ namespace DataAccess.Interfaces
         bool LogPredictionData(Data data);
 
         bool LogChangepointData(Data data);
+        bool LogPredictionSystemLoad(Data data);
+
 
         Task<IEnumerable<Data>> GetAllPredictions();
 

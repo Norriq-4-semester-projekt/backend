@@ -122,6 +122,12 @@ namespace DataAccess.Repositories
             return indexResponse.IsValid;
         }
 
+        public bool LogPredictionSystemLoad(Data data)
+        {
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("forudsig"));
+            return indexResponse.IsValid;
+        }
+
         public Task<ActionResult> UpdateByQueryAsync(Data entity, Data u1)
         {
             throw new NotImplementedException();

@@ -108,7 +108,7 @@ namespace DataAccess.Repositories
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<CpuData>(s => s
                 .Index("metricbeat-*")
-                .Size(10000)
+                .Size(20000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
 

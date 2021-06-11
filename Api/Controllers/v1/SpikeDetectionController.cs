@@ -48,6 +48,32 @@ namespace Api.Controllers.v1
         }
 
         [HttpGet]
+        public async Task<ActionResult> GetLatestPacketsIn()
+        {
+            try
+            {
+                return ReturnResponse(await UnitOfWork.NetworkData.GetLatestPacketsIn(), 200);
+            }
+            catch (Exception ex)
+            {
+                return CatchResponse(ex, ex.Message, 501);
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetLatestPacketsOut()
+        {
+            try
+            {
+                return ReturnResponse(await UnitOfWork.NetworkData.GetLatestPacketsOut(), 200);
+            }
+            catch (Exception ex)
+            {
+                return CatchResponse(ex, ex.Message, 501);
+            }
+        }
+
+        [HttpGet]
         public async Task<ActionResult> GetLatestCpuData()
         {
             try
@@ -131,6 +157,24 @@ namespace Api.Controllers.v1
             try
             {
                 bool isValid = UnitOfWork.DetectionLogging.LogPredictionData(data);
+                if (isValid)
+                {
+                    return Ok();
+                }
+
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                return CatchResponse(ex, ex.Message, 501);
+            }
+        }
+        [HttpPost]
+        public ActionResult PostPredictionSystemLoad(Data data)
+        {
+            try
+            {
+                bool isValid = UnitOfWork.DetectionLogging.LogPredictionSystemLoad(data);
                 if (isValid)
                 {
                     return Ok();

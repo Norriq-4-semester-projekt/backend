@@ -30,11 +30,47 @@ namespace Api.Controllers.v1
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetNetworkBytesOut(string interval)
+        public async Task<ActionResult> GetNetworkBytesOut()
         {
             try
             {
-                return ReturnResponse(await UnitOfWork.NetworkData.GetAllBytesOut(interval), 200);
+                return ReturnResponse(await UnitOfWork.NetworkData.GetAllBytesOut(), 200);
+            }
+            catch (Exception ex)
+            {
+                return CatchResponse(ex, ex.Message, 501);
+            }
+        }
+        [HttpGet]
+        public async Task<ActionResult> GetNetworkPacketsIn()
+        {
+            try
+            {
+                return ReturnResponse(await UnitOfWork.NetworkData.GetAllPacketsIn(), 200);
+            }
+            catch (Exception ex)
+            {
+                return CatchResponse(ex, ex.Message, 501);
+            }
+        }
+        [HttpGet]
+        public async Task<ActionResult> GetNetworkPacketsOut()
+        {
+            try
+            {
+                return ReturnResponse(await UnitOfWork.NetworkData.GetAllPacketsOut(), 200);
+            }
+            catch (Exception ex)
+            {
+                return CatchResponse(ex, ex.Message, 501);
+            }
+        }
+        [HttpGet]
+        public async Task<ActionResult> GetLikeAllData()
+        {
+            try
+            {
+                return ReturnResponse(await UnitOfWork.NetworkData.GetLikeAllData(), 200);
             }
             catch (Exception ex)
             {

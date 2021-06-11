@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.ML;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -69,7 +68,7 @@ namespace WorkerService.Services
             _logger.LogInformation(
                 "Timed Hosted Service is working. Count: {Count}", count);
 
-            HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5009/v1/SpikeDetection/GetLatestNetworkBytesOut");
+            HttpResponseMessage response = await _httpClient.GetAsync("https://localhost:5000/v1/SpikeDetection/GetLatestNetworkBytesOut");
 
             response.EnsureSuccessStatusCode();
             string responseBody = await response.Content.ReadAsStringAsync();
