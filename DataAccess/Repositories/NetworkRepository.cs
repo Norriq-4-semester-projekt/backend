@@ -38,8 +38,6 @@ namespace DataAccess.Repositories
                         .Bool(b => b
                             .Must(m => m
                                 .Exists(ex => ex
-                                    .Field(f => f.Host.Network.In.Packets)
-                                    .Field(f => f.Host.Network.Out.Packets)
                                     .Field(f => f.Host.Network.In.Bytes)
                                     .Field(f => f.Host.Network.Out.Bytes)
                                     )
@@ -60,7 +58,7 @@ namespace DataAccess.Repositories
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<NetworkData>(s => s
                 .Index("metricbeat-7.11.2-2021.05.12-000001")
-                .Size(10000)
+                .Size(1000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
 
@@ -87,7 +85,7 @@ namespace DataAccess.Repositories
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<NetworkData>(s => s
                 .Index("metricbeat-7.11.2-2021.05.12-000001")
-                .Size(10000)
+                .Size(1000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
                     .Query(q => q
@@ -120,7 +118,7 @@ namespace DataAccess.Repositories
                         .Bool(b => b
                             .Must(m => m
                                 .Exists(ex => ex
-                                    .Field(f => f.Host.Network.In.Packets)
+                                    //.Field(f => f.Host.Network.In.Packets)
                                     )
                                 )
                             .Filter(f => f
@@ -146,7 +144,7 @@ namespace DataAccess.Repositories
                         .Bool(b => b
                             .Must(m => m
                                 .Exists(ex => ex
-                                    .Field(f => f.Host.Network.Out.Packets)
+                                    //.Field(f => f.Host.Network.Out.Packets)
                                     )
                                 )
                             .Filter(f => f

@@ -33,14 +33,14 @@ namespace DataAccess.Entities.Network
     public class Out
     {
         public float Bytes { get; set; }
-        public float Packets { get; set; }
+        //public float Packets { get; set; }
 
     }
 
     public class In
     {
         public float Bytes { get; set; }
-        public float Packets { get; set; }
+        //public float Packets { get; set; }
 
     }
 }

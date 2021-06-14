@@ -23,7 +23,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<Data>> GetAll()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-               .Index("spike-detect1")
+               .Index("spike-detect-final")
                .Size(10000)
                .Sort(ss => ss
                .Descending(de => de.Timestamp))
@@ -51,7 +51,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<Data>> GetAllPredictions()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-               .Index("value-predict1")
+               .Index("value-predict-final")
                .Size(10000)
                .Sort(ss => ss
                .Descending(de => de.Timestamp))
@@ -80,7 +80,7 @@ namespace DataAccess.Repositories
 
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-               .Index("forudsig1")
+               .Index("forudsig-final")
                .Size(10000)
                .Sort(ss => ss
                .Descending(de => de.Timestamp))
@@ -152,13 +152,13 @@ namespace DataAccess.Repositories
 
         public bool LogDetectionData(Data data)
         {
-            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("spike-detect1"));
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("spike-detect-final"));
             return indexResponse.IsValid;
         }
 
         public bool LogPredictionData(Data data)
         {
-            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("value-predict1"));
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("value-predict-final"));
             return indexResponse.IsValid;
         }
 
@@ -176,7 +176,7 @@ namespace DataAccess.Repositories
 
         public bool LogPredictionSystemLoad(Data data)
         {
-            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("forudsig1"));
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("forudsig-final"));
             return indexResponse.IsValid;
         }
 
