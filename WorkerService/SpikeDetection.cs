@@ -29,7 +29,7 @@ namespace WorkerService
             //STEP 1: Create Estimator
             var estimator = MlContext.Transforms.DetectIidSpike(outputColumnName: nameof(Predictions.Prediction),
                                                                 inputColumnName: "Value",
-                                                                confidence: 99,
+                                                                confidence: 80,
                                                                 pvalueHistoryLength: size / 4);
 
             //STEP 2:The Transformed Model.

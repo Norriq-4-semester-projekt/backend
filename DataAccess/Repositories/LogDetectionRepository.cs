@@ -23,7 +23,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<Data>> GetAll()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-               .Index("spike-detect")
+               .Index("spike-detect1")
                .Size(10000)
                .Sort(ss => ss
                .Descending(de => de.Timestamp))
@@ -51,7 +51,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<Data>> GetAllPredictions()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-               .Index("value-predict")
+               .Index("value-predict1")
                .Size(10000)
                .Sort(ss => ss
                .Descending(de => de.Timestamp))
@@ -77,9 +77,10 @@ namespace DataAccess.Repositories
         }
 
         public async Task<IEnumerable<Data>> GetAllSystemLoadPredictions()
+
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-               .Index("forudsig")
+               .Index("forudsig1")
                .Size(10000)
                .Sort(ss => ss
                .Descending(de => de.Timestamp))
@@ -151,13 +152,13 @@ namespace DataAccess.Repositories
 
         public bool LogDetectionData(Data data)
         {
-            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("spike-detect"));
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("spike-detect1"));
             return indexResponse.IsValid;
         }
 
         public bool LogPredictionData(Data data)
         {
-            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("value-predict"));
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("value-predict1"));
             return indexResponse.IsValid;
         }
 
@@ -175,7 +176,7 @@ namespace DataAccess.Repositories
 
         public bool LogPredictionSystemLoad(Data data)
         {
-            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("forudsig"));
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("forudsig1"));
             return indexResponse.IsValid;
         }
 
