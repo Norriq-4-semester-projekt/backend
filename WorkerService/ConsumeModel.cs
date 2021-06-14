@@ -9,10 +9,10 @@ namespace WorkerService
     public static class ConsumeModel
     {
         private const string BaseDatasetsRelativePath = @"../../../../Input/Prediction";
-        private static readonly string DatasetRelativePath = $"{BaseDatasetsRelativePath}/MLModel.zip";
-        private static readonly string DatasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
+        private static  string DatasetRelativePath = $"{BaseDatasetsRelativePath}/MLModel.zip";
+        private static  string DatasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
 
-        private static readonly Lazy<PredictionEngine<PredictionInput, PredictionOutput>> PredictionEngine = new(CreatePredictionEngine);
+        private static  Lazy<PredictionEngine<PredictionInput, PredictionOutput>> PredictionEngine = new Lazy<PredictionEngine<PredictionInput, PredictionOutput>>(CreatePredictionEngine);
 
         // For more info on consuming ML.NET models, visit https://aka.ms/mlnet-consume
         // Method for consuming model in your app
@@ -25,7 +25,7 @@ namespace WorkerService
         public static PredictionEngine<PredictionInput, PredictionOutput> CreatePredictionEngine()
         {
             // Create new MLContext
-            MLContext mlContext = new();
+            MLContext mlContext = new MLContext();
 
             // Load model & create prediction engine
             ITransformer mlModel = mlContext.Model.Load(DatasetPath, out var modelInputSchema);

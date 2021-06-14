@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.ML;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -23,10 +24,11 @@ namespace WorkerService.Services
         private static readonly string DatasetRelativePath = $"{BaseDatasetsRelativePath}/network_bytes_out_trainingdata.json";
         private static readonly string DatasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
 
-        private static readonly List<Data> TrainingData = new();
+        private static MLContext _mlContext;
+        private static readonly List<Data> TrainingData = new List<Data>();
         private int _startSpikes;
 
-        private readonly HttpClientHandler _handler = new()
+        private readonly HttpClientHandler _handler = new HttpClientHandler()
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };
@@ -45,16 +47,20 @@ namespace WorkerService.Services
             if (data != null)
                 foreach (var item in data)
                 {
-                    Data networksData = new()
+                    Data networksData = new Data();
                     {
-                        Value = item.Host.Network.Out.Bytes,
-                        Timestamp = item.Timestamp
+                        networksData.Value = item.Host.Network.Out.Bytes;
+                        networksData.Timestamp = item.Timestamp;
                     };
                     TrainingData.Add(networksData);
                 }
             var spikeResult = SpikeDetection.DetectSpikeAsync(null, TrainingData, _startSpikes);
 
             _startSpikes = spikeResult.Item2.Count;
+
+            // Create MLContext to be shared across the model creation workflow objects
+            _mlContext = new MLContext();
+
             _logger.LogInformation("Timed Hosted Service running.");
             _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(60));
 

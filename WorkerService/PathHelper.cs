@@ -8,7 +8,7 @@ namespace WorkerService
     {
         public static string GetAbsolutePath(string relativePath)
         {
-            FileInfo dataRoot = new(typeof(Program).Assembly.Location);
+            FileInfo dataRoot = new FileInfo(typeof(Program).Assembly.Location);
             string assemblyFolderPath = dataRoot.Directory.FullName;
 
             string fullPath = Path.Combine(assemblyFolderPath, relativePath);
@@ -18,11 +18,11 @@ namespace WorkerService
 
         public static async Task<string> GetJsonResponse(string endPoint)
         {
-            HttpClientHandler handler = new()
+            HttpClientHandler handler = new HttpClientHandler()
             {
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };
-            HttpClient httpClient = new(handler);
+            HttpClient httpClient = new HttpClient(handler);
 
             HttpResponseMessage cpuResponse = await httpClient.GetAsync(endPoint);
             cpuResponse.EnsureSuccessStatusCode();

@@ -48,7 +48,7 @@ namespace WorkerService.Services
                 { "cpu_trainingdata", "https://localhost:5000/v1/TrainingData/GetCpuData" },
                 { "network_bytes_in_trainingdata", "https://localhost:5000/v1/TrainingData/GetNetworkBytesIn" },
                 { "memory_trainingdata", "https://localhost:5000/v1/TrainingData/GetMemoryData" },
-                { "network_bytes_out_trainingdata", "https://localhost:5000/v1/TrainingData/GetNetworkBytesOut?interval=now-5d" },
+                { "network_bytes_out_trainingdata", "https://localhost:5000/v1/TrainingData/GetNetworkBytesOut" },
                 { "systemload_trainingdata", "https://localhost:5000/v1/TrainingData/GetSystemLoadData" }
             };
             Dictionary<string, string> responses = new();

@@ -10,12 +10,12 @@ namespace WorkerService
 {
     public static class SpikeDetection
     {
-        private static readonly MLContext MlContext = new();
+        private static readonly MLContext MlContext = new MLContext();
         private static bool firstRun = true;
 
         public static (bool, List<Data>) DetectSpikeAsync(Data latestData, List<Data> trainingData, int startSpikes)
         {
-            List<Data> testData = new(trainingData);
+            List<Data> testData = new List<Data>(trainingData);
             if (latestData != null)
             {
                 testData.Add(latestData);
@@ -29,7 +29,7 @@ namespace WorkerService
             //STEP 1: Create Estimator
             var estimator = MlContext.Transforms.DetectIidSpike(outputColumnName: nameof(Predictions.Prediction),
                                                                 inputColumnName: "Value",
-                                                                confidence: 80,
+                                                                confidence: 99,
                                                                 pvalueHistoryLength: size / 4);
 
             //STEP 2:The Transformed Model.
@@ -40,8 +40,8 @@ namespace WorkerService
             IDataView transformedData = transformedModel.Transform(dataView);
             IEnumerable<Predictions> predictions = MlContext.Data.CreateEnumerable<Predictions>(transformedData, reuseRowObject: false);
 
-            List<string> spikeList = new();
-            List<Data> spikes = new();
+            List<string> spikeList = new List<string>();
+            List<Data> spikes = new List<Data>();
             int i = 0;
             foreach (var p in predictions)
             {

@@ -248,6 +248,18 @@ namespace Api.Controllers.v1
         }
 
         [HttpGet]
+        public async Task<ActionResult> GetSystem()
+        {
+            try
+            {
+                return ReturnResponse(await UnitOfWork.DetectionLogging.GetAllSystemLoadPredictions(), 200);
+            }
+            catch (Exception ex)
+            {
+                return CatchResponse(ex, ex.Message, 501);
+            }
+        }
+        [HttpGet]
         public async Task<ActionResult> GetPredictionCpuPctTimeGraphData()
         {
             try

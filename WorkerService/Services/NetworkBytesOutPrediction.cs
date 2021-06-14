@@ -16,7 +16,7 @@ namespace WorkerService.Services
         private readonly ILogger<NetworkBytesOutPrediction> _logger;
         private Timer _timer;
 
-        private readonly HttpClientHandler _handler = new()
+        private readonly HttpClientHandler _handler = new HttpClientHandler()
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };
@@ -78,7 +78,7 @@ namespace WorkerService.Services
 
             //Create single instance of sample data from first line of dataset for model input
 
-            PredictionInput sampleData = new()
+            PredictionInput sampleData = new PredictionInput()
             {
                 Number = systemLoadData.Value,
                 MemBytes = memoryData.Value,
@@ -96,21 +96,21 @@ namespace WorkerService.Services
             Console.WriteLine($"\n\nPredicted OutBytes: {predictionResult.Score}\n\n");
             Console.WriteLine("=============== End of process, hit any key to finish ===============");
 
-            Data predictionLog = new()
+            Data predictionLog = new Data()
             {
                 FieldType = "BytesOutPrediction",
                 Value = predictionResult.Score,
                 Timestamp = bytesOutData.Timestamp
             };
 
-            Data bytesOutLog = new()
+            Data bytesOutLog = new Data()
             {
                 FieldType = "BytesOutActual",
                 Value = bytesOutData.Value,
                 Timestamp = bytesOutData.Timestamp
             };
 
-            using HttpClientHandler handler = new()
+            using HttpClientHandler handler = new HttpClientHandler()
             {
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.ML;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,8 @@ namespace WorkerService.Services
         private static readonly string DatasetRelativePath = $"{BaseDatasetsRelativePath}/network_bytes_in_trainingdata.json";
         private static readonly string DatasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
 
-        private static readonly List<Data> TrainingData = new();
+        private static MLContext _mlContext;
+        private static readonly List<Data> TrainingData = new List<Data>();
         private int _startSpikes;
 
         private readonly HttpClientHandler _handler = new()
@@ -47,17 +49,20 @@ namespace WorkerService.Services
             if (data != null)
                 foreach (var item in data)
                 {
-                    Data networksData = new()
+                    Data networksData = new Data();
                     {
-                        Value = item.Host.Network.In.Bytes,
-                        Timestamp = item.Timestamp
+                        networksData.Value = item.Host.Network.In.Bytes;
+                        networksData.Timestamp = item.Timestamp;
                     };
                     TrainingData.Add(networksData);
                 }
 
-            Data emptyList = new();
+            Data emptyList = new Data();
             var spikeResult = SpikeDetection.DetectSpikeAsync(emptyList, TrainingData, _startSpikes);
             _startSpikes = spikeResult.Item2.Count;
+
+            // Create MLContext to be shared across the model creation workflow objects
+            _mlContext = new MLContext();
 
             _logger.LogInformation("Timed Hosted Service running.");
 

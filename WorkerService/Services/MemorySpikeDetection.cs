@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.ML;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -23,10 +24,11 @@ namespace WorkerService.Services
         private static readonly string DatasetRelativePath = $"{BaseDatasetsRelativePath}/memory_trainingdata.json";
         private static readonly string DatasetPath = PathHelper.GetAbsolutePath(DatasetRelativePath);
 
-        private static readonly List<Data> TrainingData = new();
+        private static MLContext _mlContext;
+        private static readonly List<Data> TrainingData = new List<Data>();
         private int _startSpikes;
 
-        private readonly HttpClientHandler _handler = new()
+        private readonly HttpClientHandler _handler = new HttpClientHandler()
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };
@@ -47,17 +49,21 @@ namespace WorkerService.Services
             if (data != null)
                 foreach (var item in data)
                 {
-                    Data memoryData = new()
+                    Data memoryData = new Data();
                     {
-                        Value = item.System.Memory.Actual.Used.Bytes,
-                        Timestamp = item.Timestamp
+                        memoryData.Value = item.System.Memory.Actual.Used.Bytes;
+                        memoryData.Timestamp = item.Timestamp;
                     };
                     TrainingData.Add(memoryData);
                 }
 
-            Data emptyList = new();
+            Data emptyList = new Data();
             var spikeResult = SpikeDetection.DetectSpikeAsync(emptyList, TrainingData, _startSpikes);
             _startSpikes = spikeResult.Item2.Count;
+
+            // Create MLContext to be shared across the model creation workflow objects
+            _mlContext = new MLContext();
+
 
             _logger.LogInformation("Timed Hosted Service running.");
 
