@@ -15,7 +15,7 @@ namespace WorkerService
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    //services.AddHostedService<UpdateMl>();
+                    services.AddHostedService<UpdateMl>();
                     services.AddHostedService<NetworkBytesOutSpikeDetection>();
                     services.AddHostedService<NetworkBytesOutSpikeDetection>();
                     services.AddHostedService<NetworkBytesInSpikeDetection>();
