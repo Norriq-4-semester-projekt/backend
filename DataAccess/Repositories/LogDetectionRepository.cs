@@ -76,6 +76,24 @@ namespace DataAccess.Repositories
             return response.Documents.AsEnumerable();
         }
 
+        public async Task<IEnumerable<Data>> GetAllCpupctTimePredictions()
+        {
+            var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
+               .Index("predict-cpupct-time")
+               .Size(10000)
+
+                   .Query(q => q
+                        .Bool(b => b
+                            .Must(m => m
+                                .MatchAll()
+                                )
+                            )
+                        )
+                   );
+
+            return response.Documents.AsEnumerable();
+        }
+
         public async Task<IEnumerable<Data>> GetAllChangepoints()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
@@ -113,6 +131,12 @@ namespace DataAccess.Repositories
         public bool LogPredictionData(Data data)
         {
             var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("predictml5"));
+            return indexResponse.IsValid;
+        }
+
+        public bool LogPredictionDataCpupctTime(Data data)
+        {
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("predict-cpupct-time"));
             return indexResponse.IsValid;
         }
 

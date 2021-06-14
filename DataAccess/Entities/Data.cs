@@ -4,7 +4,7 @@ namespace DataAccess.Entities
 {
     public class Data
     {
-        [Date(Format = "DateTime")]
+        [Nest.Date(Name = "timestamp", Format = "date_time_no_millis")]
         public string Timestamp { get; set; }
 
         public float Value { get; set; }

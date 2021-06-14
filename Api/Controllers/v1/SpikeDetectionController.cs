@@ -169,12 +169,32 @@ namespace Api.Controllers.v1
                 return CatchResponse(ex, ex.Message, 501);
             }
         }
+
         [HttpPost]
         public ActionResult PostPredictionSystemLoad(Data data)
         {
             try
             {
                 bool isValid = UnitOfWork.DetectionLogging.LogPredictionSystemLoad(data);
+                if (isValid)
+                {
+                    return Ok();
+                }
+
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                return CatchResponse(ex, ex.Message, 501);
+            }
+        }
+
+        [HttpPost]
+        public ActionResult PostPredictionCpupctTime(Data data)
+        {
+            try
+            {
+                bool isValid = UnitOfWork.DetectionLogging.LogPredictionDataCpupctTime(data);
                 if (isValid)
                 {
                     return Ok();
@@ -220,6 +240,19 @@ namespace Api.Controllers.v1
             try
             {
                 return ReturnResponse(await UnitOfWork.DetectionLogging.GetAllPredictions(), 200);
+            }
+            catch (Exception ex)
+            {
+                return CatchResponse(ex, ex.Message, 501);
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetPredictionCpuPctTimeGraphData()
+        {
+            try
+            {
+                return ReturnResponse(await UnitOfWork.DetectionLogging.GetAllCpupctTimePredictions(), 200);
             }
             catch (Exception ex)
             {

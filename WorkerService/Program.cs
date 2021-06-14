@@ -15,6 +15,8 @@ namespace WorkerService
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
+                    services.AddHostedService<CpupctTimePrediction>();
+                    //services.AddHostedService<NetworkBytesOutSpikeDetection>();
                     //services.AddHostedService<NetworkBytesOutSpikeDetection>();
                     //services.AddHostedService<NetworkBytesInSpikeDetection>();
                     //services.AddHostedService<MemorySpikeDetection>();
@@ -22,7 +24,7 @@ namespace WorkerService
                     //services.AddHostedService<CpuSpikeDetection>();
                     //services.AddHostedService<UpdateMl>();
                     //services.AddHostedService<NetworkBytesOutPrediction>();
-                    services.AddHostedService<SystemLoadPrediction>();
+                    //services.AddHostedService<SystemLoadPrediction>();
 
                     //services.AddHostedService<NetworkChangePointDetection>();
                     services.AddHostedService<Worker>();

@@ -11,11 +11,15 @@ namespace DataAccess.Interfaces
         bool LogPredictionData(Data data);
 
         bool LogChangepointData(Data data);
+
         bool LogPredictionSystemLoad(Data data);
 
+        bool LogPredictionDataCpupctTime(Data data);
 
         Task<IEnumerable<Data>> GetAllPredictions();
 
         Task<IEnumerable<Data>> GetAllChangepoints();
+
+        Task<IEnumerable<Data>> GetAllCpupctTimePredictions();
     }
 }
