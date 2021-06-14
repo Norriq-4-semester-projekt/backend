@@ -21,5 +21,8 @@ namespace DataAccess.Interfaces
         Task<IEnumerable<Data>> GetAllChangepoints();
 
         Task<IEnumerable<Data>> GetAllCpupctTimePredictions();
+        Task<IEnumerable<Data>> GetAllSystemLoadPredictions();
+
+        
     }
 }

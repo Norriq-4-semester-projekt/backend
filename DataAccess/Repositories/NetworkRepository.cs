@@ -30,7 +30,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<NetworkData>> GetLikeAllData()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<NetworkData>(s => s
-                .Index("metricbeat-*")
+                .Index("metricbeat-7.11.2-2021.05.12-000001")
                 .Size(60480)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
@@ -59,7 +59,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<NetworkData>> GetAllBytesIn()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<NetworkData>(s => s
-                .Index("metricbeat-*")
+                .Index("metricbeat-7.11.2-2021.05.12-000001")
                 .Size(20000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
@@ -86,7 +86,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<NetworkData>> GetAllBytesOut()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<NetworkData>(s => s
-                .Index("metricbeat-*")
+                .Index("metricbeat-7.11.2-2021.05.12-000001")
                 .Size(20000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
@@ -112,7 +112,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<NetworkData>> GetAllPacketsIn()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<NetworkData>(s => s
-                .Index("metricbeat-*")
+                .Index("metricbeat-7.11.2-2021.05.12-000001")
                 .Size(20000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
@@ -138,7 +138,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<NetworkData>> GetAllPacketsOut()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<NetworkData>(s => s
-                .Index("metricbeat-*")
+                .Index("metricbeat-7.11.2-2021.05.12-000001")
                 .Size(60480)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
@@ -166,7 +166,7 @@ namespace DataAccess.Repositories
         public async Task<Data> GetLatestBytesIn()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-                .Index("metricbeat-*")
+                .Index("metricbeat-7.11.2-2021.05.12-000001")
                     .Size(0)
                     .Query(q => q
                         .Bool(b => b
@@ -206,26 +206,39 @@ namespace DataAccess.Repositories
         public async Task<Data> GetLatestBytesOut()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-                .Index("metricbeat-*")
+                .Index("metricbeat-7.11.2-2021.05.12-000001")
                     .Size(0)
                     .Query(q => q
-                        .Exists(ex => ex
-                            .Field("host.network.out.bytes")))
+                        .Bool(b => b
+                            .Must(sh => sh
+                                .Exists(ex => ex
+                                    .Field("host.network.out.bytes")
+                                    )
+                                )
+                            .Filter(f => f
+                                .DateRange(dr => dr
+                                    .Field("@timestamp")
+                                    .GreaterThanOrEquals("now-1m")
+                                    )
+                                )
+                            )
+                            )
                     .Aggregations(aggs => aggs
-                        .DateHistogram("NetworkBytesOutDateHistogram", date => date
+                        .DateHistogram("NetworkBytesInDateHistogram", date => date
                         .Field("@timestamp")
                         .CalendarInterval(DateInterval.Minute)
                         .Aggregations(aggs => aggs
-                            .Average("AvgBytesOut", avg => avg
-                            .Field("host.network.out.bytes"))))));
-
+                            .Average("AvgBytesIn", avg => avg
+                            .Field("host.network.out.bytes"))
+                        )
+                    )
+                ));
             Data networksData = new()
             {
-                Timestamp = response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets
-                .FirstOrDefault().KeyAsString,
-                Value = (float)response.Aggregations.DateHistogram("NetworkBytesOutDateHistogram").Buckets
-                .FirstOrDefault()
-                .AverageBucket("AvgBytesOut").Value.Value
+                Timestamp = response.Aggregations.DateHistogram("NetworkBytesInDateHistogram").Buckets.FirstOrDefault()
+                    .KeyAsString,
+                Value = (float)response.Aggregations.DateHistogram("NetworkBytesInDateHistogram").Buckets
+                    .FirstOrDefault().AverageBucket("AvgBytesIn").Value.Value
             };
             return networksData;
         }
@@ -233,7 +246,7 @@ namespace DataAccess.Repositories
         public async Task<Data> GetLatestPacketsIn()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-                .Index("metricbeat-*")
+                .Index("metricbeat-7.11.2-2021.05.12-000001")
                     .Size(0)
                     .Query(q => q
                         .Bool(b => b
@@ -273,7 +286,7 @@ namespace DataAccess.Repositories
         public async Task<Data> GetLatestPacketsOut()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-                .Index("metricbeat-*")
+                .Index("metricbeat-7.11.2-2021.05.12-000001")
                     .Size(0)
                     .Query(q => q
                         .Bool(b => b

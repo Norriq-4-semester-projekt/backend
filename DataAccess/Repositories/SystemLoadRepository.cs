@@ -25,7 +25,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<SystemLoadData>> GetAll()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<SystemLoadData>(s => s
-                .Index("metricbeat-*")
+                .Index("metricbeat-7.11.2-2021.05.12-000001")
                 .Size(20000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
@@ -49,7 +49,7 @@ namespace DataAccess.Repositories
         public async Task<Data> GetLatest()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-                .Index("metricbeat-*")
+                .Index("metricbeat-7.11.2-2021.05.12-000001")
                     .Size(0)
                     .Query(q => q
                         .Bool(b => b

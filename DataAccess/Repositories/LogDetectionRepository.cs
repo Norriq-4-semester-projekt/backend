@@ -23,7 +23,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<Data>> GetAll()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-               .Index("detectml5")
+               .Index("spike-detect")
                .Size(10000)
                .Sort(ss => ss
                .Descending(de => de.Timestamp))
@@ -51,7 +51,7 @@ namespace DataAccess.Repositories
         public async Task<IEnumerable<Data>> GetAllPredictions()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
-               .Index("predictml5")
+               .Index("value-predict")
                .Size(10000)
                .Sort(ss => ss
                .Descending(de => de.Timestamp))
@@ -76,6 +76,33 @@ namespace DataAccess.Repositories
             return response.Documents.AsEnumerable();
         }
 
+        public async Task<IEnumerable<Data>> GetAllSystemLoadPredictions()
+        {
+            var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
+               .Index("forudsig")
+               .Size(10000)
+               .Sort(ss => ss
+               .Descending(de => de.Timestamp))
+
+                   .Query(q => q
+                        .Bool(b => b
+                            .Must(m => m
+                                .MatchAll()
+                                )
+                            //.Filter(f => f
+                            //    .DateRange(dr => dr
+                            //        .Field("@timestamp")
+                            //        .GreaterThanOrEquals("now-1d")
+                            //        //.GreaterThanOrEquals(entity.DateRange)
+
+                            //        )
+                            //    )
+                            )
+                        )
+                   );
+
+            return response.Documents.AsEnumerable();
+        }
         public async Task<IEnumerable<Data>> GetAllCpupctTimePredictions()
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<Data>(s => s
@@ -124,13 +151,13 @@ namespace DataAccess.Repositories
 
         public bool LogDetectionData(Data data)
         {
-            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("detectml5"));
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("spike-detect"));
             return indexResponse.IsValid;
         }
 
         public bool LogPredictionData(Data data)
         {
-            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("predictml5"));
+            var indexResponse = ElasticConnection.Instance.Client.Index<Data>(data, i => i.Index("value-predict"));
             return indexResponse.IsValid;
         }
 
