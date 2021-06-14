@@ -102,12 +102,33 @@ namespace WorkerService.Services
                 Value = predictionResult.Score,
                 Timestamp = bytesOutData.Timestamp
             };
+            float increse = 0;
+            float difference = 0;
+            bool isSpike = false;
+            if (predictionResult.Score > bytesOutData.Value)
+            {
+                increse = predictionResult.Score - bytesOutData.Value;
+
+                difference = increse / predictionResult.Score * 100;
+            }
+            else
+            {
+                increse = bytesOutData.Value - bytesInData.Value;
+
+                difference = increse / bytesInData.Value * 100;
+            }
+
+            if (difference > 50)
+            {
+                isSpike = true;
+            }
 
             Data bytesOutLog = new Data()
             {
                 FieldType = "BytesOutActual",
                 Value = bytesOutData.Value,
-                Timestamp = bytesOutData.Timestamp
+                Timestamp = bytesOutData.Timestamp,
+                IsSpike = isSpike
             };
 
             using HttpClientHandler handler = new HttpClientHandler()
