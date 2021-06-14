@@ -60,7 +60,7 @@ namespace DataAccess.Repositories
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<NetworkData>(s => s
                 .Index("metricbeat-7.11.2-2021.05.12-000001")
-                .Size(20000)
+                .Size(10000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
 
@@ -87,7 +87,7 @@ namespace DataAccess.Repositories
         {
             var response = await ElasticConnection.Instance.Client.SearchAsync<NetworkData>(s => s
                 .Index("metricbeat-7.11.2-2021.05.12-000001")
-                .Size(20000)
+                .Size(10000)
                 .Sort(ss => ss
                 .Descending(de => de.Timestamp))
                     .Query(q => q
@@ -160,8 +160,6 @@ namespace DataAccess.Repositories
                  );
             return response.Documents.AsEnumerable();
         }
-
-        
 
         public async Task<Data> GetLatestBytesIn()
         {
@@ -322,7 +320,7 @@ namespace DataAccess.Repositories
             };
             return networksData;
         }
-        
+
         public Task<ActionResult> UpdateByQueryAsync(NetworkData entity, NetworkData u1)
         {
             throw new NotImplementedException();

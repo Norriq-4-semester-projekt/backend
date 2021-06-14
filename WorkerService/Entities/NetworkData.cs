@@ -7,7 +7,7 @@ namespace WorkerService.Entities.Network
         [Text(Name = "@timestamp")]
         public string Timestamp { get; set; }
 
-        public string Test { get; set; }
+        //public string Test { get; set; }
 
         public Host Host { get; set; }
     }

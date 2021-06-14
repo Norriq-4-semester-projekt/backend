@@ -16,7 +16,7 @@ namespace WorkerService
         public static (bool, List<Data>) DetectSpikeAsync(Data latestData, List<Data> trainingData, int startSpikes)
         {
             List<Data> testData = new List<Data>(trainingData);
-            if (latestData != null)
+            if (startSpikes != 0)
             {
                 testData.Add(latestData);
                 firstRun = false;
@@ -40,7 +40,6 @@ namespace WorkerService
             IDataView transformedData = transformedModel.Transform(dataView);
             IEnumerable<Predictions> predictions = MlContext.Data.CreateEnumerable<Predictions>(transformedData, reuseRowObject: false);
 
-            List<string> spikeList = new List<string>();
             List<Data> spikes = new List<Data>();
             int i = 0;
             foreach (var p in predictions)
@@ -48,12 +47,11 @@ namespace WorkerService
                 if (p.Prediction[0] == 1)
                 {
                     spikes.Add(testData.ElementAt(i));
-                    spikeList.Add(p.Prediction[2].ToString());
                 }
                 i++;
             }
 
-            if (spikeList.Count > startSpikes)
+            if (spikes.Count > startSpikes)
             {
                 spikes.Last().IsSpike = true;
                 LogDataAsync(spikes.Last());
