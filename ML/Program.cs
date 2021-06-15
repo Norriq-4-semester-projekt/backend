@@ -12,7 +12,7 @@ namespace ML
     {
         private const string BaseDatasetsRelativePath = @"../../../../Input";
 
-        private static readonly string DatasetRelativePath = $"{BaseDatasetsRelativePath}/network_bytes_out_trainingdata.json";
+        private static readonly string DatasetRelativePath = $"{BaseDatasetsRelativePath}/MLtest.json";
 
         private static readonly string DatasetPath = GetAbsolutePath(DatasetRelativePath);
 

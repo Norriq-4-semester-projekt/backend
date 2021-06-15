@@ -46,11 +46,11 @@ namespace WorkerService.Services
             _logger.LogInformation(
                 "Timed Hosted Service is working. Count: {Count}", count);
 
-            await PredictDataAsync();
-        }
+            HttpResponseMessage cpuResponse = await _httpClient.GetAsync("https://localhost:5000/v1/SpikeDetection/GetLatestCpuData");
+            cpuResponse.EnsureSuccessStatusCode();
+            string cpuResponseBody = await cpuResponse.Content.ReadAsStringAsync();
+            Data cpuData = JsonConvert.DeserializeObject<Data>(cpuResponseBody);
 
-        private async Task<float> PredictDataAsync()
-        {
             TimeSpan timeSpan = new TimeSpan(0, 15, 0);
             String dateTime = DateTime.Now.TimeOfDay.Add(timeSpan).ToString();
             dateTime = dateTime.Remove(8);
@@ -69,14 +69,22 @@ namespace WorkerService.Services
             Console.WriteLine($"\n\nPredicted Cpupct: {predictionResult.Score}\n\n");
             Console.WriteLine("=============== End of process, hit any key to finish ===============");
 
-           
+            var settings = new JsonSerializerSettings { DateFormatString = "yyyy-MM-ddTHH:mm:ss.fffZ" };
+            var json = JsonConvert.SerializeObject(DateTime.Now.AddMinutes(15), settings);
 
             Data predictionLog = new()
             {
                 FieldType = "CpuPctPrediction",
                 Value = predictionResult.Score,
 
-                Timestamp = DateTime.Now.AddMinutes(15).ToString()
+                Timestamp = json
+            };
+
+            Data CpuLog = new()
+            {
+                FieldType = "CpuPctActual",
+                Value = cpuData.Value,
+                Timestamp = cpuData.Timestamp
             };
 
             using HttpClientHandler handler = new()
@@ -87,10 +95,14 @@ namespace WorkerService.Services
             using var httpClient = new HttpClient(handler);
             var predictionContent = new StringContent(JsonConvert.SerializeObject(predictionLog), Encoding.UTF8, "application/json");
             HttpResponseMessage response = await httpClient.PostAsync("http://localhost:5001/v1/SpikeDetection/PostPredictionCpupctTime", predictionContent);
-            response.EnsureSuccessStatusCode();
+            //response.EnsureSuccessStatusCode();
+            var actualContent = new StringContent(JsonConvert.SerializeObject(CpuLog), Encoding.UTF8, "application/json");
+            HttpResponseMessage response2 = await httpClient.PostAsync("http://localhost:5001/v1/SpikeDetection/PostPredictionCpupctTime", actualContent);
+            //response2.EnsureSuccessStatusCode();
 
-            return predictionResult.Score;
         }
+
+        
 
         public Task StopAsync(CancellationToken stoppingToken)
         {

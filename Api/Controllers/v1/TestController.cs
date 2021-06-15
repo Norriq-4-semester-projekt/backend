@@ -17,11 +17,24 @@ namespace Api.Controllers.v1
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetLatestNetworkBytesIn()
+        public async Task<ActionResult> GetLatestNetworkBytesIn50mb()
         {
             try
             {
-                return ReturnResponse(await UnitOfWork.TestClass.TestBytesIn(), 200);
+                return ReturnResponse(await UnitOfWork.TestClass.TestBytesIn50mb(), 200);
+            }
+            catch (Exception ex)
+            {
+                return CatchResponse(ex, ex.Message, 501);
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetLatestNetworkBytesIn20mb()
+        {
+            try
+            {
+                return ReturnResponse(await UnitOfWork.TestClass.TestBytesIn20mb(), 200);
             }
             catch (Exception ex)
             {

@@ -21,9 +21,9 @@ namespace WorkerService
                     services.AddHostedService<MemorySpikeDetection>();
                     services.AddHostedService<SystemLoadSpikeDetection>();
                     services.AddHostedService<CpuSpikeDetection>();
-                    services.AddHostedService<CpupctTimePrediction>();
-                    services.AddHostedService<SystemLoadPrediction>();
                     services.AddHostedService<NetworkBytesOutPrediction>();
+                    services.AddHostedService<CpupctTimePrediction>();
+                    //services.AddHostedService<SystemLoadPrediction>();
 
                     //services.AddHostedService<NetworkChangePointDetection>();
                     services.AddHostedService<Worker>();

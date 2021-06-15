@@ -33,10 +33,40 @@ namespace DataAccess.Repositories
             throw new NotImplementedException();
         }
 
-        public async Task<ActionResult> TestBytesIn()
+        public async Task<ActionResult> TestBytesIn50mb()
         {
             const string filepath = @"../../../../TestData/50MB.zip";
             const string filename = "50MB.zip";
+
+            FileInfo dataRoot = new FileInfo(typeof(Program).Assembly.Location);
+            if (dataRoot.Directory != null)
+            {
+                string assemblyFolderPath = dataRoot.Directory.FullName;
+
+                string fullPath = Path.Combine(assemblyFolderPath, filepath);
+
+                MultipartFormDataContent content = new MultipartFormDataContent();
+                ByteArrayContent fileContent = new ByteArrayContent(await File.ReadAllBytesAsync(fullPath));
+
+                content.Add(fileContent, "file", filename);
+
+                try
+                {
+                    await Client.PostAsync("https://freshcase.dk/", content);
+                    return new ObjectResult("File has been uploaded!") { StatusCode = 200 };
+                }
+                catch (Exception ex)
+                {
+                    return new ObjectResult("Something went wrong: " + ex.Message) { StatusCode = 500 };
+                }
+            }
+            return new ObjectResult("File not Found!") { StatusCode = 500 };
+        }
+
+        public async Task<ActionResult> TestBytesIn20mb()
+        {
+            const string filepath = @"../../../../TestData/20MB.zip";
+            const string filename = "20MB.zip";
 
             FileInfo dataRoot = new FileInfo(typeof(Program).Assembly.Location);
             if (dataRoot.Directory != null)

@@ -6,6 +6,8 @@ namespace DataAccess.Interfaces
 {
     public interface ITestClass : IGenericRepository<TestClass>
     {
-        Task<ActionResult> TestBytesIn();
+        Task<ActionResult> TestBytesIn50mb();
+        Task<ActionResult> TestBytesIn20mb();
+
     }
 }

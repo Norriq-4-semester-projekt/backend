@@ -46,9 +46,9 @@ namespace WorkerService.Services
             Dictionary<string, string> endPoints = new()
             {
                 { "cpu_trainingdata", "https://localhost:5000/v1/TrainingData/GetCpuData" },
-                { "network_bytes_in_trainingdata", "https://localhost:5000/v1/TrainingData/GetNetworkBytesIn" },
+                //{ "network_bytes_in_trainingdata", "https://localhost:5000/v1/TrainingData/GetNetworkBytesIn" },
+                //{ "network_bytes_out_trainingdata", "https://localhost:5000/v1/TrainingData/GetNetworkBytesOut" },
                 { "memory_trainingdata", "https://localhost:5000/v1/TrainingData/GetMemoryData" },
-                { "network_bytes_out_trainingdata", "https://localhost:5000/v1/TrainingData/GetNetworkBytesOut" },
                 { "systemload_trainingdata", "https://localhost:5000/v1/TrainingData/GetSystemLoadData" }
             };
             Dictionary<string, string> responses = new();
